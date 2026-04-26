@@ -1,0 +1,26 @@
+# IDE and project-local metadata
+.idea/
+*.iml
+nbproject/private/
+
+# Build output
+build/
+dist/
+out/
+*.class
+
+# Runtime logs and crash dumps
+*.log
+hs_err_pid*.mdmp
+replay_pid*.log
+*.hprof
+
+# Local machine files
+*.lnk
+Thumbs.db
+.DS_Store
+
+# Local runtime and secrets
+admin-runtime.properties
+data/config/config.properties
+maintenanceConfig.txt
