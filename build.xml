@@ -10,6 +10,24 @@
 <project name="nro" default="default" basedir=".">
     <description>Builds, tests, and runs the project nro.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <target name="run">
+        <property file="nbproject/private/private.properties"/>
+        <property file="nbproject/project.properties"/>
+        <mkdir dir="${build.dir}"/>
+        <exec executable="${ant.home}/bin/ant.bat" failonerror="true" output="${build.dir}/compile.log">
+            <arg value="-f"/>
+            <arg file="${ant.file}"/>
+            <arg value="compile"/>
+        </exec>
+        <java classname="${main.class}" dir="${basedir}" failonerror="true" fork="true">
+            <classpath>
+                <path path="${run.classpath}"/>
+            </classpath>
+            <jvmarg line="${run.jvmargs}"/>
+        </java>
+    </target>
+
     <!--
 
     There exist several targets which are by default empty and which can be 

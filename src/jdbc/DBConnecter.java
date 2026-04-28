@@ -64,6 +64,8 @@ public class DBConnecter {
             CONN_TIMEOUT = Long.parseLong(properties.getProperty("database.connectionTimeout", String.valueOf(CONN_TIMEOUT)));
             LEAK_DETECTION_THRESHOLD = Long.parseLong(properties.getProperty("database.leakDetectionThreshold", String.valueOf(LEAK_DETECTION_THRESHOLD)));
 
+            System.out.print("\033[2J\033[H");
+            System.out.flush();
             Logger.warning(RED
                     + "  _    _        ____       ____        _    _    \n"
                     + " | |  | |      / __ \\       /\\        | \\ | |  \n"

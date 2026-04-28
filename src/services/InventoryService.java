@@ -688,6 +688,7 @@ public class InventoryService {
                 msg.writer().writeUTF(item.getInfo());
                 msg.writer().writeUTF(item.getContent());
                 msg.writer().writeByte(item.itemOptions.size()); // options
+                // mở option item cho src
                 for (int j = 0; j < item.itemOptions.size(); j++) {
                     if (item.itemOptions.get(j).optionTemplate.id == 213) {
                         int opId = 213;
@@ -699,11 +700,11 @@ public class InventoryService {
                             opId = 222;
                             param /= 1000;
                         }
-                        msg.writer().writeByte(opId);
-                        msg.writer().writeShort(param);
+                        msg.writer().writeInt(opId);
+                        msg.writer().writeInt(param);
                     } else {
-                        msg.writer().writeByte(item.itemOptions.get(j).optionTemplate.id);
-                        msg.writer().writeShort(item.itemOptions.get(j).param);
+                        msg.writer().writeInt(item.itemOptions.get(j).optionTemplate.id);
+                        msg.writer().writeInt(item.itemOptions.get(j).param);
                     }
                 }
             }
@@ -751,6 +752,7 @@ public class InventoryService {
 
                 List<Item.ItemOption> itemOptions = item.itemOptions;
                 msg.writer().writeByte(itemOptions.size());
+                // mở option item cho src
                 for (Item.ItemOption itemOption : itemOptions) {
                     if (itemOption.optionTemplate.id == 213) {
                         int opId = 213;
@@ -762,11 +764,11 @@ public class InventoryService {
                             opId = 222;
                             param /= 1000;
                         }
-                        msg.writer().writeByte(opId);
-                        msg.writer().writeShort(param);
+                        msg.writer().writeInt(opId);
+                        msg.writer().writeInt(param);
                     } else {
-                        msg.writer().writeByte(itemOption.optionTemplate.id);
-                        msg.writer().writeShort(itemOption.param);
+                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(itemOption.param);
                     }
                 }
             }
@@ -791,6 +793,7 @@ public class InventoryService {
                         msg.writer().writeUTF(it.getInfo());
                         msg.writer().writeUTF(it.getContent());
                         msg.writer().writeByte(it.itemOptions.size());
+                        // mở option item cho src
                         for (Item.ItemOption io : it.itemOptions) {
                             if (io.optionTemplate.id == 213) {
                                 int opId = 213;
@@ -802,11 +805,11 @@ public class InventoryService {
                                     opId = 222;
                                     param /= 1000;
                                 }
-                                msg.writer().writeByte(opId);
-                                msg.writer().writeShort(param);
+                                msg.writer().writeInt(opId);
+                                msg.writer().writeInt(param);
                             } else {
-                                msg.writer().writeByte(io.optionTemplate.id);
-                                msg.writer().writeShort(io.param);
+                                msg.writer().writeInt(io.optionTemplate.id);
+                                msg.writer().writeInt(io.param);
                             }
                         }
                     }
@@ -820,6 +823,7 @@ public class InventoryService {
                         msg.writer().writeUTF(it.getInfo());
                         msg.writer().writeUTF(it.getContent());
                         msg.writer().writeByte(it.itemOptions.size());
+                        // mở option item cho src
                         for (Item.ItemOption io : it.itemOptions) {
                             if (io.optionTemplate.id == 213) {
                                 int opId = 213;
@@ -831,11 +835,11 @@ public class InventoryService {
                                     opId = 222;
                                     param /= 1000;
                                 }
-                                msg.writer().writeByte(opId);
-                                msg.writer().writeShort(param);
+                                msg.writer().writeInt(opId);
+                                msg.writer().writeInt(param);
                             } else {
-                                msg.writer().writeByte(io.optionTemplate.id);
-                                msg.writer().writeShort(io.param);
+                                msg.writer().writeInt(io.optionTemplate.id);
+                                msg.writer().writeInt(io.param);
                             }
                         }
                     }
