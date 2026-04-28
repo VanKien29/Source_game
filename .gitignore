@@ -1,0 +1,42 @@
+# Build outputs
+build/
+dist/
+out/
+classes/
+*.class
+
+# IDE files
+.idea/
+*.iml
+nbproject/private/
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# Logs and Crash dumps
+*.log
+*.mdmp
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
+
+# Sensitive configuration files
+data/config/config.properties
+admin-runtime.properties
+maintenanceConfig.txt
+
+# Database dumps
+sql/*.sql
+*.sql
+*.sqlite
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.lnk
+
+# Archive/Backup files
+*.bak
+*.zip
+*.tar.gz
+*.rar
