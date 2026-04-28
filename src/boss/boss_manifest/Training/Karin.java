@@ -70,15 +70,7 @@ public class Karin extends TrainingBoss {
 
     @Override
     public void afk() {
-        if (playerAtt == null || playerAtt.location == null) {
-            return; // hoặc có thể gọi this.changeStatus(BossStatus.LEAVE_MAP);
-        }
-
-        if (Util.canDoWithTime(lastTimeMove, 1500)) {
-            this.goToXY(playerAtt.location.x, playerAtt.location.y);
-            this.lastTimeMove = System.currentTimeMillis();
-        }
-        if (Util.canDoWithTime(lastTimeAFK, 5000)) {
+        if (Util.canDoWithTime(lastTimeAFK, 15000)) {
             this.changeStatus(BossStatus.LEAVE_MAP);
         }
     }

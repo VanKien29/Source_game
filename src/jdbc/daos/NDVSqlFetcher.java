@@ -1426,6 +1426,9 @@ public class NDVSqlFetcher {
                     player.traning.setLastTime(Long.parseLong(dataArray.get(7).toString()));
                     player.traning.setLastTop(Integer.parseInt(dataArray.get(8).toString()));
                     player.traning.setLastRewardTime(Long.parseLong(dataArray.get(9).toString()));
+                    if (dataArray.size() > 10) {
+                        player.traning.setTopWhis(Integer.parseInt(dataArray.get(10).toString()));
+                    }
                 }
             } catch (Exception e) {
                 player.levelLuyenTap = 0;

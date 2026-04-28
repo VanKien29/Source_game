@@ -538,6 +538,10 @@ public class MapService {
     public boolean isMapNguHanhSon(int mapId) {
         return mapId >= 122 && mapId <= 124;
     }
+    
+    public boolean isMapToken(int mapId) {
+        return mapId == 168;
+    }
 
     public boolean shouldChangeMap(int currentMapId, int newMapId) {
         return MapService.gI().isMapKhiGasHuyDiet(currentMapId)

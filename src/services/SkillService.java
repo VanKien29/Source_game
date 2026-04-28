@@ -15,6 +15,7 @@ import boss.boss_manifest.Broly.SuperBroly;
 import boss.boss_manifest.Commeson.NhanBan;
 import boss.boss_manifest.Commeson.PhanThan;
 import boss.boss_manifest.SuperRank.Rival;
+import boss.boss_manifest.Training.TrainingBoss;
 import boss.boss_manifest.Yardart.Yardart;
 import consts.ConstAchievement;
 import consts.cn;
@@ -57,6 +58,12 @@ public class SkillService {
     }
 
     public boolean useSkill(Player player, Player plTarget, Mob mobTarget, int status, Message msg) {
+        if (player == null || player.zone == null || player.location == null) {
+            return false;
+        }
+        if (plTarget != null && (plTarget.zone == null || plTarget.location == null)) {
+            return false;
+        }
         if (plTarget != null && player.clan != null && plTarget.clan != null && player.clan == plTarget.clan
                 && MapService.gI().isMapBlackBallWar(plTarget.zone.map.mapId)) {
             Service.gI().chatJustForMe(player, plTarget, "Ê cùng bang mà");
@@ -1062,12 +1069,14 @@ public class SkillService {
         if (hpHoi > 0 || mpHoi > 0) {
             int x = -1;
             int y = -1;
-            if (pl != null) {
+            if (pl != null && pl.location != null) {
                 x = pl.location.x;
                 y = pl.location.y;
-            } else if (mob != null) {
+            } else if (mob != null && mob.location != null) {
                 x = mob.location.x;
                 y = mob.location.y;
+            } else {
+                return;
             }
             EffectMapService.gI().sendEffectMapToAllInMap(player, 37, 3, 1, x, y, -1);
             PlayerService.gI().hoiPhuc(player, Util.maxIntValue(hpHoi), Util.maxIntValue(mpHoi));
@@ -1075,6 +1084,10 @@ public class SkillService {
     }
 
     private void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss) {
+        if (plAtt == null || plInjure == null || plAtt.zone == null || plInjure.zone == null
+                || plAtt.location == null || plInjure.location == null) {
+            return;
+        }
         if (plInjure.effectSkill.anTroi) {
             plAtt.nPoint.isCrit100 = true;
         }
@@ -1099,7 +1112,7 @@ public class SkillService {
                 : dameHit;
         phanSatThuong(plAtt, plInjure, miss ? 0 : damePST);
         hutHPMP(plAtt, dameHit, plInjure, null);
-        if (plInjure instanceof Yardart) { // Fix lỗi máu trắng boss Yardart
+        if (!plInjure.isDie() && plInjure instanceof Yardart) { // Fix lỗi máu trắng boss Yardart
             if (plInjure.nPoint.hp < dameHit) {
                 dameHit = plInjure.nPoint.hp - 1;
                 if (dameHit == 0) {
@@ -1108,6 +1121,9 @@ public class SkillService {
             } else if (plInjure.nPoint.hp <= plInjure.nPoint.hpMax / 10) {
                 return;
             }
+        }
+        if (!plInjure.isDie() && plInjure instanceof TrainingBoss && dameHit >= plInjure.nPoint.hp) {
+            dameHit = Math.max(0, plInjure.nPoint.hp - 1);
         }
         Message msg = null;
         try {
@@ -1122,7 +1138,9 @@ public class SkillService {
             msg.writer().writeBoolean(plInjure.isDie()); // is die
             msg.writer().writeBoolean(plAtt.nPoint.isCrit); // crit
             Service.gI().sendMessAllPlayerInMap(plAtt, msg);
-//            Service.gI().reload_HP_NV(plInjure); int bật cái này
+            if (!plInjure.isDie() && plInjure instanceof TrainingBoss) {
+                Service.gI().Send_Info_NV_do_Injure(plInjure);
+            }
             if (plAtt.isPl() && plInjure.isPl() && plAtt.typePk == ConstPlayer.PK_PVP_2
                     && plInjure.typePk == ConstPlayer.PK_PVP_2) {
                 long tnsm = plAtt.nPoint.calSucManhTiemNang(dameHit / 10)
@@ -1392,6 +1410,10 @@ public class SkillService {
     }
 
     public boolean canAttackPlayer(Player p1, Player p2) {
+        if (p1 == null || p2 == null || p1.zone == null || p2.zone == null
+                || p1.location == null || p2.location == null) {
+            return false;
+        }
         if (p1.isDie() || p2.isDie()) {
             return false;
         }

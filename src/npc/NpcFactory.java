@@ -42,6 +42,7 @@ import server.Client;
 import server.Maintenance;
 import server.Manager;
 import services.func.Input;
+import services.func.TopWhisRewardService;
 import utils.Logger;
 import utils.Util;
 import models.SuperDivineWater.SuperDivineWaterService;
@@ -758,6 +759,11 @@ public class NpcFactory {
                                     BossManager.gI().createBoss(BossID.SO_3);
                                     BossManager.gI().createBoss(BossID.SO_4);
                                     BossManager.gI().createBoss(BossID.TIEU_DOI_TRUONG);
+                                }
+                                case 9 -> {
+                                    TopWhisRewardService.gI().rewardWeeklyTopWhisByAdmin(player);
+                                }
+                                case 10 -> {
                                 }
 
                                 default -> {

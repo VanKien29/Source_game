@@ -20,11 +20,11 @@ public class DBConnecter {
     private static final String URL
             = "jdbc:mysql://%s:%s/%s?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true";
 
-    private static String DB_HOST = "14.225.203.122";
+    private static String DB_HOST = "localhost";
     private static String DB_PORT = "3306";
-    public static String DB_DATA = "blue";
-    public static String DB_USER = "tech_test2";
-    private static String DB_PASSWORD = "tech_test2";
+    public static String DB_DATA = "nro";
+    public static String DB_USER = "root";
+    private static String DB_PASSWORD = "";
 
     // ⚙️ Hikari pool config
     private static int MIN_CONN = 5;
@@ -32,6 +32,7 @@ public class DBConnecter {
     private static long MAX_LIFE_TIME = 1800000L; // 30 phút
     private static long IDLE_TIMEOUT = 600000L;   // 10 phút
     private static long CONN_TIMEOUT = 30000L;    // 30 giây
+    private static long LEAK_DETECTION_THRESHOLD = 120000L; // 2 phút
 
     private static final HikariConfig config = new HikariConfig();
     private static final HikariDataSource ds;
@@ -59,6 +60,9 @@ public class DBConnecter {
             MIN_CONN = Integer.parseInt(properties.getProperty("database.min", String.valueOf(MIN_CONN)));
             MAX_CONN = Integer.parseInt(properties.getProperty("database.max", String.valueOf(MAX_CONN)));
             MAX_LIFE_TIME = Long.parseLong(properties.getProperty("database.lifetime", String.valueOf(MAX_LIFE_TIME)));
+            IDLE_TIMEOUT = Long.parseLong(properties.getProperty("database.idleTimeout", String.valueOf(IDLE_TIMEOUT)));
+            CONN_TIMEOUT = Long.parseLong(properties.getProperty("database.connectionTimeout", String.valueOf(CONN_TIMEOUT)));
+            LEAK_DETECTION_THRESHOLD = Long.parseLong(properties.getProperty("database.leakDetectionThreshold", String.valueOf(LEAK_DETECTION_THRESHOLD)));
 
             Logger.warning(RED
                     + "  _    _        ____       ____        _    _    \n"
@@ -142,7 +146,9 @@ public class DBConnecter {
         config.addDataSourceProperty("cacheServerConfiguration", "true");
         config.addDataSourceProperty("elideSetAutoCommits", "true");
         config.addDataSourceProperty("maintainTimeStats", "false");
-        config.setLeakDetectionThreshold(10000); // ✅ cảnh báo khi connection mở >10s
+        if (LEAK_DETECTION_THRESHOLD > 0) {
+            config.setLeakDetectionThreshold(LEAK_DETECTION_THRESHOLD);
+        }
 
         ds = new HikariDataSource(config);
     }

@@ -30,6 +30,14 @@ public class InventoryService {
         return InventoryService.I;
     }
 
+    private void refreshSetKichHoatEffect(Player player) {
+        if (player == null || player.isPet || player.setClothes == null) {
+            return;
+        }
+        player.setClothes.setup();
+        Service.gI().updateSetKichHoatEffect(player);
+    }
+
     private void __________________Tìm_kiếm_item_____________________________() {
         // **********************************************************************
     }
@@ -448,6 +456,7 @@ public class InventoryService {
         Item item = player.inventory.itemsBag.get(index);
         if (item.isNotNullItem()) {
             player.inventory.itemsBag.set(index, putItemBody(player, item));
+            refreshSetKichHoatEffect(player);
             sendItemBag(player);
             sendItemBody(player);
             Service.gI().point(player);
@@ -474,6 +483,7 @@ public class InventoryService {
                 }
             }
             player.inventory.itemsBody.set(index, putItemBag(player, item));
+            refreshSetKichHoatEffect(player);
             sendItemBag(player);
             sendItemBody(player);
             if (index == 8 || index == 11 || index == 12) {
@@ -550,6 +560,7 @@ public class InventoryService {
                                     player.inventory.itemsBox.set(index, itemBody);
                                     done = true;
 
+                                    refreshSetKichHoatEffect(player);
                                     sendItemBody(player);
                                     Service.gI().point(player);
                                     Service.gI().Send_Caitrang(player);
@@ -647,6 +658,7 @@ public class InventoryService {
         Item item = player.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
             player.inventory.itemsBody.set(index, putItemBox(player, item));
+            refreshSetKichHoatEffect(player);
             sortItems(player.inventory.itemsBag);
             sendItemBody(player);
             sendItemBox(player);

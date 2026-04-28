@@ -161,6 +161,18 @@ public class Map implements Runnable {
         }
     }
 
+    public synchronized void reloadWayPoints(List<WayPoint> wayPoints) {
+        this.wayPoints = wayPoints != null ? new ArrayList<>(wayPoints) : new ArrayList<>();
+    }
+
+    public synchronized void reloadNpcs(byte[] npcId, short[] npcX, short[] npcY) {
+        this.initNpc(
+                npcId != null ? npcId : new byte[0],
+                npcX != null ? npcX : new short[0],
+                npcY != null ? npcY : new short[0]
+        );
+    }
+
     @Override
     public void run() {
         while (true) {
@@ -220,9 +232,26 @@ public class Map implements Runnable {
                             mobZone = new Mob(mob);
                     }
                     mobZone.zone = zone;
-                    zone.mobs.add(mobZone);
+                    synchronized (zone.mobs) {
+                        zone.mobs.add(mobZone);
+                    }
                 }
             }
+        }
+    }
+
+    public void reloadMobs(byte[] mobTemp, byte[] mobLevel, int[] mobHp, short[] mobX, short[] mobY) {
+        for (Zone zone : this.zones) {
+            synchronized (zone.mobs) {
+                zone.mobs.clear();
+            }
+        }
+        initMob(mobTemp, mobLevel, mobHp, mobX, mobY);
+    }
+
+    public void updateZoneMaxPlayers(int maxPlayer) {
+        for (Zone zone : this.zones) {
+            zone.maxPlayer = maxPlayer;
         }
     }
 

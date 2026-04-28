@@ -287,6 +287,19 @@ public class SetClothes {
         return true;
     }
 
+    public int getSetKichHoatEffectId() {
+        if (kakarot == 5 || cadic == 5 || nappa == 5 || giamSatThuong == 5 || cadicM == 5) {
+            return 86;
+        }
+        if (ocTieu == 5 || pikkoroDaimao == 5 || picolo == 5 || lienHoan == 5 || nail == 5) {
+            return 87;
+        }
+        if (songoku == 5 || thienXinHang == 5 || kirin == 5 || kaioken == 5 || thanVuTruKaio == 5) {
+            return 88;
+        }
+        return -1;
+    }
+
     public void dispose() {
         this.player = null;
     }

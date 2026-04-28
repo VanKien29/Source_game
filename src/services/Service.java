@@ -49,6 +49,11 @@ import power.CaptionManager;
 
 public class Service {
 
+    private static final int[] TOP_WHIS_EFFECTS = {58, 57, 56};
+    private static final int[] SET_KICH_HOAT_EFFECTS = {86, 87, 88, 504};
+    private static final int SET_KICH_HOAT_EXTRA_EFFECT = 504;
+    private static final int SET_KICH_HOAT_EXTRA_EFFECT_LAYER = 0;
+
     private static Service instance;
 
     public static Service gI() {
@@ -1454,11 +1459,17 @@ public class Service {
     }
 
     public void attackPlayer(Player pl, int idPlAnPem) {
+        if (pl == null || pl.zone == null || pl.zone.map == null || pl.location == null) {
+            return;
+        }
         Player player;
         if (MapService.gI().isMapOffline(pl.zone.map.mapId)) {
             player = pl.zone.getPlayerInMapOffline(pl, idPlAnPem);
         } else {
             player = pl.zone.getPlayerInMap(idPlAnPem);
+        }
+        if (player == null || player.zone == null || player.location == null) {
+            return;
         }
         SkillService.gI().useSkill(pl, player, null, -1, null);
     }
@@ -2112,33 +2123,122 @@ public class Service {
 
     public void sendEffPlayer(Player pl) {
         if (pl.isPl()) {
-            Item danhhieu = pl.inventory.itemsBody.get(11);
-            if (danhhieu.isNotNullItem()) {
-                Service.gI().sendEffAllPlayer(pl, danhhieu.template.part, 1, -1, 1);
+            if (pl.inventory.itemsBody.size() > 11) {
+                Item danhhieu = pl.inventory.itemsBody.get(11);
+                if (danhhieu.isNotNullItem()) {
+                    Service.gI().sendEffAllPlayer(pl, danhhieu.template.part, 1, -1, 1);
+                }
             }
-            Item chanMenh = pl.inventory.itemsBody.get(12);
-            if (chanMenh.isNotNullItem()) {
-                Service.gI().sendEffAllPlayer(pl, chanMenh.template.part, 0, -1, 1);
+            if (pl.inventory.itemsBody.size() > 12) {
+                Item chanMenh = pl.inventory.itemsBody.get(12);
+                if (chanMenh.isNotNullItem()) {
+                    Service.gI().sendEffAllPlayer(pl, chanMenh.template.part, 0, -1, 1);
+                }
             }
+            sendSetKichHoatEffect(pl);
+            sendTopWhisEffect(pl);
         }
     }
 
     public void sendEffAllPlayerMapToMe(Player pl) {
         try {
             for (Player plM : pl.zone.getPlayers()) {
-                if (plM.isPl() && plM.inventory.itemsBody.size() >= 11) {
-                    Item danhhieu = plM.inventory.itemsBody.get(11);
-                    if (danhhieu.isNotNullItem()) {
-                        Service.gI().sendEffPlayer(plM, pl, danhhieu.template.part, 1, -1, 1);
+                if (plM.isPl()) {
+                    if (plM.inventory.itemsBody.size() > 11) {
+                        Item danhhieu = plM.inventory.itemsBody.get(11);
+                        if (danhhieu.isNotNullItem()) {
+                            Service.gI().sendEffPlayer(plM, pl, danhhieu.template.part, 1, -1, 1);
+                        }
                     }
-                    Item chanmenh = plM.inventory.itemsBody.get(12);
-                    if (chanmenh.isNotNullItem()) {
-                        Service.gI().sendEffPlayer(plM, pl, chanmenh.template.part, 0, -1, 1);
+                    if (plM.inventory.itemsBody.size() > 12) {
+                        Item chanmenh = plM.inventory.itemsBody.get(12);
+                        if (chanmenh.isNotNullItem()) {
+                            Service.gI().sendEffPlayer(plM, pl, chanmenh.template.part, 0, -1, 1);
+                        }
                     }
+                    sendSetKichHoatEffect(plM, pl);
+                    sendTopWhisEffect(plM, pl);
                 }
             }
         } catch (Exception e) {
         }
+    }
+
+    public void updateSetKichHoatEffect(Player pl) {
+        removeSetKichHoatEffect(pl);
+        sendSetKichHoatEffect(pl);
+    }
+
+    public void removeSetKichHoatEffect(Player pl) {
+        if (pl == null || pl.zone == null) {
+            return;
+        }
+        for (int effectId : SET_KICH_HOAT_EFFECTS) {
+            removeEffPlayer(pl, effectId);
+        }
+    }
+
+    public void sendSetKichHoatEffect(Player pl) {
+        if (pl == null || pl.zone == null) {
+            return;
+        }
+        int effectId = getSetKichHoatEffectId(pl);
+        if (effectId > 0) {
+            sendEffAllPlayer(pl, effectId, 1, -1, 1);
+            sendEffAllPlayer(pl, SET_KICH_HOAT_EXTRA_EFFECT, SET_KICH_HOAT_EXTRA_EFFECT_LAYER, -1, 1);
+        }
+    }
+
+    private void sendSetKichHoatEffect(Player pl, Player plReceive) {
+        int effectId = getSetKichHoatEffectId(pl);
+        if (effectId > 0) {
+            sendEffPlayer(pl, plReceive, effectId, 1, -1, 1);
+            sendEffPlayer(pl, plReceive, SET_KICH_HOAT_EXTRA_EFFECT, SET_KICH_HOAT_EXTRA_EFFECT_LAYER, -1, 1);
+        }
+    }
+
+    private int getSetKichHoatEffectId(Player pl) {
+        if (pl == null || pl.setClothes == null) {
+            return -1;
+        }
+        return pl.setClothes.getSetKichHoatEffectId();
+    }
+
+    public void removeTopWhisEffect(Player pl) {
+        if (pl == null || pl.zone == null) {
+            return;
+        }
+        for (int effectId : TOP_WHIS_EFFECTS) {
+            removeEffPlayer(pl, effectId);
+        }
+    }
+
+    public void sendTopWhisEffect(Player pl) {
+        if (pl == null || pl.zone == null) {
+            return;
+        }
+        int effectId = getTopWhisEffectId(pl);
+        if (effectId > 0) {
+            sendEffAllPlayer(pl, effectId, 1, -1, 1);
+        }
+    }
+
+    private void sendTopWhisEffect(Player pl, Player plReceive) {
+        int effectId = getTopWhisEffectId(pl);
+        if (effectId > 0) {
+            sendEffPlayer(pl, plReceive, effectId, 1, -1, 1);
+        }
+    }
+
+    private int getTopWhisEffectId(Player pl) {
+        if (pl == null || pl.traning == null) {
+            return -1;
+        }
+        int rank = pl.traning.getTopWhis();
+        if (rank < 1 || rank > TOP_WHIS_EFFECTS.length) {
+            return -1;
+        }
+        return TOP_WHIS_EFFECTS[rank - 1];
     }
 
     public void sendEffPlayer2(Player pl, Player plReceive, int idEff, int layer, int loop, int loopCount) {

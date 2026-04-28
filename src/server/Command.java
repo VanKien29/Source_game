@@ -171,7 +171,7 @@ public class Command {
             } else if (text.equals("topxu")) {
                 Service.gI().sendThongBaoOK(player, TopService.getTopQuocVuong());
                 return true;
-            } else if (text.equals("adminad123")) { // menu admin kiendeptrai
+            } else if (text.equals("ad")) { // menu admin kiendeptrai
                 Input.gI().createFormAdmin(player);//đây là lệnh admin ( ctrl click chuột phải vào createFormAdmin
                 return true;
             } // else if (text.equals("daucatmoi")) {
@@ -186,7 +186,7 @@ public class Command {
             } else if (text.startsWith("m")) {
                 String mapIdStr = text.replaceFirst("m", "").trim();
                 if (mapIdStr.isEmpty()) {
-                 //   Service.gI().sendThongBao(player, "Vui lòng nhập id map. Ví dụ: m 5");
+                    //   Service.gI().sendThongBao(player, "Vui lòng nhập id map. Ví dụ: m 5");
                     return true;
                 }
                 try {
@@ -197,61 +197,61 @@ public class Command {
                 }
                 return true;
             }
-//            if (text.startsWith("dmg")) {
-//                try {
-//                    long dameg = Integer.parseInt(text.replaceAll("dmg", ""));
-//                    player.nPoint.dameg = dameg;
-//                    Service.gI().point(player);
-//                    return true;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            if (text.startsWith("hpg")) {
-//                try {
-//                    long hpg = Integer.parseInt(text.replaceAll("hpg", ""));
-//                    player.nPoint.hpg = hpg;
-//                    Service.gI().point(player);
-//                    return true;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            if (text.startsWith("mpg")) {
-//                try {
-//                    long mpg = Integer.parseInt(text.replaceAll("mpg", ""));
-//                    player.nPoint.mpg = mpg;
-//                    Service.gI().point(player);
-//                    return true;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            if (text.startsWith("defg")) {
-//                try {
-//                    int defg = Integer.parseInt(text.replaceAll("defg", ""));
-//                    player.nPoint.defg = defg;
-//                    Service.gI().point(player);
-//                    return true;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            if (text.startsWith("dmg")) {
+                try {
+                    long dameg = Integer.parseInt(text.replaceAll("dmg", ""));
+                    player.nPoint.dameg = dameg;
+                    Service.gI().point(player);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (text.startsWith("hpg")) {
+                try {
+                    long hpg = Integer.parseInt(text.replaceAll("hpg", ""));
+                    player.nPoint.hpg = hpg;
+                    Service.gI().point(player);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (text.startsWith("mpg")) {
+                try {
+                    long mpg = Integer.parseInt(text.replaceAll("mpg", ""));
+                    player.nPoint.mpg = mpg;
+                    Service.gI().point(player);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (text.startsWith("defg")) {
+                try {
+                    int defg = Integer.parseInt(text.replaceAll("defg", ""));
+                    player.nPoint.defg = defg;
+                    Service.gI().point(player);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 //             if (text.equals("tx")) {
 //                player.isMenuProcessing = false;
 //                showTaiXiuStats(player);
 //                return true;
 //            }
-//            if (text.startsWith("crg")) {
-//                try {
-//                    int critg = Integer.parseInt(text.replaceAll("crg", ""));
-//                    player.nPoint.critg = critg;
-//                    Service.gI().point(player);
-//                    return true;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            if (text.startsWith("crg")) {
+                try {
+                    int critg = Integer.parseInt(text.replaceAll("crg", ""));
+                    player.nPoint.critg = critg;
+                    Service.gI().point(player);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             if (text.startsWith("adminnnv")) {
                 try {
                     int idTask = Integer.parseInt(text.replaceAll("nnv", ""));

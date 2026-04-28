@@ -15,6 +15,7 @@ import network.Message;
 import consts.ConstPlayer;
 import java.io.IOException;
 import models.Training.TrainingService;
+import map.Zone;
 import player.Player;
 import services.EffectSkillService;
 import services.MapService;
@@ -220,30 +221,36 @@ public abstract class TrainingBoss extends Boss {
 
     @Override
     public void leaveMap() {
-        ChangeMapService.gI().exitMap(this);
-        Player npc = TrainingService.gI().getNonInteractiveNPC(zone, (int) this.id);
-        if (npc != null) {
-            this.nPoint.hp = this.nPoint.hpMax;
-            Service.gI().Send_Info_NV(this);
-            this.goToPlayer(npc, false);
-        } else {
-            Message msg;
-            try {
-                msg = new Message(-6);
-                msg.writer().writeLong(this.id);
-                playerAtt.sendMessage(msg);
-                msg.cleanup();
-                this.zone = null;
-            } catch (IOException e) {
-                Logger.logException(MapService.class, e);
-            }
-            TrainingService.gI().luyenTapEnd(playerAtt, (int) this.id);
+        Zone oldZone = this.zone;
+        if (oldZone != null) {
+            sendRemoveToPlayer(oldZone);
+            ChangeMapService.gI().exitMap(this);
         }
+        this.zone = null;
+        TrainingService.gI().luyenTapEnd(playerAtt, (int) this.id);
 
         this.lastZone = null;
         this.lastTimeRest = System.currentTimeMillis();
         this.changeStatus(BossStatus.REST);
         OtherBossManager.gI().removeBoss(this);
         this.dispose();
+    }
+
+    protected void sendRemoveToPlayer(Zone oldZone) {
+        if (playerAtt == null || oldZone == null || !MapService.gI().isMapOffline(oldZone.map.mapId)) {
+            return;
+        }
+        Message msg = null;
+        try {
+            msg = new Message(-6);
+            msg.writer().writeInt((int) this.id);
+            playerAtt.sendMessage(msg);
+        } catch (IOException e) {
+            Logger.logException(MapService.class, e);
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
+        }
     }
 }

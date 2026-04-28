@@ -241,7 +241,10 @@ public class DataGame {
         Message msg;
         try {
             final byte[] effData = FileIO.readFile("data/effdata/DataEffect_" + idT);
-            final byte[] effImg = FileIO.readFile("data/effect/x" + session.zoomLevel + "/ImgEffect_" + idT + ".png");
+            byte[] effImg = FileIO.readFile("data/effect/x" + session.zoomLevel + "/ImgEffect_" + idT + ".png");
+            if (effImg == null) {
+                effImg = FileIO.readFile("data/effect/x" + session.zoomLevel + "/ImageEffect_" + idT + ".png");
+            }
             if (effData == null || effImg == null) {
                 return;
             }

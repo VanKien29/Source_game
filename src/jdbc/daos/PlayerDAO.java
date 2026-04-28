@@ -1122,6 +1122,7 @@ public class PlayerDAO {
                 dataArray.add(player.traning.getLastTime());
                 dataArray.add(player.traning.getLastTop());
                 dataArray.add(player.traning.getLastRewardTime());
+                dataArray.add(player.traning.getTopWhis());
 
                 String dataLuyenTap = dataArray.toJSONString();
                 dataArray.clear();

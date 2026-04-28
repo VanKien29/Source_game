@@ -97,7 +97,6 @@ import boss.boss_manifest.Cell.XENCON5;
 import boss.boss_manifest.Cell.XENCON6;
 import boss.boss_manifest.Cell.XENCON7;
 import boss.boss_manifest.Cumber.Cumber;
-;
 import boss.boss_manifest.DaiTuongBroly.DaiTuongBroly;
 import boss.boss_manifest.Hatchiyac.Hatchiyac;
 import boss.boss_manifest.Doraemon.*;
@@ -115,6 +114,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -266,25 +266,33 @@ public class BossManager implements Runnable {
 
     protected final List<Boss> bosses;
     private static final Map<Integer, BossData> RUNTIME_CUSTOM_TEMPLATES = new HashMap<>();
+    private static final Map<String, JSONObject> RUNTIME_TEMPLATE_OVERRIDES = new ConcurrentHashMap<>();
     private static final String RUNTIME_CONFIG_TABLE = "boss_runtime_config";
+    private static final String TEMPLATE_CONFIG_TABLE = "boss_template_config";
+    private static final String SPAWN_RULE_TABLE = "boss_spawn_rule";
     private static boolean runtimeConfigsApplied;
 
     public void addBoss(Boss boss) {
-        this.bosses.add(boss);
+        synchronized (this.bosses) {
+            this.bosses.add(boss);
+        }
     }
 
     public void removeBoss(Boss boss) {
-        this.bosses.remove(boss);
+        synchronized (this.bosses) {
+            this.bosses.remove(boss);
+        }
     }
 
-    public static String runtimeBossesJson() {
+    public static synchronized String runtimeBossesJson() {
         StringBuilder json = new StringBuilder();
         json.append("{\"bosses\":[");
         boolean first = true;
         for (BossManager manager : runtimeManagers()) {
             String managerKey = runtimeManagerKey(manager);
-            for (int i = 0; i < manager.bosses.size(); i++) {
-                Boss boss = manager.bosses.get(i);
+            List<Boss> snapshot = runtimeBossSnapshot(manager);
+            for (int i = 0; i < snapshot.size(); i++) {
+                Boss boss = snapshot.get(i);
                 if (boss == null) {
                     continue;
                 }
@@ -299,7 +307,7 @@ public class BossManager implements Runnable {
         return json.toString();
     }
 
-    public static String runtimeCreateBoss(int bossId, int count) {
+    public static synchronized String runtimeCreateBoss(int bossId, int count) {
         return runtimeCreateBoss(bossId, count, true);
     }
 
@@ -307,6 +315,7 @@ public class BossManager implements Runnable {
         int total = Math.max(1, Math.min(count, 50));
         StringBuilder created = new StringBuilder("[");
         boolean first = true;
+        int createdCount = 0;
         for (int i = 0; i < total; i++) {
             Boss boss = BossManager.gI().createBoss(bossId);
             if (boss == null) {
@@ -320,16 +329,17 @@ public class BossManager implements Runnable {
                 created.append(',');
             }
             first = false;
+            createdCount++;
             created.append(runtimeBossJson(ref.managerKey, ref.index, boss));
         }
         created.append(']');
-        if (persist && !first) {
-            persistBossSpawn(bossId, total);
+        if (persist && createdCount > 0) {
+            persistBossSpawn(bossId, createdCount);
         }
         return "{\"created\":" + created + "}";
     }
 
-    public static String runtimeCreateCustomBoss(JSONObject payload) {
+    public static synchronized String runtimeCreateCustomBoss(JSONObject payload) {
         return runtimeCreateCustomBoss(payload, true);
     }
 
@@ -362,6 +372,7 @@ public class BossManager implements Runnable {
         int total = Math.max(1, Math.min(intValue(payload.get("count"), 1), 50));
         StringBuilder created = new StringBuilder("[");
         boolean first = true;
+        int createdCount = 0;
         for (int i = 0; i < total; i++) {
             Boss boss = BossManager.gI().createBoss(bossId);
             RuntimeBossRef ref = boss == null ? null : findRuntimeBossRef(boss);
@@ -372,16 +383,17 @@ public class BossManager implements Runnable {
                 created.append(',');
             }
             first = false;
+            createdCount++;
             created.append(runtimeBossJson(ref.managerKey, ref.index, boss));
         }
         created.append(']');
-        if (persist && !first) {
-            persistBossCustom(payload, bossId, total);
+        if (persist && createdCount > 0) {
+            persistBossCustom(payload, bossId, createdCount);
         }
         return "{\"created\":" + created + "}";
     }
 
-    public static boolean runtimeSetEnabled(String managerKey, int index, boolean enabled) {
+    public static synchronized boolean runtimeSetEnabled(String managerKey, int index, boolean enabled) {
         Boss boss = runtimeBoss(managerKey, index);
         if (boss == null) {
             return false;
@@ -391,7 +403,7 @@ public class BossManager implements Runnable {
         return true;
     }
 
-    public static boolean runtimeSetGroupEnabled(String managerKey, int index, boolean enabled) {
+    public static synchronized boolean runtimeSetGroupEnabled(String managerKey, int index, boolean enabled) {
         Boss boss = runtimeBoss(managerKey, index);
         if (boss == null) {
             return false;
@@ -406,13 +418,10 @@ public class BossManager implements Runnable {
         return true;
     }
 
-    public static boolean runtimeDeleteBoss(String managerKey, int index) {
+    public static synchronized boolean runtimeDeleteBoss(String managerKey, int index) {
         BossManager manager = runtimeManager(managerKey);
-        if (manager == null || index < 0 || index >= manager.bosses.size()) {
-            return false;
-        }
-        Boss boss = manager.bosses.get(index);
-        if (boss == null) {
+        Boss boss = runtimeBoss(managerKey, index);
+        if (manager == null || boss == null) {
             return false;
         }
         boss.setRuntimeDisabled(true);
@@ -421,7 +430,7 @@ public class BossManager implements Runnable {
         return true;
     }
 
-    public static boolean runtimeDeleteGroup(String managerKey, int index) {
+    public static synchronized boolean runtimeDeleteGroup(String managerKey, int index) {
         Boss boss = runtimeBoss(managerKey, index);
         if (boss == null) {
             return false;
@@ -444,7 +453,7 @@ public class BossManager implements Runnable {
         return true;
     }
 
-    public static boolean runtimeRespawnBoss(String managerKey, int index) {
+    public static synchronized boolean runtimeRespawnBoss(String managerKey, int index) {
         Boss boss = runtimeBoss(managerKey, index);
         if (boss == null) {
             return false;
@@ -461,7 +470,7 @@ public class BossManager implements Runnable {
         return true;
     }
 
-    public static boolean runtimeRespawnGroup(String managerKey, int index) {
+    public static synchronized boolean runtimeRespawnGroup(String managerKey, int index) {
         Boss boss = runtimeBoss(managerKey, index);
         if (boss == null) {
             return false;
@@ -484,7 +493,7 @@ public class BossManager implements Runnable {
         return true;
     }
 
-    public static boolean runtimeUpdateBoss(JSONObject payload) {
+    public static synchronized boolean runtimeUpdateBoss(JSONObject payload) {
         return runtimeUpdateBoss(payload, true);
     }
 
@@ -498,16 +507,137 @@ public class BossManager implements Runnable {
         int targetLevel = intValue(payload.get("level_index"), Math.max(boss.currentLevel, 0));
         targetLevel = Math.max(0, Math.min(targetLevel, boss.data.length - 1));
         boolean editingCurrentLevel = targetLevel == Math.max(0, Math.min(Math.max(boss.currentLevel, 0), boss.data.length - 1));
-        BossData data = runtimeEditableBossData(boss, targetLevel);
+        boolean hasTemplateChanges = hasBossTemplateChanges(payload);
+        if (hasTemplateChanges) {
+            applyBossTemplateUpdate((int) boss.id, targetLevel, payload);
+            if (persist) {
+                persistBossTemplateOverride((int) boss.id, targetLevel, payload);
+            }
+        }
         if (payload.containsKey("enabled")) {
             boss.setRuntimeDisabled(!boolValue(payload.get("enabled"), true));
         }
+        if (payload.containsKey("hp") && boss.nPoint != null && editingCurrentLevel) {
+            boss.nPoint.hp = Math.max(1, longValue(payload.get("hp"), boss.nPoint.hp));
+        }
+        if (payload.containsKey("status")) {
+            try {
+                boss.changeStatus(BossStatus.valueOf(stringValue(payload.get("status"))));
+            } catch (Exception ignored) {
+            }
+        }
+        if (persist && payload.containsKey("enabled")) {
+            persistBossOverride(managerKey, index, boss, targetLevel, runtimeStatePayload(managerKey, index, targetLevel, !boss.runtimeDisabled), !boss.runtimeDisabled, false);
+        }
+        return true;
+    }
+
+    private static boolean hasBossTemplateChanges(JSONObject payload) {
+        return payload.containsKey("name")
+                || payload.containsKey("template_name")
+                || payload.containsKey("gender")
+                || payload.containsKey("outfit")
+                || payload.containsKey("hp_max")
+                || payload.containsKey("dame")
+                || payload.containsKey("seconds_rest")
+                || payload.containsKey("map_join")
+                || payload.containsKey("skill_temp")
+                || payload.containsKey("type_appear")
+                || payload.containsKey("bosses_appear_together")
+                || payload.containsKey("text_s")
+                || payload.containsKey("text_m")
+                || payload.containsKey("text_e");
+    }
+
+    private static JSONObject templatePayload(JSONObject source) {
+        JSONObject payload = new JSONObject();
+        copyIfPresent(source, payload, "name");
+        copyIfPresent(source, payload, "template_name");
+        copyIfPresent(source, payload, "gender");
+        copyIfPresent(source, payload, "outfit");
+        copyIfPresent(source, payload, "hp_max");
+        copyIfPresent(source, payload, "dame");
+        copyIfPresent(source, payload, "seconds_rest");
+        copyIfPresent(source, payload, "map_join");
+        copyIfPresent(source, payload, "skill_temp");
+        copyIfPresent(source, payload, "type_appear");
+        copyIfPresent(source, payload, "bosses_appear_together");
+        copyIfPresent(source, payload, "text_s");
+        copyIfPresent(source, payload, "text_m");
+        copyIfPresent(source, payload, "text_e");
+        return payload;
+    }
+
+    private static JSONObject runtimeStatePayload(String managerKey, int index, int level, boolean enabled) {
+        JSONObject payload = new JSONObject();
+        payload.put("manager", managerKey);
+        payload.put("index", index);
+        payload.put("level_index", level);
+        payload.put("enabled", enabled);
+        return payload;
+    }
+
+    private static void copyIfPresent(JSONObject source, JSONObject target, String key) {
+        if (source != null && source.containsKey(key)) {
+            target.put(key, source.get(key));
+        }
+    }
+
+    private static void applyBossTemplateUpdate(int bossId, int level, JSONObject source) {
+        JSONObject payload = templatePayload(source);
+        if (payload.isEmpty()) {
+            return;
+        }
+        rememberBossTemplateOverride(bossId, level, payload);
+        for (BossManager manager : runtimeManagers()) {
+            for (Boss member : runtimeBossSnapshot(manager)) {
+                if (member != null && member.id == bossId) {
+                    applyBossTemplatePayload(member, level, payload);
+                }
+            }
+        }
+    }
+
+    private static void rememberBossTemplateOverride(int bossId, int level, JSONObject source) {
+        JSONObject payload = templatePayload(source);
+        if (payload.isEmpty()) {
+            return;
+        }
+        String key = templateOverrideKey(bossId, level);
+        JSONObject merged = RUNTIME_TEMPLATE_OVERRIDES.containsKey(key)
+                ? copyJson(RUNTIME_TEMPLATE_OVERRIDES.get(key))
+                : new JSONObject();
+        merged.putAll(payload);
+        merged.put("boss_id", bossId);
+        merged.put("level_index", level);
+        RUNTIME_TEMPLATE_OVERRIDES.put(key, merged);
+    }
+
+    private static String templateOverrideKey(int bossId, int level) {
+        return bossId + ":" + Math.max(0, level);
+    }
+
+    private static void applyKnownTemplateOverrides(Boss boss) {
+        if (boss == null || boss.data == null) {
+            return;
+        }
+        int bossId = (int) boss.id;
+        for (int level = 0; level < boss.data.length; level++) {
+            JSONObject payload = RUNTIME_TEMPLATE_OVERRIDES.get(templateOverrideKey(bossId, level));
+            if (payload != null) {
+                applyBossTemplatePayload(boss, level, payload);
+            }
+        }
+    }
+
+    private static void applyBossTemplatePayload(Boss boss, int level, JSONObject payload) {
+        if (boss == null || boss.data == null || level < 0 || level >= boss.data.length) {
+            return;
+        }
+        BossData data = runtimeEditableBossData(boss, level);
         if (payload.containsKey("name")) {
             String name = stringValue(payload.get("name")).trim();
             if (!name.isEmpty()) {
-                if (editingCurrentLevel) {
-                    boss.name = name;
-                }
                 data.setName(name);
             }
         }
@@ -515,9 +645,6 @@ public class BossManager implements Runnable {
             String name = stringValue(payload.get("template_name")).trim();
             if (!name.isEmpty()) {
                 data.setName(name);
-                if (editingCurrentLevel && (boss.name == null || boss.name.trim().isEmpty())) {
-                    boss.name = name;
-                }
             }
         }
         if (payload.containsKey("gender")) {
@@ -530,14 +657,17 @@ public class BossManager implements Runnable {
             data.setMapJoin(intArrayValue(payload.get("map_join"), data.getMapJoin()));
         }
         if (payload.containsKey("seconds_rest")) {
-            int seconds = Math.max(0, intValue(payload.get("seconds_rest"), data.getSecondsRest()));
-            data.setSecondsRest(seconds);
-            if (editingCurrentLevel) {
-                boss.secondsRest = seconds;
-            }
+            data.setSecondsRest(Math.max(0, intValue(payload.get("seconds_rest"), data.getSecondsRest())));
         }
         if (payload.containsKey("skill_temp")) {
             data.setSkillTemp(skillArrayValue(payload.get("skill_temp"), data.getSkillTemp()));
+        }
+        if (payload.containsKey("type_appear")) {
+            data.setTypeAppear(appearTypeValue(payload.get("type_appear"), data.getTypeAppear()));
+        }
+        if (payload.containsKey("bosses_appear_together")) {
+            data.setBossesAppearTogether(intArrayValue(payload.get("bosses_appear_together"), data.getBossesAppearTogether()));
+            rebuildBossAppearTogether(boss, level, data.getBossesAppearTogether());
         }
         if (payload.containsKey("text_s")) {
             data.setTextS(stringArrayValue(payload.get("text_s"), data.getTextS()));
@@ -548,39 +678,62 @@ public class BossManager implements Runnable {
         if (payload.containsKey("text_e")) {
             data.setTextE(stringArrayValue(payload.get("text_e"), data.getTextE()));
         }
-        if (boss.nPoint != null && editingCurrentLevel) {
-            if (payload.containsKey("hp")) {
-                boss.nPoint.hp = Math.max(1, longValue(payload.get("hp"), boss.nPoint.hp));
-            }
-            if (payload.containsKey("hp_max")) {
-                long hpMax = Math.max(1, longValue(payload.get("hp_max"), boss.nPoint.hpg));
+        if (payload.containsKey("hp_max")) {
+            data.setHp(new long[]{Math.max(1, longValue(payload.get("hp_max"), data.getHp() != null && data.getHp().length > 0 ? data.getHp()[0] : 1))});
+        }
+        if (payload.containsKey("dame")) {
+            data.setDame(Math.max(1, longValue(payload.get("dame"), data.getDame())));
+        }
+
+        int currentLevel = Math.max(0, Math.min(Math.max(boss.currentLevel, 0), boss.data.length - 1));
+        if (level == currentLevel) {
+            boss.name = data.getName();
+            boss.secondsRest = data.getSecondsRest();
+            if (boss.nPoint != null) {
+                long hpMax = data.getHp() != null && data.getHp().length > 0 ? Math.max(1, data.getHp()[0]) : Math.max(1, boss.nPoint.hpg);
                 boss.nPoint.hpg = hpMax;
                 boss.nPoint.hpMax = hpMax;
-                data.setHp(new long[]{hpMax});
-            }
-            if (payload.containsKey("dame")) {
-                boss.nPoint.dameg = Math.max(1, longValue(payload.get("dame"), boss.nPoint.dameg));
+                if (boss.nPoint.hp > hpMax) {
+                    boss.nPoint.hp = hpMax;
+                }
+                boss.nPoint.dameg = Math.max(1, data.getDame());
                 boss.nPoint.dame = boss.nPoint.dameg;
-                data.setDame(boss.nPoint.dameg);
-            }
-        } else {
-            if (payload.containsKey("hp_max")) {
-                data.setHp(new long[]{Math.max(1, longValue(payload.get("hp_max"), data.getHp() != null && data.getHp().length > 0 ? data.getHp()[0] : 1))});
-            }
-            if (payload.containsKey("dame")) {
-                data.setDame(Math.max(1, longValue(payload.get("dame"), data.getDame())));
             }
         }
-        if (payload.containsKey("status")) {
-            try {
-                boss.changeStatus(BossStatus.valueOf(stringValue(payload.get("status"))));
-            } catch (Exception ignored) {
+    }
+
+    private static void rebuildBossAppearTogether(Boss boss, int level, int[] childIds) {
+        if (boss == null || boss.bossAppearTogether == null || level < 0 || level >= boss.bossAppearTogether.length) {
+            return;
+        }
+        Boss[] oldChildren = boss.bossAppearTogether[level];
+        if (oldChildren != null) {
+            for (Boss child : oldChildren) {
+                if (child == null) {
+                    continue;
+                }
+                child.setRuntimeDisabled(true);
+                RuntimeBossRef ref = findRuntimeBossRef(child);
+                BossManager manager = ref == null ? null : runtimeManager(ref.managerKey);
+                if (manager != null) {
+                    manager.removeBoss(child);
+                }
             }
         }
-        if (persist) {
-            persistBossOverride(managerKey, index, boss, targetLevel, payload, !boss.runtimeDisabled, false);
+        if (childIds == null || childIds.length == 0) {
+            boss.bossAppearTogether[level] = null;
+            return;
         }
-        return true;
+        Boss[] children = new Boss[childIds.length];
+        for (int i = 0; i < childIds.length; i++) {
+            Boss child = BossManager.gI().createBoss(childIds[i]);
+            if (child != null) {
+                child.parentBoss = boss;
+                child.lv = i;
+                children[i] = child;
+            }
+        }
+        boss.bossAppearTogether[level] = children;
     }
 
     public static synchronized void runtimeApplyPersistentConfigs() {
@@ -589,7 +742,10 @@ public class BossManager implements Runnable {
         }
         runtimeConfigsApplied = true;
         try (Connection con = DBConnecter.getConnectionServer()) {
-            ensureBossRuntimeConfigTable(con);
+            ensureBossConfigTables(con);
+            int configApplied = 0;
+            configApplied += loadBossTemplateConfigs(con);
+            configApplied += applyBossSpawnRules(con);
             try (PreparedStatement ps = con.prepareStatement(
                     "select * from " + RUNTIME_CONFIG_TABLE + " where active = 1 order by id asc");
                     ResultSet rs = ps.executeQuery()) {
@@ -602,6 +758,9 @@ public class BossManager implements Runnable {
                 if (applied > 0) {
                     Logger.log("[BossRuntime] Applied " + applied + " persistent boss configs\n");
                 }
+            }
+            if (configApplied > 0) {
+                Logger.log("[BossRuntime] Applied " + configApplied + " structured boss configs\n");
             }
         } catch (Exception e) {
             Logger.logException(BossManager.class, e);
@@ -623,6 +782,11 @@ public class BossManager implements Runnable {
                     payload.put("boss_id", bossId);
                 }
                 runtimeCreateCustomBoss(payload, false);
+                return true;
+            }
+            if ("template".equals(type)) {
+                int level = Math.max(0, rs.getInt("level_index"));
+                applyBossTemplateUpdate(bossId, level, payload);
                 return true;
             }
             if (!"override".equals(type)) {
@@ -672,12 +836,25 @@ public class BossManager implements Runnable {
 
     private static void persistBossState(String managerKey, int index, Boss boss, boolean enabled, boolean deleted) {
         int level = boss == null ? 0 : Math.max(0, boss.currentLevel);
-        JSONObject payload = new JSONObject();
-        payload.put("manager", managerKey);
-        payload.put("index", index);
-        payload.put("level_index", level);
-        payload.put("enabled", enabled);
+        JSONObject payload = runtimeStatePayload(managerKey, index, level, enabled);
         persistBossOverride(managerKey, index, boss, level, payload, enabled, deleted);
+    }
+
+    private static void persistBossTemplateOverride(int bossId, int level, JSONObject source) {
+        JSONObject payload = templatePayload(source);
+        if (payload.isEmpty()) {
+            return;
+        }
+        payload.put("boss_id", bossId);
+        payload.put("level_index", level);
+        payload.put("active", true);
+        try (Connection con = DBConnecter.getConnectionServer()) {
+            ensureBossConfigTables(con);
+            saveBossTemplateConfig(con, payload);
+        } catch (Exception e) {
+            Logger.logException(BossManager.class, e);
+        }
+        persistBossConfig("template:" + bossId, "template", "", -1, bossId, level, true, false, payload);
     }
 
     private static void persistBossOverride(String managerKey, int index, Boss boss, int level, JSONObject source, boolean enabled, boolean deleted) {
@@ -693,7 +870,14 @@ public class BossManager implements Runnable {
 
     private static void persistBossConfig(String key, String type, String managerKey, int index, int bossId, int level, boolean enabled, boolean deleted, JSONObject payload) {
         try (Connection con = DBConnecter.getConnectionServer()) {
-            ensureBossRuntimeConfigTable(con);
+            ensureBossConfigTables(con);
+            if ("override".equals(type)) {
+                try (PreparedStatement clear = con.prepareStatement(
+                        "update " + RUNTIME_CONFIG_TABLE + " set active = 0 where config_key = ? and config_type = 'override'")) {
+                    clear.setString(1, key);
+                    clear.executeUpdate();
+                }
+            }
             try (PreparedStatement ps = con.prepareStatement(
                     "insert into " + RUNTIME_CONFIG_TABLE
                     + " (config_key, config_type, manager_key, runtime_index, boss_id, level_index, enabled, deleted, active, payload)"
@@ -742,6 +926,238 @@ public class BossManager implements Runnable {
         }
     }
 
+    private static void ensureBossConfigTables(Connection con) throws Exception {
+        ensureBossRuntimeConfigTable(con);
+        try (Statement st = con.createStatement()) {
+            st.executeUpdate(
+                    "create table if not exists " + TEMPLATE_CONFIG_TABLE + " ("
+                    + "id bigint unsigned not null auto_increment,"
+                    + "boss_id int not null,"
+                    + "level_index int not null default 0,"
+                    + "active tinyint(1) not null default 1,"
+                    + "payload mediumtext null,"
+                    + "created_at timestamp not null default current_timestamp,"
+                    + "updated_at timestamp not null default current_timestamp on update current_timestamp,"
+                    + "primary key (id),"
+                    + "unique key uk_boss_template_config (boss_id, level_index),"
+                    + "key idx_boss_template_active (active, boss_id)"
+                    + ") engine=InnoDB default charset=utf8mb4 collate=utf8mb4_general_ci");
+            st.executeUpdate(
+                    "create table if not exists " + SPAWN_RULE_TABLE + " ("
+                    + "id bigint unsigned not null auto_increment,"
+                    + "rule_key varchar(191) not null,"
+                    + "boss_id int not null,"
+                    + "manager_key varchar(64) not null default 'main',"
+                    + "count int not null default 1,"
+                    + "auto_spawn tinyint(1) not null default 1,"
+                    + "active tinyint(1) not null default 1,"
+                    + "payload mediumtext null,"
+                    + "created_at timestamp not null default current_timestamp,"
+                    + "updated_at timestamp not null default current_timestamp on update current_timestamp,"
+                    + "primary key (id),"
+                    + "unique key uk_boss_spawn_rule (rule_key),"
+                    + "key idx_boss_spawn_active (active, auto_spawn)"
+                    + ") engine=InnoDB default charset=utf8mb4 collate=utf8mb4_general_ci");
+        }
+    }
+
+    public static synchronized String runtimeConfigsJson() {
+        try (Connection con = DBConnecter.getConnectionServer()) {
+            ensureBossConfigTables(con);
+            return new StringBuilder("{")
+                    .append("\"template\":").append(runtimeTemplateConfigsJson(con)).append(',')
+                    .append("\"spawn\":").append(runtimeSpawnRulesJson(con)).append(',')
+                    .append("\"runtime\":").append(runtimeLegacyConfigsJson(con))
+                    .append('}')
+                    .toString();
+        } catch (Exception e) {
+            Logger.logException(BossManager.class, e);
+            return "{\"template\":[],\"spawn\":[],\"runtime\":[]}";
+        }
+    }
+
+    public static synchronized String runtimeSaveConfig(JSONObject body) {
+        String section = stringValue(body.get("section")).trim().toLowerCase();
+        try (Connection con = DBConnecter.getConnectionServer()) {
+            ensureBossConfigTables(con);
+            switch (section) {
+                case "template" -> saveBossTemplateConfig(con, body);
+                case "spawn" -> {
+                    saveBossSpawnRule(con, body);
+                    if (boolValue(body.get("apply_now"), false)) {
+                        runtimeCreateBoss(intValue(body.get("boss_id"), 0), Math.max(1, intValue(body.get("count"), 1)), false);
+                    }
+                }
+                default -> {
+                    return "{\"saved\":false,\"message\":\"Unknown boss config section\"}";
+                }
+            }
+            return "{\"saved\":true,\"configs\":" + runtimeConfigsJson() + "}";
+        } catch (Exception e) {
+            Logger.logException(BossManager.class, e);
+            return "{\"saved\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}";
+        }
+    }
+
+    private static int loadBossTemplateConfigs(Connection con) throws Exception {
+        int applied = 0;
+        try (PreparedStatement ps = con.prepareStatement(
+                "select * from " + TEMPLATE_CONFIG_TABLE + " where active = 1 order by id asc");
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int bossId = rs.getInt("boss_id");
+                int level = Math.max(0, rs.getInt("level_index"));
+                JSONObject payload = parseJsonObject(rs.getString("payload"));
+                payload.put("boss_id", bossId);
+                payload.put("level_index", level);
+                applyBossTemplateUpdate(bossId, level, payload);
+                applied++;
+            }
+        }
+        return applied;
+    }
+
+    private static int applyBossSpawnRules(Connection con) throws Exception {
+        int applied = 0;
+        try (PreparedStatement ps = con.prepareStatement(
+                "select * from " + SPAWN_RULE_TABLE + " where active = 1 and auto_spawn = 1 order by id asc");
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                int bossId = rs.getInt("boss_id");
+                int count = Math.max(1, Math.min(50, rs.getInt("count")));
+                runtimeCreateBoss(bossId, count, false);
+                applied++;
+            }
+        }
+        return applied;
+    }
+
+    private static void saveBossTemplateConfig(Connection con, JSONObject body) throws Exception {
+        int bossId = intValue(body.get("boss_id"), 0);
+        int level = Math.max(0, intValue(body.get("level_index"), 0));
+        JSONObject payload = templatePayload(body);
+        payload.put("boss_id", bossId);
+        payload.put("level_index", level);
+        try (PreparedStatement ps = con.prepareStatement(
+                "insert into " + TEMPLATE_CONFIG_TABLE + " (boss_id, level_index, active, payload) values (?, ?, ?, ?)"
+                + " on duplicate key update active = values(active), payload = values(payload), updated_at = current_timestamp")) {
+            ps.setInt(1, bossId);
+            ps.setInt(2, level);
+            ps.setInt(3, boolValue(body.get("active"), true) ? 1 : 0);
+            ps.setString(4, payload.toJSONString());
+            ps.executeUpdate();
+        }
+        if (boolValue(body.get("active"), true)) {
+            applyBossTemplateUpdate(bossId, level, payload);
+        }
+    }
+
+    private static void saveBossSpawnRule(Connection con, JSONObject body) throws Exception {
+        int bossId = intValue(body.get("boss_id"), 0);
+        String managerKey = stringValue(body.get("manager_key")).trim();
+        if (managerKey.isEmpty()) {
+            managerKey = "main";
+        }
+        String ruleKey = stringValue(body.get("rule_key")).trim();
+        if (ruleKey.isEmpty()) {
+            ruleKey = "spawn:" + managerKey + ":" + bossId;
+        }
+        JSONObject payload = copyJson(body);
+        try (PreparedStatement ps = con.prepareStatement(
+                "insert into " + SPAWN_RULE_TABLE + " (rule_key, boss_id, manager_key, count, auto_spawn, active, payload)"
+                + " values (?, ?, ?, ?, ?, ?, ?)"
+                + " on duplicate key update boss_id = values(boss_id), manager_key = values(manager_key), count = values(count),"
+                + " auto_spawn = values(auto_spawn), active = values(active), payload = values(payload), updated_at = current_timestamp")) {
+            ps.setString(1, ruleKey);
+            ps.setInt(2, bossId);
+            ps.setString(3, managerKey);
+            ps.setInt(4, Math.max(1, Math.min(50, intValue(body.get("count"), 1))));
+            ps.setInt(5, boolValue(body.get("auto_spawn"), true) ? 1 : 0);
+            ps.setInt(6, boolValue(body.get("active"), true) ? 1 : 0);
+            ps.setString(7, payload.toJSONString());
+            ps.executeUpdate();
+        }
+    }
+
+    private static String runtimeTemplateConfigsJson(Connection con) throws Exception {
+        StringBuilder json = new StringBuilder("[");
+        try (PreparedStatement ps = con.prepareStatement(
+                "select * from " + TEMPLATE_CONFIG_TABLE + " order by boss_id asc, level_index asc, id asc");
+                ResultSet rs = ps.executeQuery()) {
+            boolean first = true;
+            while (rs.next()) {
+                if (!first) json.append(',');
+                first = false;
+                json.append('{')
+                        .append("\"id\":").append(rs.getLong("id")).append(',')
+                        .append("\"boss_id\":").append(rs.getInt("boss_id")).append(',')
+                        .append("\"level_index\":").append(rs.getInt("level_index")).append(',')
+                        .append("\"active\":").append(rs.getInt("active") == 1).append(',')
+                        .append("\"payload\":").append(payloadJson(rs.getString("payload")))
+                        .append('}');
+            }
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeSpawnRulesJson(Connection con) throws Exception {
+        StringBuilder json = new StringBuilder("[");
+        try (PreparedStatement ps = con.prepareStatement(
+                "select * from " + SPAWN_RULE_TABLE + " order by id asc");
+                ResultSet rs = ps.executeQuery()) {
+            boolean first = true;
+            while (rs.next()) {
+                if (!first) json.append(',');
+                first = false;
+                json.append('{')
+                        .append("\"id\":").append(rs.getLong("id")).append(',')
+                        .append("\"rule_key\":\"").append(escapeJson(rs.getString("rule_key"))).append("\",")
+                        .append("\"boss_id\":").append(rs.getInt("boss_id")).append(',')
+                        .append("\"manager_key\":\"").append(escapeJson(rs.getString("manager_key"))).append("\",")
+                        .append("\"count\":").append(rs.getInt("count")).append(',')
+                        .append("\"auto_spawn\":").append(rs.getInt("auto_spawn") == 1).append(',')
+                        .append("\"active\":").append(rs.getInt("active") == 1).append(',')
+                        .append("\"payload\":").append(payloadJson(rs.getString("payload")))
+                        .append('}');
+            }
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeLegacyConfigsJson(Connection con) throws Exception {
+        StringBuilder json = new StringBuilder("[");
+        try (PreparedStatement ps = con.prepareStatement(
+                "select id, config_key, config_type, manager_key, runtime_index, boss_id, level_index, enabled, deleted, active, payload from " + RUNTIME_CONFIG_TABLE + " order by id desc limit 200");
+                ResultSet rs = ps.executeQuery()) {
+            boolean first = true;
+            while (rs.next()) {
+                if (!first) json.append(',');
+                first = false;
+                json.append('{')
+                        .append("\"id\":").append(rs.getLong("id")).append(',')
+                        .append("\"config_key\":\"").append(escapeJson(rs.getString("config_key"))).append("\",")
+                        .append("\"config_type\":\"").append(escapeJson(rs.getString("config_type"))).append("\",")
+                        .append("\"manager_key\":\"").append(escapeJson(rs.getString("manager_key"))).append("\",")
+                        .append("\"runtime_index\":").append(rs.getInt("runtime_index")).append(',')
+                        .append("\"boss_id\":").append(rs.getInt("boss_id")).append(',')
+                        .append("\"level_index\":").append(rs.getInt("level_index")).append(',')
+                        .append("\"enabled\":").append(rs.getInt("enabled") == 1).append(',')
+                        .append("\"deleted\":").append(rs.getInt("deleted") == 1).append(',')
+                        .append("\"active\":").append(rs.getInt("active") == 1).append(',')
+                        .append("\"payload\":").append(payloadJson(rs.getString("payload")))
+                        .append('}');
+            }
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String payloadJson(String raw) {
+        return parseJsonObject(raw).toJSONString();
+    }
+
     private static JSONObject copyJson(JSONObject source) {
         JSONObject copy = new JSONObject();
         if (source != null) {
@@ -757,16 +1173,22 @@ public class BossManager implements Runnable {
 
     private static Boss runtimeBoss(String managerKey, int index) {
         BossManager manager = runtimeManager(managerKey);
-        if (manager == null || index < 0 || index >= manager.bosses.size()) {
+        if (manager == null) {
             return null;
         }
-        return manager.bosses.get(index);
+        synchronized (manager.bosses) {
+            if (index < 0 || index >= manager.bosses.size()) {
+                return null;
+            }
+            return manager.bosses.get(index);
+        }
     }
 
     private static RuntimeBossRef findRuntimeBossRef(Boss boss) {
         for (BossManager manager : runtimeManagers()) {
-            for (int i = 0; i < manager.bosses.size(); i++) {
-                if (manager.bosses.get(i) == boss) {
+            List<Boss> snapshot = runtimeBossSnapshot(manager);
+            for (int i = 0; i < snapshot.size(); i++) {
+                if (snapshot.get(i) == boss) {
                     return new RuntimeBossRef(runtimeManagerKey(manager), i);
                 }
             }
@@ -1052,6 +1474,15 @@ public class BossManager implements Runnable {
         return "main";
     }
 
+    private static List<Boss> runtimeBossSnapshot(BossManager manager) {
+        if (manager == null) {
+            return new ArrayList<>();
+        }
+        synchronized (manager.bosses) {
+            return new ArrayList<>(manager.bosses);
+        }
+    }
+
     private static String runtimeBossJson(String managerKey, int index, Boss boss) {
         BossData data = boss.data[Math.max(0, Math.min(Math.max(boss.currentLevel, 0), boss.data.length - 1))];
         Boss groupRoot = runtimeGroupRoot(boss);
@@ -1112,13 +1543,13 @@ public class BossManager implements Runnable {
             if (i > 0) {
                 json.append(',');
             }
-            json.append(runtimeBossLevelJson(boss.data[i], i));
+            json.append(runtimeBossLevelJson((int) boss.id, boss.data[i], i));
         }
         json.append(']');
         return json.toString();
     }
 
-    private static String runtimeBossLevelJson(BossData data, int level) {
+    private static String runtimeBossLevelJson(int bossId, BossData data, int level) {
         long hpMax = 0;
         long[] hp = data.getHp();
         if (hp != null && hp.length > 0) {
@@ -1339,7 +1770,7 @@ public class BossManager implements Runnable {
 
     public Boss createBoss(int bossID) {
         try {
-            return switch (bossID) {
+            Boss created = switch (bossID) {
                 case BossID.BROLY_SSJ ->
                     new BrolySsj();
                 case BossID.BA_CON_SOI ->
@@ -1549,6 +1980,8 @@ public class BossManager implements Runnable {
                 default ->
                     createRuntimeCustomBoss(bossID);
             };
+            applyKnownTemplateOverrides(created);
+            return created;
         } catch (Exception e) {
             Logger.error(e + "\n");
             return null;
@@ -1557,7 +1990,10 @@ public class BossManager implements Runnable {
 
     public Boss getBoss(int id) {
         try {
-            Boss boss = this.bosses.get(id);
+            Boss boss;
+            synchronized (this.bosses) {
+                boss = this.bosses.get(id);
+            }
             if (boss != null) {
                 return boss;
             }
@@ -1576,16 +2012,17 @@ public class BossManager implements Runnable {
             msg = new Message(-96);
             msg.writer().writeByte(0);
             msg.writer().writeUTF("Boss");
+            List<Boss> snapshot = runtimeBossSnapshot(this);
             msg.writer()
-                    .writeByte((int) bosses.stream()
+                    .writeByte((int) snapshot.stream()
                             .filter(boss -> !MapService.gI().isMapBossFinal(boss.data[0].getMapJoin()[0])
                             && !MapService.gI().isMapHuyDiet(boss.data[0].getMapJoin()[0])
                             && !MapService.gI().isMapYardart(boss.data[0].getMapJoin()[0])
                             && !MapService.gI().isMapMaBu(boss.data[0].getMapJoin()[0])
                             && !MapService.gI().isMapBlackBallWar(boss.data[0].getMapJoin()[0]))
                             .count());
-            for (int i = 0; i < bosses.size(); i++) {
-                Boss boss = this.bosses.get(i);
+            for (int i = 0; i < snapshot.size(); i++) {
+                Boss boss = snapshot.get(i);
                 if (MapService.gI().isMapBossFinal(boss.data[0].getMapJoin()[0])
                         || MapService.gI().isMapYardart(boss.data[0].getMapJoin()[0])
                         || MapService.gI().isMapHuyDiet(boss.data[0].getMapJoin()[0])
@@ -1618,11 +2055,11 @@ public class BossManager implements Runnable {
     }
 
     public Boss getBossById(int bossId) {
-        return this.bosses.stream().filter(boss -> boss.id == bossId && !boss.isDie()).findFirst().orElse(null);
+        return runtimeBossSnapshot(this).stream().filter(boss -> boss.id == bossId && !boss.isDie()).findFirst().orElse(null);
     }
 
     public boolean checkBosses(Zone zone, int BossID) {
-        return this.bosses.stream()
+        return runtimeBossSnapshot(this).stream()
                 .filter(boss -> boss.id == BossID && boss.zone != null && boss.zone.equals(zone) && !boss.isDie())
                 .findFirst().orElse(null) != null;
     }
@@ -1633,7 +2070,7 @@ public class BossManager implements Runnable {
     }
 
     public Boss getBossById(int bossId, int mapId, int zoneId) {
-        return this.bosses.stream().filter(boss -> boss.id == bossId && boss.zone != null
+        return runtimeBossSnapshot(this).stream().filter(boss -> boss.id == bossId && boss.zone != null
                 && boss.zone.map.mapId == mapId && boss.zone.zoneId == zoneId && !boss.isDie()).findFirst()
                 .orElse(null);
     }
@@ -1644,9 +2081,13 @@ public class BossManager implements Runnable {
             try {
                 int delay = 150;
                 long st = System.currentTimeMillis();
-                for (int i = this.bosses.size() - 1; i >= 0; i--) {
+                List<Boss> snapshot = runtimeBossSnapshot(this);
+                for (int i = snapshot.size() - 1; i >= 0; i--) {
                     try {
-                        this.bosses.get(i).update();
+                        Boss boss = snapshot.get(i);
+                        if (boss != null) {
+                            boss.update();
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

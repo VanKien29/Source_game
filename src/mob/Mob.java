@@ -29,6 +29,7 @@ import network.Message;
 
 import java.io.IOException;
 
+import server.Manager;
 import server.Maintenance;
 import utils.Util;
 
@@ -881,6 +882,12 @@ public class Mob {
                 list.add(it);
             }
         }
+        if (MapService.gI().isMapToken(mapid)) {
+            if (Util.isTrue(1, 50)) { //1/160
+                ItemMap it = new ItemMap(zone, 1259, Util.nextInt(1, 2), x, yEnd, player.id);
+                list.add(it);
+            }
+        }
         if (Util.isTrue(1, 150)) { //1/250
             ItemMap it1612 = new ItemMap(zone, 457, Util.nextInt(1, 3), x, yEnd, player.id);
             list.add(it1612);
@@ -1050,6 +1057,7 @@ public class Mob {
         // }
         // }
         // }
+        Manager.appendRuntimeMapDropRewards(this.zone, player, this.tempId, x, yEnd, list);
         return list;
     }
 

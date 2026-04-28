@@ -69,20 +69,6 @@ public class ThuongDe extends TrainingBoss {
 
     @Override
     public void leaveMap() {
-        ChangeMapService.gI().exitMap(this);
-        Player npc = TrainingService.gI().getNonInteractiveNPC(zone, (int) this.id);
-        if (npc != null) {
-            this.nPoint.hp = this.nPoint.hpMax;
-            Service.gI().Send_Info_NV(this);
-            this.goToPlayer(npc, false);
-        } else {
-            TrainingService.gI().luyenTapEnd(playerAtt, (int) this.id);
-        }
-
-        this.lastZone = null;
-        this.lastTimeRest = System.currentTimeMillis();
-        this.changeStatus(BossStatus.REST);
-        OtherBossManager.gI().removeBoss(this);
-        this.dispose();
+        super.leaveMap();
     }
 }

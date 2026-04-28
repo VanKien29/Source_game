@@ -151,7 +151,16 @@ public class Whis extends Npc {
                         }
                     }
                     case 2 -> {
-                        TrainingService.gI().callBoss(player, BossID.WHIS, false);
+                        if (BiKiepTuyetKy != null) {
+                            TopService.showListTop(player, 3);
+                        } else {
+                            TrainingService.gI().callBoss(player, BossID.WHIS, false);
+                        }
+                    }
+                    case 3 -> {
+                        if (BiKiepTuyetKy != null) {
+                            TrainingService.gI().callBoss(player, BossID.WHIS, false);
+                        }
                     }
                 }
             } else if (player.iDMark.getIndexMenu() == 5) {

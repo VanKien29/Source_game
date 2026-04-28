@@ -38,6 +38,7 @@ import server.io.MyKeyHandler;
 import server.io.MySession;
 import services.ClanService;
 import services.NgocRongNamecService;
+import services.func.TopWhisRewardService;
 import utils.Logger;
 import utils.TimeUtil;
 
@@ -132,6 +133,7 @@ public class ServerManager {
                     long st = System.currentTimeMillis();
                     ConstDataEventSM.isRunningSK = ConstDataEventSM.isActiveEvent();
                     ConstDataEventNAP.isRunningSK = ConstDataEventNAP.isActiveEvent();
+                    TopWhisRewardService.gI().checkAndRewardWeekly();
                     Functions.sleep(Math.max(500 - (System.currentTimeMillis() - st), 10));
 
                 } catch (Exception e) {

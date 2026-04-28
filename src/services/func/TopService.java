@@ -57,6 +57,14 @@ public class TopService {
         }
     }
 
+    public static void refreshWhisTop() {
+        try (Connection con = DBConnecter.getConnectionServer()) {
+            Manager.topWHIS = Manager.realTop(ConstSQL.TOP_WHIS, con);
+        } catch (Exception e) {
+            Logger.logException(TopService.class, e, "Lỗi refresh top Whis");
+        }
+    }
+
     public static void showListTopPower(Player player) {
         TopPowerManager.getInstance().load();
         List<Player> list = TopPowerManager.getInstance().getList();
@@ -200,6 +208,9 @@ public class TopService {
     }
 
     public static void showListTop(Player player, int select) {
+        if (select == 3) {
+            refreshWhisTop();
+        }
         List<TOP> tops = Manager.topNV;
         switch (select) {
             case 0 ->

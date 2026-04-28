@@ -870,27 +870,27 @@ public class Input {
         createForm(pl, TX_WIN_RATE, "Thiết lập tỉ lệ % thắng cho bên đặt ít tiền (0-100)", new SubInput("Tỉ lệ %", NUMERIC));
     }
 
-    public void createFormAdmin(Player pl) {
-        createForm(pl, ADMIN_BCH, "Nhập mật khẩu", new SubInput("Mật Khẩu", NUMERIC));// tìm phần ADMIN_BCH
 //    public void createFormAdmin(Player pl) {
-//        if (pl.isAdmin()) {
-//            Logger.warning("Player " + pl.name + " vừa truy cập vào lệnh admin\n");
-//            NpcService.gI().createMenuConMeo(pl, ConstNpc.MENU_ADMIN, 10376,
-//                    "|7|CODE BY VKIEN\n"
-//                    + "|0|Time start: " + ServerManager.timeStart
-//                    + "\nClients: " + Client.gI().getPlayers().size() + " người chơi, "
-//                    + "Sessions: " + SessionManager.gI().getNumSession() + ", Threads: "
-//                    + Thread.activeCount() + " luồng" + "\n" + SystemMetrics.ToString(),
-//                    "Ngọc rồng", "Đệ tử", "Bảo trì", "Tìm kiếm\nngười chơi",
-//                    "Boss", "Call Broly", "Buff VND", "Buff\nhộp thư", "Call TDST", "Đóng");
-//
-//        } else {
-//            PlayerService.gI().banPlayer(pl);
-//            Logger.warning("Player " + pl.name + " có dấu hiệu bug admin tiến hành band acc");
-//        }
+//        createForm(pl, ADMIN_BCH, "Nhập mật khẩu", new SubInput("Mật Khẩu", NUMERIC));// tìm phần ADMIN_BCH
+    public void createFormAdmin(Player pl) {
+        if (pl.isAdmin()) {
+            Logger.warning("Player " + pl.name + " vừa truy cập vào lệnh admin\n");
+            NpcService.gI().createMenuConMeo(pl, ConstNpc.MENU_ADMIN, 10376,
+                    "|7|CODE BY VKIEN\n"
+                    + "|0|Time start: " + ServerManager.timeStart
+                    + "\nClients: " + Client.gI().getPlayers().size() + " người chơi, "
+                    + "Sessions: " + SessionManager.gI().getNumSession() + ", Threads: "
+                    + Thread.activeCount() + " luồng" + "\n" + SystemMetrics.ToString(),
+                    "Ngọc rồng", "Đệ tử", "Bảo trì", "Tìm kiếm\nngười chơi",
+                    "Boss", "Call Broly", "Buff VND", "Buff\nhộp thư", "Call TDST", "Trao quà\nTop Whis", "Đóng");
+
+        } else {
+            PlayerService.gI().banPlayer(pl);
+            Logger.warning("Player " + pl.name + " có dấu hiệu bug admin tiến hành band acc");
+        }
     }
 
-//    }
+    //    }
     public void createFormChangeName(Player pl, Player plChanged) {
         PLAYER_ID_OBJECT.put((int) pl.id, plChanged);
         createForm(pl, CHANGE_NAME, "Đổi tên " + plChanged.name, new SubInput("Tên mới", ANY));

@@ -77,17 +77,10 @@ public class TauPayPay extends TrainingBoss {
 
     @Override
     public void leaveMap() {
-        ChangeMapService.gI().spaceShipArrive(this, (byte) 2, ChangeMapService.DEFAULT_SPACE_SHIP);
-        Message msg;
-        try {
-            msg = new Message(-6);
-            msg.writer().writeInt((int) this.id);
-            playerAtt.sendMessage(msg);
-            msg.cleanup();
-            this.zone = null;
-        } catch (IOException e) {
-            Logger.logException(MapService.class, e);
+        if (this.zone != null) {
+            ChangeMapService.gI().spaceShipArrive(this, (byte) 2, ChangeMapService.DEFAULT_SPACE_SHIP);
         }
+        super.leaveMap();
     }
 
     @Override

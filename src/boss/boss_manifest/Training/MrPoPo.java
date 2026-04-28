@@ -18,6 +18,7 @@ public class MrPoPo extends TrainingBoss {
 
     private long lastTimeBay;
     private long lastTimeBay2;
+    private int hitCount;
 
     public MrPoPo(Player player) throws Exception {
         super(PHOBAN, BossID.MRPOPO, BossesData.MRPOPO);
@@ -58,6 +59,41 @@ public class MrPoPo extends TrainingBoss {
             doneChatS = true;
         }
         return false;
+    }
+
+    @Override
+    public synchronized long injured(Player plAtt, long damage, boolean piercing, boolean isMobAttack) {
+        if (this.isDie()) {
+            return 0;
+        }
+        if (!piercing && Util.isTrue(400, 1000)) {
+            this.chat("Xí hụt");
+            return 0;
+        }
+        if (plAtt != null && plAtt.idNRNM != -1) {
+            return 1;
+        }
+        if (damage <= 0) {
+            return 0;
+        }
+
+        int hitRequired = playerAtt != null && playerAtt.isThachDau ? 3 : 1;
+        hitCount++;
+        if (hitCount >= hitRequired) {
+            long damageHit = Math.max(1, this.nPoint.hp);
+            this.nPoint.hp = 0;
+            this.setDie(plAtt);
+            die(plAtt);
+            return damageHit;
+        }
+        if (this.nPoint.hp > 1) {
+            this.nPoint.subHP(1);
+        }
+        return 1;
+    }
+
+    @Override
+    public void buffPea() {
     }
 
     @Override

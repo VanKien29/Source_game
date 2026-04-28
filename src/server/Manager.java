@@ -114,6 +114,7 @@ public final class Manager {
     public static final List<Clan> CLANS = new ArrayList<>();
     public static final List<String> NOTIFY = new ArrayList<>();
     public static final List<KolTaskTemplate> KOL_TASKS_TEMPLATE = new ArrayList<>();
+    public static final Map<Integer, List<RuntimeMapDropRule>> MAP_DROP_RULES = new HashMap<>();
 
     public static List<TOP> topSM;
     public static List<TOP> topNap;
@@ -830,6 +831,10 @@ public final class Manager {
                 Logger.success("Successfully loaded map template (" + MAP_TEMPLATES.length + ")\n");
             }
 
+            ensureMapDropRuleTable(con);
+            loadMapDropRules(con);
+            Logger.success("Successfully loaded map drop rules (" + MAP_DROP_RULES.size() + " maps)\n");
+
             ps = con.prepareStatement("select * from radar");
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -1192,10 +1197,832 @@ public final class Manager {
 
     }
 
+    public static synchronized String runtimeMapMobsJson() {
+        StringBuilder json = new StringBuilder("{");
+        json.append("\"maps\":[");
+        if (MAP_TEMPLATES != null) {
+            for (int i = 0; i < MAP_TEMPLATES.length; i++) {
+                if (i > 0) {
+                    json.append(',');
+                }
+                json.append(runtimeMapTemplateJson(MAP_TEMPLATES[i]));
+            }
+        }
+        json.append("],\"mob_templates\":").append(runtimeMobTemplatesJson()).append('}');
+        return json.toString();
+    }
+
+    public static synchronized String runtimeSaveMapMobs(JSONObject body) {
+        int mapId = intValue(body.get("map_id"), -1);
+        MapTemplate template = findMapTemplate(mapId);
+        if (template == null) {
+            return "{\"saved\":false,\"message\":\"Khong tim thay map\"}";
+        }
+        int maxPlayer = Math.max(1, Math.min(100, intValue(body.get("max_player"), template.maxPlayerPerZone)));
+        int zonesConfig = Math.max(1, Math.min(120, intValue(body.get("zones"), template.zones)));
+        Object rawMobs = normalizeJsonBodyValue(body.get("mobs"));
+        Object rawWayPoints = normalizeJsonBodyValue(body.get("waypoints"));
+        Object rawNpcs = normalizeJsonBodyValue(body.get("npcs"));
+        Object rawDropRules = normalizeJsonBodyValue(body.get("drop_rules"));
+        if (!(rawMobs instanceof JSONArray)) {
+            return "{\"saved\":false,\"message\":\"Du lieu mobs khong hop le\"}";
+        }
+        JSONArray mobs = (JSONArray) rawMobs;
+
+        byte[] mobTemp = new byte[mobs.size()];
+        byte[] mobLevel = new byte[mobs.size()];
+        int[] mobHp = new int[mobs.size()];
+        short[] mobX = new short[mobs.size()];
+        short[] mobY = new short[mobs.size()];
+        JSONArray persistMobs = new JSONArray();
+        java.util.Map<Integer, Integer> mobPercentDameUpdates = new java.util.LinkedHashMap<>();
+        List<WayPoint> wayPoints;
+        RuntimeNpcData npcData;
+        List<RuntimeMapDropRule> dropRules;
+        try {
+            wayPoints = rawWayPoints == null
+                    ? cloneWayPoints(template.wayPoints)
+                    : runtimeWayPointsFromPayload(rawWayPoints);
+            npcData = rawNpcs == null
+                    ? runtimeNpcDataFromTemplate(template)
+                    : runtimeNpcDataFromPayload(rawNpcs);
+            dropRules = rawDropRules == null
+                    ? cloneMapDropRules(mapId)
+                    : runtimeMapDropRulesFromPayload(mapId, rawDropRules);
+        } catch (Exception e) {
+            return "{\"saved\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}";
+        }
+
+        for (int i = 0; i < mobs.size(); i++) {
+            JSONObject mob = mapMobObject(mobs.get(i));
+            int tempId = intValue(mob.get("temp_id"), intValue(mob.get("temp"), -1));
+            if (tempId < Byte.MIN_VALUE || tempId > Byte.MAX_VALUE) {
+                return "{\"saved\":false,\"message\":\"Mob template vuot gioi han map mob: " + tempId + "\"}";
+            }
+            if (getMobTemplateByTemp(tempId) == null) {
+                return "{\"saved\":false,\"message\":\"Mob template khong ton tai: " + tempId + "\"}";
+            }
+            int level = Math.max(0, Math.min(127, intValue(mob.get("level"), 1)));
+            int hp = Math.max(1, intValue(mob.get("hp"), 1));
+            int x = Math.max(0, Math.min(Short.MAX_VALUE, intValue(mob.get("x"), 0)));
+            int y = Math.max(0, Math.min(Short.MAX_VALUE, intValue(mob.get("y"), 0)));
+            int percentDame = Math.max(0, Math.min(100, intValue(mob.get("percent_dame"),
+                    intValue(mob.get("dame"), mobTemplatePercentDame(tempId)))));
+
+            mobTemp[i] = (byte) tempId;
+            mobLevel[i] = (byte) level;
+            mobHp[i] = hp;
+            mobX[i] = (short) x;
+            mobY[i] = (short) y;
+            mobPercentDameUpdates.put(tempId, percentDame);
+
+            JSONArray row = new JSONArray();
+            row.add(tempId);
+            row.add(level);
+            row.add(hp);
+            row.add(x);
+            row.add(y);
+            persistMobs.add(row);
+        }
+
+        String persistWayPoints = serializeWayPoints(wayPoints);
+        String persistNpcs = serializeNpcs(npcData);
+
+        template.mobTemp = mobTemp;
+        template.mobLevel = mobLevel;
+        template.mobHp = mobHp;
+        template.mobX = mobX;
+        template.mobY = mobY;
+        template.maxPlayerPerZone = (byte) maxPlayer;
+        template.zones = (byte) zonesConfig;
+        template.wayPoints = wayPoints;
+        template.npcId = npcData.npcId;
+        template.npcX = npcData.npcX;
+        template.npcY = npcData.npcY;
+
+        try (Connection con = DBConnecter.getConnectionServer();
+                PreparedStatement mapPs = con.prepareStatement("update map_template set mobs = ?, max_player = ?, zones = ?, waypoints = ?, npcs = ? where id = ?");
+                PreparedStatement mobTemplatePs = con.prepareStatement("update mob_template set percent_dame = ? where id = ?");
+                PreparedStatement deleteDropRulePs = con.prepareStatement("delete from map_drop_rule where map_id = ?");
+                PreparedStatement insertDropRulePs = con.prepareStatement("insert into map_drop_rule (map_id, item_id, quantity_min, quantity_max, chance_numerator, chance_denominator, mob_temp_id, options_text, active, note) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            con.setAutoCommit(false);
+            ensureMapDropRuleTable(con);
+
+            mapPs.setString(1, persistMobs.toJSONString());
+            mapPs.setInt(2, maxPlayer);
+            mapPs.setInt(3, zonesConfig);
+            mapPs.setString(4, persistWayPoints);
+            mapPs.setString(5, persistNpcs);
+            mapPs.setInt(6, mapId);
+            mapPs.executeUpdate();
+
+            for (java.util.Map.Entry<Integer, Integer> entry : mobPercentDameUpdates.entrySet()) {
+                mobTemplatePs.setInt(1, entry.getValue());
+                mobTemplatePs.setInt(2, entry.getKey());
+                mobTemplatePs.addBatch();
+                updateMobTemplatePercentDame(entry.getKey(), entry.getValue());
+            }
+            if (!mobPercentDameUpdates.isEmpty()) {
+                mobTemplatePs.executeBatch();
+            }
+
+            if (rawDropRules != null) {
+                deleteDropRulePs.setInt(1, mapId);
+                deleteDropRulePs.executeUpdate();
+                for (RuntimeMapDropRule rule : dropRules) {
+                    insertDropRulePs.setInt(1, mapId);
+                    insertDropRulePs.setInt(2, rule.itemId);
+                    insertDropRulePs.setInt(3, rule.quantityMin);
+                    insertDropRulePs.setInt(4, rule.quantityMax);
+                    insertDropRulePs.setInt(5, rule.chanceNumerator);
+                    insertDropRulePs.setInt(6, rule.chanceDenominator);
+                    if (rule.mobTempId == null) {
+                        insertDropRulePs.setNull(7, Types.INTEGER);
+                    } else {
+                        insertDropRulePs.setInt(7, rule.mobTempId);
+                    }
+                    insertDropRulePs.setString(8, serializeItemOptions(rule.options));
+                    insertDropRulePs.setInt(9, rule.active ? 1 : 0);
+                    insertDropRulePs.setString(10, rule.note);
+                    insertDropRulePs.addBatch();
+                }
+                if (!dropRules.isEmpty()) {
+                    insertDropRulePs.executeBatch();
+                }
+                MAP_DROP_RULES.put(mapId, dropRules);
+            }
+            con.commit();
+        } catch (Exception e) {
+            Logger.logException(Manager.class, e);
+            return "{\"saved\":false,\"message\":\"Luu map_template.mobs that bai\"}";
+        }
+
+        map.Map runtimeMap = findRuntimeMap(mapId);
+        if (runtimeMap != null) {
+            runtimeMap.updateZoneMaxPlayers(maxPlayer);
+            runtimeMap.reloadMobs(mobTemp, mobLevel, mobHp, mobX, mobY);
+            runtimeMap.reloadWayPoints(wayPoints);
+            runtimeMap.reloadNpcs(npcData.npcId, npcData.npcX, npcData.npcY);
+        }
+
+        return "{\"saved\":true,\"map\":" + runtimeMapTemplateJson(template) + "}";
+    }
+
+    private static String runtimeMapTemplateJson(MapTemplate template) {
+        if (template == null) {
+            return "{}";
+        }
+        map.Map runtimeMap = findRuntimeMap(template.id);
+        int zoneCount = runtimeMap != null && runtimeMap.zones != null ? runtimeMap.zones.size() : template.zones;
+        int playerCount = 0;
+        if (runtimeMap != null && runtimeMap.zones != null) {
+            for (Zone zone : runtimeMap.zones) {
+                playerCount += zone.getNumOfPlayers();
+            }
+        }
+        return new StringBuilder("{")
+                .append("\"id\":").append(template.id).append(',')
+                .append("\"name\":\"").append(escapeJson(template.name)).append("\",")
+                .append("\"planet_id\":").append(template.planetId).append(',')
+                .append("\"type\":").append(template.type).append(',')
+                .append("\"bg_id\":").append(template.bgId).append(',')
+                .append("\"bg_type\":").append(template.bgType).append(',')
+                .append("\"tile_id\":").append(template.tileId).append(',')
+                .append("\"zones\":").append(zoneCount).append(',')
+                .append("\"zones_config\":").append(template.zones).append(',')
+                .append("\"zones_forced\":").append(isZoneCountForcedByType(template.type)).append(',')
+                .append("\"max_player\":").append(template.maxPlayerPerZone).append(',')
+                .append("\"player_count\":").append(playerCount).append(',')
+                .append("\"width\":").append(runtimeMap != null ? runtimeMap.mapWidth : 0).append(',')
+                .append("\"height\":").append(runtimeMap != null ? runtimeMap.mapHeight : 0).append(',')
+                .append("\"mob_count\":").append(template.mobTemp == null ? 0 : template.mobTemp.length).append(',')
+                .append("\"waypoints\":").append(runtimeWaypointsJson(template)).append(',')
+                .append("\"npcs\":").append(runtimeNpcsJson(template)).append(',')
+                .append("\"fixed_items\":").append(runtimeFixedItemsJson(template.id)).append(',')
+                .append("\"drop_rules\":").append(runtimeMapDropRulesJson(template.id)).append(',')
+                .append("\"mobs\":").append(runtimeMapMobsJson(template, runtimeMap))
+                .append('}')
+                .toString();
+    }
+
+    private static String runtimeWaypointsJson(MapTemplate template) {
+        StringBuilder json = new StringBuilder("[");
+        if (template.wayPoints != null) {
+            for (int i = 0; i < template.wayPoints.size(); i++) {
+                if (i > 0) {
+                    json.append(',');
+                }
+                WayPoint wayPoint = template.wayPoints.get(i);
+                json.append('{')
+                        .append("\"name\":\"").append(escapeJson(wayPoint.name)).append("\",")
+                        .append("\"min_x\":").append(wayPoint.minX).append(',')
+                        .append("\"min_y\":").append(wayPoint.minY).append(',')
+                        .append("\"max_x\":").append(wayPoint.maxX).append(',')
+                        .append("\"max_y\":").append(wayPoint.maxY).append(',')
+                        .append("\"go_map\":").append(wayPoint.goMap).append(',')
+                        .append("\"go_x\":").append(wayPoint.goX).append(',')
+                        .append("\"go_y\":").append(wayPoint.goY).append(',')
+                        .append("\"is_enter\":").append(wayPoint.isEnter).append(',')
+                        .append("\"is_offline\":").append(wayPoint.isOffline)
+                        .append('}');
+            }
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeNpcsJson(MapTemplate template) {
+        StringBuilder json = new StringBuilder("[");
+        int count = template.npcId == null ? 0 : template.npcId.length;
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            NpcTemplate npcTemplate = getNpcTemplateByTemp(template.npcId[i]);
+            json.append('{')
+                    .append("\"id\":").append(template.npcId[i]).append(',')
+                    .append("\"name\":\"").append(escapeJson(npcTemplate == null ? "" : npcTemplate.name)).append("\",")
+                    .append("\"avatar\":").append(npcTemplate == null ? -1 : npcTemplate.avatar).append(',')
+                    .append("\"head\":").append(npcTemplate == null ? -1 : npcTemplate.head).append(',')
+                    .append("\"body\":").append(npcTemplate == null ? -1 : npcTemplate.body).append(',')
+                    .append("\"leg\":").append(npcTemplate == null ? -1 : npcTemplate.leg).append(',')
+                    .append("\"x\":").append(template.npcX[i]).append(',')
+                    .append("\"y\":").append(template.npcY[i])
+                    .append('}');
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeFixedItemsJson(int mapId) {
+        int[][] fixedItems;
+        switch (mapId) {
+            case 21 ->
+                fixedItems = new int[][]{{74, 1, 633, 315}};
+            case 22 ->
+                fixedItems = new int[][]{{74, 1, 56, 315}};
+            case 23 ->
+                fixedItems = new int[][]{{74, 1, 633, 320}};
+            case 42 ->
+                fixedItems = new int[][]{{78, 1, 70, 288}};
+            case 43 ->
+                fixedItems = new int[][]{{78, 1, 70, 264}};
+            case 44 ->
+                fixedItems = new int[][]{{78, 1, 70, 288}};
+            case 85 ->
+                fixedItems = new int[][]{{372, 1, 0, 0}};
+            case 86 ->
+                fixedItems = new int[][]{{373, 1, 0, 0}};
+            case 87 ->
+                fixedItems = new int[][]{{374, 1, 0, 0}};
+            case 88 ->
+                fixedItems = new int[][]{{375, 1, 0, 0}};
+            case 89 ->
+                fixedItems = new int[][]{{376, 1, 0, 0}};
+            case 90 ->
+                fixedItems = new int[][]{{377, 1, 0, 0}};
+            case 91 ->
+                fixedItems = new int[][]{{378, 1, 0, 0}};
+            default ->
+                fixedItems = new int[0][];
+        }
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < fixedItems.length; i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            int[] row = fixedItems[i];
+            ItemTemplate itemTemplate = getItemTemplateByTemp(row[0]);
+            json.append('{')
+                    .append("\"id\":").append(row[0]).append(',')
+                    .append("\"name\":\"").append(escapeJson(itemTemplate == null ? "" : itemTemplate.name)).append("\",")
+                    .append("\"icon_id\":").append(itemTemplate == null ? -1 : itemTemplate.iconID).append(',')
+                    .append("\"quantity\":").append(row[1]).append(',')
+                    .append("\"x\":").append(row[2]).append(',')
+                    .append("\"y\":").append(row[3]).append(',')
+                    .append("\"per_zone\":true")
+                    .append('}');
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeMapDropRulesJson(int mapId) {
+        List<RuntimeMapDropRule> rules = MAP_DROP_RULES.get(mapId);
+        if (rules == null || rules.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < rules.size(); i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            RuntimeMapDropRule rule = rules.get(i);
+            ItemTemplate itemTemplate = getItemTemplateByTemp(rule.itemId);
+            MobTemplate mobTemplate = rule.mobTempId == null ? null : getMobTemplateByTemp(rule.mobTempId);
+            json.append('{')
+                    .append("\"item_id\":").append(rule.itemId).append(',')
+                    .append("\"item_name\":\"").append(escapeJson(itemTemplate == null ? "" : itemTemplate.name)).append("\",")
+                    .append("\"icon_id\":").append(itemTemplate == null ? -1 : itemTemplate.iconID).append(',')
+                    .append("\"quantity_min\":").append(rule.quantityMin).append(',')
+                    .append("\"quantity_max\":").append(rule.quantityMax).append(',')
+                    .append("\"chance_numerator\":").append(rule.chanceNumerator).append(',')
+                    .append("\"chance_denominator\":").append(rule.chanceDenominator).append(',')
+                    .append("\"mob_temp_id\":").append(rule.mobTempId == null ? -1 : rule.mobTempId).append(',')
+                    .append("\"mob_name\":\"").append(escapeJson(mobTemplate == null ? "" : mobTemplate.name)).append("\",")
+                    .append("\"active\":").append(rule.active).append(',')
+                    .append("\"note\":\"").append(escapeJson(rule.note)).append("\",")
+                    .append("\"options\":").append(runtimeItemOptionsJson(rule.options))
+                    .append('}');
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeMapMobsJson(MapTemplate template, map.Map runtimeMap) {
+        StringBuilder json = new StringBuilder("[");
+        int count = template.mobTemp == null ? 0 : template.mobTemp.length;
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            int tempId = template.mobTemp[i];
+            MobTemplate mobTemplate = getMobTemplateByTemp(tempId);
+            mob.Mob liveMob = firstZoneMob(runtimeMap, i);
+            json.append('{')
+                    .append("\"index\":").append(i).append(',')
+                    .append("\"temp_id\":").append(tempId).append(',')
+                    .append("\"name\":\"").append(escapeJson(mobTemplate == null ? "" : mobTemplate.name)).append("\",")
+                    .append("\"type\":").append(mobTemplate == null ? 0 : mobTemplate.type).append(',')
+                    .append("\"level\":").append(template.mobLevel[i]).append(',')
+                    .append("\"hp\":").append(template.mobHp[i]).append(',')
+                    .append("\"x\":").append(template.mobX[i]).append(',')
+                    .append("\"y\":").append(template.mobY[i]).append(',')
+                    .append("\"template_hp\":").append(mobTemplate == null ? 0 : mobTemplate.hp).append(',')
+                    .append("\"percent_dame\":").append(mobTemplate == null ? 0 : mobTemplate.percentDame).append(',')
+                    .append("\"percent_tiem_nang\":").append(mobTemplate == null ? 0 : mobTemplate.percentTiemNang).append(',')
+                    .append("\"live_hp\":").append(liveMob != null ? liveMob.point.gethp() : 0).append(',')
+                    .append("\"live_status\":").append(liveMob != null ? liveMob.status : -1).append(',')
+                    .append("\"alive\":").append(liveMob != null && !liveMob.isDie())
+                    .append('}');
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static String runtimeMobTemplatesJson() {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < MOB_TEMPLATES.size(); i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            MobTemplate mob = MOB_TEMPLATES.get(i);
+            json.append('{')
+                    .append("\"id\":").append(mob.id).append(',')
+                    .append("\"name\":\"").append(escapeJson(mob.name)).append("\",")
+                    .append("\"type\":").append(mob.type).append(',')
+                    .append("\"hp\":").append(mob.hp).append(',')
+                    .append("\"range_move\":").append(mob.rangeMove).append(',')
+                    .append("\"speed\":").append(mob.speed).append(',')
+                    .append("\"dart_type\":").append(mob.dartType).append(',')
+                    .append("\"percent_dame\":").append(mob.percentDame).append(',')
+                    .append("\"percent_tiem_nang\":").append(mob.percentTiemNang)
+                    .append('}');
+        }
+        json.append(']');
+        return json.toString();
+    }
+
+    private static JSONObject mapMobObject(Object raw) {
+        if (raw instanceof JSONObject) {
+            return (JSONObject) raw;
+        }
+        JSONObject object = new JSONObject();
+        if (raw instanceof JSONArray) {
+            JSONArray row = (JSONArray) raw;
+            object.put("temp_id", row.size() > 0 ? row.get(0) : 0);
+            object.put("level", row.size() > 1 ? row.get(1) : 1);
+            object.put("hp", row.size() > 2 ? row.get(2) : 1);
+            object.put("x", row.size() > 3 ? row.get(3) : 0);
+            object.put("y", row.size() > 4 ? row.get(4) : 0);
+        }
+        return object;
+    }
+
+    private static Object normalizeJsonBodyValue(Object value) {
+        if (value instanceof String) {
+            return JSONValue.parse(String.valueOf(value));
+        }
+        return value;
+    }
+
+    private static List<WayPoint> cloneWayPoints(List<WayPoint> source) {
+        List<WayPoint> wayPoints = new ArrayList<>();
+        if (source == null) {
+            return wayPoints;
+        }
+        for (WayPoint origin : source) {
+            if (origin == null) {
+                continue;
+            }
+            WayPoint clone = new WayPoint();
+            clone.name = origin.name;
+            clone.minX = origin.minX;
+            clone.minY = origin.minY;
+            clone.maxX = origin.maxX;
+            clone.maxY = origin.maxY;
+            clone.isEnter = origin.isEnter;
+            clone.isOffline = origin.isOffline;
+            clone.goMap = origin.goMap;
+            clone.goX = origin.goX;
+            clone.goY = origin.goY;
+            wayPoints.add(clone);
+        }
+        return wayPoints;
+    }
+
+    private static List<WayPoint> runtimeWayPointsFromPayload(Object raw) {
+        List<WayPoint> wayPoints = new ArrayList<>();
+        if (!(raw instanceof JSONArray)) {
+            return wayPoints;
+        }
+        JSONArray rows = (JSONArray) raw;
+        for (Object entry : rows) {
+            JSONObject row = entry instanceof JSONObject ? (JSONObject) entry : new JSONObject();
+            if (!(entry instanceof JSONObject) && entry instanceof JSONArray) {
+                JSONArray array = (JSONArray) entry;
+                row.put("name", array.size() > 0 ? array.get(0) : "");
+                row.put("min_x", array.size() > 1 ? array.get(1) : 0);
+                row.put("min_y", array.size() > 2 ? array.get(2) : 0);
+                row.put("max_x", array.size() > 3 ? array.get(3) : 0);
+                row.put("max_y", array.size() > 4 ? array.get(4) : 0);
+                row.put("is_enter", array.size() > 5 ? array.get(5) : 0);
+                row.put("is_offline", array.size() > 6 ? array.get(6) : 0);
+                row.put("go_map", array.size() > 7 ? array.get(7) : 0);
+                row.put("go_x", array.size() > 8 ? array.get(8) : 0);
+                row.put("go_y", array.size() > 9 ? array.get(9) : 0);
+            }
+
+            WayPoint wayPoint = new WayPoint();
+            wayPoint.name = String.valueOf(row.getOrDefault("name", ""));
+            wayPoint.minX = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("min_x"), 0)));
+            wayPoint.minY = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("min_y"), 0)));
+            wayPoint.maxX = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("max_x"), 0)));
+            wayPoint.maxY = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("max_y"), 0)));
+            wayPoint.isEnter = intValue(row.get("is_enter"), 0) == 1 || Boolean.parseBoolean(String.valueOf(row.get("is_enter")));
+            wayPoint.isOffline = intValue(row.get("is_offline"), 0) == 1 || Boolean.parseBoolean(String.valueOf(row.get("is_offline")));
+            wayPoint.goMap = intValue(row.get("go_map"), 0);
+            wayPoint.goX = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("go_x"), 0)));
+            wayPoint.goY = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("go_y"), 0)));
+            wayPoints.add(wayPoint);
+        }
+        return wayPoints;
+    }
+
+    private static RuntimeNpcData runtimeNpcDataFromTemplate(MapTemplate template) {
+        RuntimeNpcData npcData = new RuntimeNpcData();
+        int count = template.npcId == null ? 0 : template.npcId.length;
+        npcData.npcId = new byte[count];
+        npcData.npcX = new short[count];
+        npcData.npcY = new short[count];
+        for (int i = 0; i < count; i++) {
+            npcData.npcId[i] = template.npcId[i];
+            npcData.npcX[i] = template.npcX[i];
+            npcData.npcY[i] = template.npcY[i];
+        }
+        return npcData;
+    }
+
+    private static RuntimeNpcData runtimeNpcDataFromPayload(Object raw) {
+        RuntimeNpcData npcData = new RuntimeNpcData();
+        if (!(raw instanceof JSONArray)) {
+            npcData.npcId = new byte[0];
+            npcData.npcX = new short[0];
+            npcData.npcY = new short[0];
+            return npcData;
+        }
+        JSONArray rows = (JSONArray) raw;
+        npcData.npcId = new byte[rows.size()];
+        npcData.npcX = new short[rows.size()];
+        npcData.npcY = new short[rows.size()];
+        for (int i = 0; i < rows.size(); i++) {
+            Object entry = rows.get(i);
+            JSONObject row = entry instanceof JSONObject ? (JSONObject) entry : new JSONObject();
+            if (!(entry instanceof JSONObject) && entry instanceof JSONArray) {
+                JSONArray array = (JSONArray) entry;
+                row.put("id", array.size() > 0 ? array.get(0) : 0);
+                row.put("x", array.size() > 1 ? array.get(1) : 0);
+                row.put("y", array.size() > 2 ? array.get(2) : 0);
+            }
+            int npcId = intValue(row.get("id"), -1);
+            if (npcId < Byte.MIN_VALUE || npcId > Byte.MAX_VALUE || getNpcTemplateByTemp(npcId) == null) {
+                throw new IllegalArgumentException("NPC khong ton tai: " + npcId);
+            }
+            npcData.npcId[i] = (byte) npcId;
+            npcData.npcX[i] = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("x"), 0)));
+            npcData.npcY[i] = (short) Math.max(0, Math.min(Short.MAX_VALUE, intValue(row.get("y"), 0)));
+        }
+        return npcData;
+    }
+
+    private static List<RuntimeMapDropRule> cloneMapDropRules(int mapId) {
+        List<RuntimeMapDropRule> rules = MAP_DROP_RULES.get(mapId);
+        List<RuntimeMapDropRule> clones = new ArrayList<>();
+        if (rules == null) {
+            return clones;
+        }
+        for (RuntimeMapDropRule rule : rules) {
+            clones.add(rule.copy());
+        }
+        return clones;
+    }
+
+    private static List<RuntimeMapDropRule> runtimeMapDropRulesFromPayload(int mapId, Object raw) {
+        List<RuntimeMapDropRule> rules = new ArrayList<>();
+        if (!(raw instanceof JSONArray)) {
+            return rules;
+        }
+        JSONArray rows = (JSONArray) raw;
+        for (Object entry : rows) {
+            JSONObject row = entry instanceof JSONObject ? (JSONObject) entry : new JSONObject();
+            RuntimeMapDropRule rule = new RuntimeMapDropRule();
+            rule.mapId = mapId;
+            rule.itemId = intValue(row.get("item_id"), -1);
+            if (getItemTemplateByTemp(rule.itemId) == null) {
+                throw new IllegalArgumentException("Item drop khong ton tai: " + rule.itemId);
+            }
+            int mobTempId = intValue(row.get("mob_temp_id"), -1);
+            if (mobTempId >= 0) {
+                if (getMobTemplateByTemp(mobTempId) == null) {
+                    throw new IllegalArgumentException("Mob temp cua drop khong ton tai: " + mobTempId);
+                }
+                rule.mobTempId = mobTempId;
+            }
+            rule.quantityMin = Math.max(1, intValue(row.get("quantity_min"), 1));
+            rule.quantityMax = Math.max(rule.quantityMin, intValue(row.get("quantity_max"), rule.quantityMin));
+            rule.chanceNumerator = Math.max(0, intValue(row.get("chance_numerator"), 1));
+            rule.chanceDenominator = Math.max(1, intValue(row.get("chance_denominator"), 100));
+            rule.active = intValue(row.get("active"), 1) == 1 || Boolean.parseBoolean(String.valueOf(row.get("active")));
+            rule.note = String.valueOf(row.getOrDefault("note", ""));
+            rule.options = itemOptionsFromPayload(normalizeJsonBodyValue(row.get("options")));
+            rules.add(rule);
+        }
+        return rules;
+    }
+
+    private static List<Item.ItemOption> itemOptionsFromPayload(Object raw) {
+        List<Item.ItemOption> options = new ArrayList<>();
+        if (!(raw instanceof JSONArray)) {
+            return options;
+        }
+        JSONArray rows = (JSONArray) raw;
+        for (Object entry : rows) {
+            JSONObject row = entry instanceof JSONObject ? (JSONObject) entry : new JSONObject();
+            if (!(entry instanceof JSONObject) && entry instanceof JSONArray) {
+                JSONArray array = (JSONArray) entry;
+                row.put("id", array.size() > 0 ? array.get(0) : 0);
+                row.put("param", array.size() > 1 ? array.get(1) : 0);
+            }
+            int id = intValue(row.get("id"), -1);
+            if (id < 0) {
+                continue;
+            }
+            options.add(new Item.ItemOption(id, intValue(row.get("param"), 0)));
+        }
+        return options;
+    }
+
+    private static String serializeWayPoints(List<WayPoint> wayPoints) {
+        JSONArray rows = new JSONArray();
+        if (wayPoints != null) {
+            for (WayPoint wayPoint : wayPoints) {
+                JSONArray row = new JSONArray();
+                row.add(wayPoint.name == null ? "" : wayPoint.name);
+                row.add((int) wayPoint.minX);
+                row.add((int) wayPoint.minY);
+                row.add((int) wayPoint.maxX);
+                row.add((int) wayPoint.maxY);
+                row.add(wayPoint.isEnter ? 1 : 0);
+                row.add(wayPoint.isOffline ? 1 : 0);
+                row.add(wayPoint.goMap);
+                row.add((int) wayPoint.goX);
+                row.add((int) wayPoint.goY);
+                rows.add(row);
+            }
+        }
+        return rows.toJSONString();
+    }
+
+    private static String serializeNpcs(RuntimeNpcData npcData) {
+        JSONArray rows = new JSONArray();
+        int count = npcData.npcId == null ? 0 : npcData.npcId.length;
+        for (int i = 0; i < count; i++) {
+            JSONArray row = new JSONArray();
+            row.add((int) npcData.npcId[i]);
+            row.add((int) npcData.npcX[i]);
+            row.add((int) npcData.npcY[i]);
+            rows.add(row);
+        }
+        return rows.toJSONString();
+    }
+
+    private static String serializeItemOptions(List<Item.ItemOption> options) {
+        JSONArray rows = new JSONArray();
+        if (options != null) {
+            for (Item.ItemOption option : options) {
+                JSONArray row = new JSONArray();
+                row.add(option.optionTemplate.id);
+                row.add(option.param);
+                rows.add(row);
+            }
+        }
+        return rows.toJSONString();
+    }
+
+    private static String runtimeItemOptionsJson(List<Item.ItemOption> options) {
+        JSONArray rows = new JSONArray();
+        if (options != null) {
+            for (Item.ItemOption option : options) {
+                JSONObject row = new JSONObject();
+                row.put("id", option.optionTemplate.id);
+                row.put("param", option.param);
+                rows.add(row);
+            }
+        }
+        return rows.toJSONString();
+    }
+
+    private static MapTemplate findMapTemplate(int mapId) {
+        if (MAP_TEMPLATES == null) {
+            return null;
+        }
+        for (MapTemplate mapTemplate : MAP_TEMPLATES) {
+            if (mapTemplate != null && mapTemplate.id == mapId) {
+                return mapTemplate;
+            }
+        }
+        return null;
+    }
+
+    private static map.Map findRuntimeMap(int mapId) {
+        for (map.Map map : MAPS) {
+            if (map != null && map.mapId == mapId) {
+                return map;
+            }
+        }
+        return null;
+    }
+
+    private static mob.Mob firstZoneMob(map.Map map, int index) {
+        if (map == null || map.zones == null || map.zones.isEmpty()) {
+            return null;
+        }
+        Zone zone = map.zones.get(0);
+        synchronized (zone.mobs) {
+            if (index < 0 || index >= zone.mobs.size()) {
+                return null;
+            }
+            return zone.mobs.get(index);
+        }
+    }
+
+    private static int intValue(Object value, int fallback) {
+        try {
+            return Integer.parseInt(String.valueOf(value));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private static int mobTemplatePercentDame(int tempId) {
+        MobTemplate mobTemplate = getMobTemplateByTemp(tempId);
+        return mobTemplate == null ? 0 : mobTemplate.percentDame;
+    }
+
+    private static void updateMobTemplatePercentDame(int tempId, int percentDame) {
+        MobTemplate mobTemplate = getMobTemplateByTemp(tempId);
+        if (mobTemplate != null) {
+            mobTemplate.percentDame = (byte) percentDame;
+        }
+    }
+
+    private static boolean isZoneCountForcedByType(int mapType) {
+        return mapType == ConstMap.MAP_OFFLINE
+                || mapType == ConstMap.MAP_BLACK_BALL_WAR
+                || mapType == ConstMap.MAP_MA_BU
+                || mapType == ConstMap.MAP_MABU_14H
+                || mapType == ConstMap.MAP_DOANH_TRAI
+                || mapType == ConstMap.MAP_BAN_DO_KHO_BAU
+                || mapType == ConstMap.MAP_CON_DUONG_RAN_DOC
+                || mapType == ConstMap.MAP_KHI_GAS_HUY_DIET;
+    }
+
+    private static void ensureMapDropRuleTable(Connection con) throws SQLException {
+        try (Statement st = con.createStatement()) {
+            st.executeUpdate("create table if not exists map_drop_rule ("
+                    + "id int primary key auto_increment,"
+                    + "map_id int not null,"
+                    + "item_id int not null,"
+                    + "quantity_min int not null default 1,"
+                    + "quantity_max int not null default 1,"
+                    + "chance_numerator int not null default 1,"
+                    + "chance_denominator int not null default 100,"
+                    + "mob_temp_id int null,"
+                    + "options_text text null,"
+                    + "active tinyint(1) not null default 1,"
+                    + "note varchar(255) null,"
+                    + "created_at timestamp null default current_timestamp,"
+                    + "updated_at timestamp null default current_timestamp on update current_timestamp,"
+                    + "index idx_map_active (map_id, active),"
+                    + "index idx_mob_temp (mob_temp_id))");
+        }
+    }
+
+    private static void loadMapDropRules(Connection con) throws SQLException {
+        MAP_DROP_RULES.clear();
+        try (PreparedStatement ps = con.prepareStatement("select map_id, item_id, quantity_min, quantity_max, chance_numerator, chance_denominator, mob_temp_id, options_text, active, note from map_drop_rule order by map_id asc, id asc");
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                RuntimeMapDropRule rule = new RuntimeMapDropRule();
+                rule.mapId = rs.getInt("map_id");
+                rule.itemId = rs.getInt("item_id");
+                rule.quantityMin = Math.max(1, rs.getInt("quantity_min"));
+                rule.quantityMax = Math.max(rule.quantityMin, rs.getInt("quantity_max"));
+                rule.chanceNumerator = Math.max(0, rs.getInt("chance_numerator"));
+                rule.chanceDenominator = Math.max(1, rs.getInt("chance_denominator"));
+                int mobTempId = rs.getInt("mob_temp_id");
+                rule.mobTempId = rs.wasNull() ? null : mobTempId;
+                rule.active = rs.getInt("active") == 1;
+                rule.note = rs.getString("note");
+                rule.options = itemOptionsFromPayload(JSONValue.parse(rs.getString("options_text")));
+                MAP_DROP_RULES.computeIfAbsent(rule.mapId, key -> new ArrayList<>()).add(rule);
+            }
+        }
+    }
+
+    public static void appendRuntimeMapDropRewards(Zone zone, player.Player player, int mobTempId, int x, int yEnd, List<map.ItemMap> list) {
+        if (zone == null || zone.map == null || player == null || list == null) {
+            return;
+        }
+        List<RuntimeMapDropRule> rules = MAP_DROP_RULES.get(zone.map.mapId);
+        if (rules == null || rules.isEmpty()) {
+            return;
+        }
+        for (RuntimeMapDropRule rule : rules) {
+            if (!rule.active) {
+                continue;
+            }
+            if (rule.mobTempId != null && rule.mobTempId != mobTempId) {
+                continue;
+            }
+            if (rule.chanceNumerator <= 0 || rule.chanceDenominator <= 0) {
+                continue;
+            }
+            if (!Util.isTrue(rule.chanceNumerator, rule.chanceDenominator)) {
+                continue;
+            }
+            int quantity = rule.quantityMin >= rule.quantityMax
+                    ? rule.quantityMin
+                    : Util.nextInt(rule.quantityMin, rule.quantityMax);
+            map.ItemMap itemMap = new map.ItemMap(zone, rule.itemId, quantity, x, yEnd, player.id);
+            if (rule.options != null) {
+                for (Item.ItemOption option : rule.options) {
+                    itemMap.options.add(new Item.ItemOption(option.optionTemplate.id, option.param));
+                }
+            }
+            list.add(itemMap);
+        }
+    }
+
+    private static String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", "\\r").replace("\n", "\\n");
+    }
+
     public static MobTemplate getMobTemplateByTemp(int mobTempId) {
         for (MobTemplate mobTemp : MOB_TEMPLATES) {
             if (mobTemp.id == mobTempId) {
                 return mobTemp;
+            }
+        }
+        return null;
+    }
+
+    public static NpcTemplate getNpcTemplateByTemp(int npcTempId) {
+        for (NpcTemplate npcTemplate : NPC_TEMPLATES) {
+            if (npcTemplate.id == npcTempId) {
+                return npcTemplate;
+            }
+        }
+        return null;
+    }
+
+    public static ItemTemplate getItemTemplateByTemp(int itemTempId) {
+        for (ItemTemplate itemTemplate : ITEM_TEMPLATES) {
+            if (itemTemplate.id == itemTempId) {
+                return itemTemplate;
             }
         }
         return null;
@@ -1227,4 +2054,42 @@ public final class Manager {
         }
     }
     // End xử lý menu top
+
+    private static class RuntimeNpcData {
+
+        private byte[] npcId = new byte[0];
+        private short[] npcX = new short[0];
+        private short[] npcY = new short[0];
+    }
+
+    private static class RuntimeMapDropRule {
+
+        private int mapId;
+        private int itemId;
+        private int quantityMin;
+        private int quantityMax;
+        private int chanceNumerator;
+        private int chanceDenominator;
+        private Integer mobTempId;
+        private List<Item.ItemOption> options = new ArrayList<>();
+        private boolean active = true;
+        private String note = "";
+
+        private RuntimeMapDropRule copy() {
+            RuntimeMapDropRule clone = new RuntimeMapDropRule();
+            clone.mapId = this.mapId;
+            clone.itemId = this.itemId;
+            clone.quantityMin = this.quantityMin;
+            clone.quantityMax = this.quantityMax;
+            clone.chanceNumerator = this.chanceNumerator;
+            clone.chanceDenominator = this.chanceDenominator;
+            clone.mobTempId = this.mobTempId;
+            clone.active = this.active;
+            clone.note = this.note;
+            for (Item.ItemOption option : this.options) {
+                clone.options.add(new Item.ItemOption(option.optionTemplate.id, option.param));
+            }
+            return clone;
+        }
+    }
 }

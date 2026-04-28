@@ -47,6 +47,8 @@ public class AdminHttpServer {
             server.createContext("/internal/runtime/bosses/create", this::handleBossCreate);
             server.createContext("/internal/runtime/bosses/action", this::handleBossAction);
             server.createContext("/internal/runtime/bosses/update", this::handleBossUpdate);
+            server.createContext("/internal/runtime/bosses/configs", this::handleBossConfigs);
+            server.createContext("/internal/runtime/map-mobs", this::handleMapMobs);
             server.setExecutor(Executors.newFixedThreadPool(2));
             server.start();
             System.out.println("[AdminRuntime] Listening on http://" + config.host + ":" + config.port);
@@ -115,6 +117,40 @@ public class AdminHttpServer {
             return ok
                     ? AdminResponse.ok("BOSS_UPDATED", "Cap nhat boss runtime thanh cong")
                     : AdminResponse.fail(404, "BOSS_UPDATE_FAILED", "Khong tim thay boss");
+        }));
+    }
+
+    private void handleBossConfigs(HttpExchange exchange) throws IOException {
+        String method = exchange.getRequestMethod();
+        if ("GET".equalsIgnoreCase(method)) {
+            handle(exchange, "GET", () -> AdminResponse.ok("BOSS_CONFIGS_LISTED", "Lay cau hinh boss thanh cong", BossManager.runtimeConfigsJson()));
+            return;
+        }
+        handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("boss.config.save", config.commandTimeoutMillis, () -> {
+            JSONObject body = parseBody(readBodySafely(exchange));
+            String dataJson = BossManager.runtimeSaveConfig(body);
+            JSONObject result = parseBody(dataJson);
+            boolean saved = Boolean.parseBoolean(String.valueOf(result.get("saved")));
+            return saved
+                    ? AdminResponse.ok("BOSS_CONFIG_SAVED", "Luu cau hinh boss thanh cong", dataJson)
+                    : AdminResponse.fail(422, "BOSS_CONFIG_SAVE_FAILED", stringValue(result.get("message")));
+        }));
+    }
+
+    private void handleMapMobs(HttpExchange exchange) throws IOException {
+        String method = exchange.getRequestMethod();
+        if ("GET".equalsIgnoreCase(method)) {
+            handle(exchange, "GET", () -> AdminResponse.ok("MAP_MOBS_LISTED", "Lay danh sach map mob thanh cong", Manager.runtimeMapMobsJson()));
+            return;
+        }
+        handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("map_mob.save", config.commandTimeoutMillis, () -> {
+            JSONObject body = parseBody(readBodySafely(exchange));
+            String dataJson = Manager.runtimeSaveMapMobs(body);
+            JSONObject result = parseBody(dataJson);
+            boolean saved = Boolean.parseBoolean(String.valueOf(result.get("saved")));
+            return saved
+                    ? AdminResponse.ok("MAP_MOBS_SAVED", "Luu va reload mob thanh cong", dataJson)
+                    : AdminResponse.fail(422, "MAP_MOBS_SAVE_FAILED", stringValue(result.get("message")));
         }));
     }
 

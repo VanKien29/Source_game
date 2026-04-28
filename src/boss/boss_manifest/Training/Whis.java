@@ -14,6 +14,7 @@ import jdbc.daos.TraningDAO;
 import player.Player;
 import services.Service;
 import services.func.ChangeMapService;
+import services.func.TopService;
 import utils.Util;
 
 public class Whis extends TrainingBoss {
@@ -97,6 +98,7 @@ public class Whis extends TrainingBoss {
             playerAtt.traning.setTime((int) (System.currentTimeMillis() - lastJoinMapTime));
             playerAtt.traning.setLastTime(System.currentTimeMillis());
             TraningDAO.updatePlayer(playerAtt);
+            TopService.refreshWhisTop();
         } catch (Exception e) {
         }
         super.die(plKill);
