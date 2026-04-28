@@ -457,9 +457,10 @@ public class ShopService {
                             msg.writer().writeInt(itemShop.cost);
                         }
                         msg.writer().writeByte(itemShop.options.size());
+                        // mở option item cho src
                         for (Item.ItemOption option : itemShop.options) {
-                            msg.writer().writeByte(option.optionTemplate.id);
-                            msg.writer().writeShort(option.param);
+                            msg.writer().writeInt(option.optionTemplate.id);
+                            msg.writer().writeInt(option.param);
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
                         if (itemShop.temp.type == 5) {
@@ -507,9 +508,10 @@ public class ShopService {
                         }
                         msg.writer().writeInt(itemShop.cost);
                         msg.writer().writeByte(itemShop.options.size());
+                        // mở option item cho src
                         for (Item.ItemOption option : itemShop.options) {
-                            msg.writer().writeByte(option.optionTemplate.id);
-                            msg.writer().writeShort(option.param);
+                            msg.writer().writeInt(option.optionTemplate.id);
+                            msg.writer().writeInt(option.param);
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
                         if (itemShop.temp.type == 5) {
@@ -550,16 +552,17 @@ public class ShopService {
                 msg.writer().writeShort(item.template.id);
                 msg.writer().writeUTF("Ngọc Rồng Hdpe");
                 msg.writer().writeByte(item.itemOptions.size() + 1);
+                // mở option item cho src
                 for (Item.ItemOption io : item.itemOptions) {
-                    msg.writer().writeByte(io.optionTemplate.id);
-                    msg.writer().writeShort(io.param);
+                    msg.writer().writeInt(io.optionTemplate.id);
+                    msg.writer().writeInt(io.param);
                 }
                 if (item.quantity > 1) {
-                    msg.writer().writeByte(31);
-                    msg.writer().writeShort(item.quantity);
+                    msg.writer().writeInt(31);
+                    msg.writer().writeInt(item.quantity);
                 } else {
-                    msg.writer().writeByte(73);
-                    msg.writer().writeShort(0);
+                    msg.writer().writeInt(73);
+                    msg.writer().writeInt(0);
                 }
                 msg.writer().writeByte(1);
                 if (item.template.type == 5) {
@@ -604,9 +607,10 @@ public class ShopService {
                 msg.writer().writeInt(giamualaingoc);
                 msg.writer().writeInt(item.quantity);
                 msg.writer().writeByte(item.itemOptions.size());
+                // mở option item cho src
                 for (Item.ItemOption io : item.itemOptions) {
-                    msg.writer().writeByte(io.optionTemplate.id);
-                    msg.writer().writeShort(io.param);
+                    msg.writer().writeInt(io.optionTemplate.id);
+                    msg.writer().writeInt(io.param);
                 }
                 msg.writer().writeByte(0);
                 if (item.template.type == 5) {

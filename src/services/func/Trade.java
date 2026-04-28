@@ -298,9 +298,10 @@ public class Trade {
                     msg.writer().writeInt(item.quantity);
                     // }
                     msg.writer().writeByte(item.itemOptions.size());
+                    // mở option item cho src
                     for (Item.ItemOption io : item.itemOptions) {
-                        msg.writer().writeByte(io.optionTemplate.id);
-                        msg.writer().writeShort(io.param);
+                        msg.writer().writeInt(io.optionTemplate.id);
+                        msg.writer().writeInt(io.param);
                     }
                 }
                 player2.sendMessage(msg);
@@ -316,9 +317,10 @@ public class Trade {
                     msg.writer().writeInt(item.quantity);
                     // }
                     msg.writer().writeByte(item.itemOptions.size());
+                    // mở option item cho src
                     for (Item.ItemOption io : item.itemOptions) {
-                        msg.writer().writeByte(io.optionTemplate.id);
-                        msg.writer().writeShort(io.param);
+                        msg.writer().writeInt(io.optionTemplate.id);
+                        msg.writer().writeInt(io.param);
                     }
                 }
                 player1.sendMessage(msg);

@@ -744,9 +744,10 @@ public class Service {
                     msg.writer().writeUTF(item.getContent());
                     List<ItemOption> itemOptions = item.itemOptions;
                     msg.writer().writeByte(itemOptions.size());
+                    // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
-                        msg.writer().writeByte(itemOption.optionTemplate.id);
-                        msg.writer().writeShort(itemOption.param);
+                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(itemOption.param);
                     }
                 }
 
@@ -766,9 +767,10 @@ public class Service {
                     msg.writer().writeUTF(item.getContent());
                     List<ItemOption> itemOptions = item.itemOptions;
                     msg.writer().writeByte(itemOptions.size());
+                    // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
-                        msg.writer().writeByte(itemOption.optionTemplate.id);
-                        msg.writer().writeShort(itemOption.param);
+                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(itemOption.param);
                     }
                 }
 
@@ -788,9 +790,10 @@ public class Service {
                     msg.writer().writeUTF(item.getContent());
                     List<ItemOption> itemOptions = item.itemOptions;
                     msg.writer().writeByte(itemOptions.size());
+                    // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
-                        msg.writer().writeByte(itemOption.optionTemplate.id);
-                        msg.writer().writeShort(itemOption.param);
+                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(itemOption.param);
                     }
                 }
             }
@@ -1642,9 +1645,10 @@ public class Service {
 
                         int countOption = item.itemOptions.size();
                         msg.writer().writeByte(countOption);
+                        // mở option item cho src
                         for (ItemOption iop : item.itemOptions) {
-                            msg.writer().writeByte(iop.optionTemplate.id);
-                            msg.writer().writeShort(iop.param);
+                            msg.writer().writeInt(iop.optionTemplate.id);
+                            msg.writer().writeInt(iop.param);
                         }
                     }
                 }
