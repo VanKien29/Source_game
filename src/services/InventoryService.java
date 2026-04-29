@@ -435,12 +435,15 @@ public class InventoryService {
             }
         }
 
-        // Tháo hiệu ứng cũ nếu là slot có hiệu ứng
+        // Thao hieu ung cu neu la slot co hieu ung. Slot 8 la deo lung/flag bag,
+        // khong di qua co che effect vi id flag bag co the trung part danh hieu.
         sItem = player.inventory.itemsBody.get(index);
-        if (index == 8 || index == 11 || index == 12) {
+        if (index == 11 || index == 12) {
             if (sItem.isNotNullItem()) {
                 Service.gI().removeEffPlayer(player, sItem.template.part);
             }
+        } else if (index == 8 && sItem.isNotNullItem()) {
+            Service.gI().clearFlagBagCollisionEffect(player, sItem);
         }
 
         // Mặc item mới
@@ -486,7 +489,10 @@ public class InventoryService {
             refreshSetKichHoatEffect(player);
             sendItemBag(player);
             sendItemBody(player);
-            if (index == 8 || index == 11 || index == 12) {
+            if (index == 8 && item.isNotNullItem()) {
+                Service.gI().clearFlagBagCollisionEffect(player, item);
+            }
+            if (index == 11 || index == 12) {
                 if (item.isNotNullItem()) {
                     Service.gI().removeEffPlayer(player, item.template.part);
                 }

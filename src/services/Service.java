@@ -1163,11 +1163,13 @@ public class Service {
                         break;
                 }
             }
+            int clientFlagBag = FlagBagService.gI().toClientFlagBagId(flagbag);
             msg = new Message(-64);
             msg.writer().writeInt((int) pl.id);
-            msg.writer().writeByte(flagbag);
+            msg.writer().writeByte(clientFlagBag);
             sendMessAllPlayerInMap(pl, msg);
             msg.cleanup();
+            clearFlagBagCollisionEffect(pl, flagbag);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1181,6 +1183,7 @@ public class Service {
                     flagbag = 205;
                 }
             }
+            flagbag = FlagBagService.gI().toClientFlagBagId(flagbag);
             Message msg = new Message(-64);
             msg.writer().writeInt((int) pl.id);
             msg.writer().writeByte(flagbag);
@@ -1812,7 +1815,7 @@ public class Service {
                 msg.writer().writeShort(-1);
             }
             msg.writer().writeShort(plChat.getBody());
-            msg.writer().writeShort(plChat.getFlagBag());
+            msg.writer().writeShort(FlagBagService.gI().toClientFlagBagId(plChat.getFlagBag()));
             msg.writer().writeShort(plChat.getLeg());
             msg.writer().writeByte(1);
             plChat.sendMessage(msg);
@@ -1826,7 +1829,7 @@ public class Service {
                 msg.writer().writeShort(-1);
             }
             msg.writer().writeShort(plChat.getBody());
-            msg.writer().writeShort(plChat.getFlagBag());
+            msg.writer().writeShort(FlagBagService.gI().toClientFlagBagId(plChat.getFlagBag()));
             msg.writer().writeShort(plChat.getLeg());
             msg.writer().writeByte(1);
             plReceive.sendMessage(msg);
@@ -2129,13 +2132,13 @@ public class Service {
         if (pl.isPl()) {
             if (pl.inventory.itemsBody.size() > 11) {
                 Item danhhieu = pl.inventory.itemsBody.get(11);
-                if (danhhieu.isNotNullItem()) {
+                if (isDanhHieuEffectItem(danhhieu)) {
                     Service.gI().sendEffAllPlayer(pl, danhhieu.template.part, 1, -1, 1);
                 }
             }
             if (pl.inventory.itemsBody.size() > 12) {
                 Item chanMenh = pl.inventory.itemsBody.get(12);
-                if (chanMenh.isNotNullItem()) {
+                if (isChanMenhEffectItem(chanMenh)) {
                     Service.gI().sendEffAllPlayer(pl, chanMenh.template.part, 0, -1, 1);
                 }
             }
@@ -2150,13 +2153,13 @@ public class Service {
                 if (plM.isPl()) {
                     if (plM.inventory.itemsBody.size() > 11) {
                         Item danhhieu = plM.inventory.itemsBody.get(11);
-                        if (danhhieu.isNotNullItem()) {
+                        if (isDanhHieuEffectItem(danhhieu)) {
                             Service.gI().sendEffPlayer(plM, pl, danhhieu.template.part, 1, -1, 1);
                         }
                     }
                     if (plM.inventory.itemsBody.size() > 12) {
                         Item chanmenh = plM.inventory.itemsBody.get(12);
-                        if (chanmenh.isNotNullItem()) {
+                        if (isChanMenhEffectItem(chanmenh)) {
                             Service.gI().sendEffPlayer(plM, pl, chanmenh.template.part, 0, -1, 1);
                         }
                     }
@@ -2165,6 +2168,47 @@ public class Service {
                 }
             }
         } catch (Exception e) {
+        }
+    }
+
+    private boolean isDanhHieuEffectItem(Item item) {
+        return item != null && item.isNotNullItem() && item.template != null && item.template.type == 99;
+    }
+
+    private boolean isChanMenhEffectItem(Item item) {
+        return item != null && item.isNotNullItem() && item.template != null && item.template.type == 98;
+    }
+
+    private boolean hasEquippedEffect(Player pl, int idEff) {
+        if (pl == null || pl.inventory == null || pl.inventory.itemsBody == null) {
+            return false;
+        }
+        if (pl.inventory.itemsBody.size() > 11) {
+            Item danhhieu = pl.inventory.itemsBody.get(11);
+            if (isDanhHieuEffectItem(danhhieu) && danhhieu.template.part == idEff) {
+                return true;
+            }
+        }
+        if (pl.inventory.itemsBody.size() > 12) {
+            Item chanMenh = pl.inventory.itemsBody.get(12);
+            if (isChanMenhEffectItem(chanMenh) && chanMenh.template.part == idEff) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void clearFlagBagCollisionEffect(Player pl, Item flagBagItem) {
+        int rawFlagBagId = FlagBagService.gI().resolveEquippedFlagBagId(flagBagItem);
+        if (rawFlagBagId != -1) {
+            clearFlagBagCollisionEffect(pl, rawFlagBagId);
+        }
+    }
+
+    public void clearFlagBagCollisionEffect(Player pl, int rawFlagBagId) {
+        int clientFlagBagId = FlagBagService.gI().toClientFlagBagId(rawFlagBagId);
+        if (FlagBagService.gI().isClientAlias(rawFlagBagId, clientFlagBagId) && !hasEquippedEffect(pl, rawFlagBagId)) {
+            removeEffPlayer(pl, rawFlagBagId);
         }
     }
 
@@ -3016,6 +3060,7 @@ public class Service {
                         flagbag = 205;
                 }
             }
+            flagbag = FlagBagService.gI().toClientFlagBagId(flagbag);
             msg.writer().writeByte(flagbag); // bag
             msg.writer().writeByte(-1);
             msg.writer().writeShort(pl.location.x);

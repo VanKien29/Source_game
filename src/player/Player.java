@@ -1267,9 +1267,12 @@ public class Player implements Runnable {
         if (TaskService.gI().getIdTask(this) == ConstTask.TASK_3_2) {
             return 28;
         }
-        if (this.inventory.itemsBody.size() >= 11) {
+        if (this.inventory.itemsBody.size() > 8) {
             if (this.inventory.itemsBody.get(8).isNotNullItem()) {
-                return this.inventory.itemsBody.get(8).template.part;
+                short flagBagId = FlagBagService.gI().resolveEquippedFlagBagId(this.inventory.itemsBody.get(8));
+                if (flagBagId != -1) {
+                    return flagBagId;
+                }
             }
         }
         // if (this.isPet && this.inventory.itemsBody.size() >= 8) {
