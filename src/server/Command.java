@@ -118,15 +118,16 @@ public class Command {
             //                    return true;
             //                } catch (Exception e) {
             //                }
-            //            } else if (text.equals("battu")) {
-            //                if (player.isBattu) {
-            //                    player.isBattu = false;
-            //                } else {
-            //                    player.isBattu = true;
-            //                }
-            //                Service.gI().sendThongBao(player, "Bất tử" + (player.isBattu ? ": ON" : ": OFF"));
-            //                return true;
-            //            } else if (text.startsWith("dt")) {
+            //                        }
+            else if (text.equals("battu")) {
+                if (player.isBattu) {
+                    player.isBattu = false;
+                } else {
+                    player.isBattu = true;
+                }
+                Service.gI().sendThongBao(player, "Bất tử" + (player.isBattu ? ": ON" : ": OFF"));
+                return true;
+            } //            else if (text.startsWith("dt")) {
             //                try {
             //                    long power = Long.parseLong(text.replaceAll("upp", ""));
             //                    Service.gI().addSMTN(player.pet, (byte) 2, power, false);
@@ -134,32 +135,30 @@ public class Command {
             //                } catch (Exception e) {
             //                }
             //            } 
-            //            else if (text.equals("test")) {
-            //                switch (player.gender) {
-            //                    case 0 ->
-            //                        SkillService.gI().learSkillSpecial(player, Skill.SUPER_KAME, 1);
-            //                    case 2 ->
-            //                        SkillService.gI().learSkillSpecial(player, Skill.LIEN_HOAN_CHUONG, 1);
-            //                    default ->
-            //                        SkillService.gI().learSkillSpecial(player, Skill.MA_PHONG_BA, 1);
-            //                }
-            //                return true;
-            //            } 
-            //            else if (text.equals("test2")) {
-            //                switch (player.gender) {
-            //                    case 0 -> {
-            //                        SkillService.gI().learSkillSpecial(player, Skill.PHAN_THAN, 6);
-            //                    }
-            //                    case 2 -> {
-            //                        SkillService.gI().learSkillSpecial(player, Skill.PHAN_THAN, 6);
-            //                    }
-            //                    default -> {
-            //                        SkillService.gI().learSkillSpecial(player, Skill.PHAN_THAN, 6);
-            //                    }
-            //                }
-            //                return true;
-            //            } 
-            else if (text.equals("dragon")) {
+            else if (text.equals("test")) {
+                switch (player.gender) {
+                    case 0 ->
+                        SkillService.gI().learSkillSpecial(player, Skill.SUPER_KAME, 1);
+                    case 2 ->
+                        SkillService.gI().learSkillSpecial(player, Skill.LIEN_HOAN_CHUONG, 1);
+                    default ->
+                        SkillService.gI().learSkillSpecial(player, Skill.MA_PHONG_BA, 1);
+                }
+                return true;
+            } else if (text.equals("test2")) {
+                switch (player.gender) {
+                    case 0 -> {
+                        SkillService.gI().learSkillSpecial(player, Skill.PHAN_THAN, 6);
+                    }
+                    case 2 -> {
+                        SkillService.gI().learSkillSpecial(player, Skill.PHAN_THAN, 6);
+                    }
+                    default -> {
+                        SkillService.gI().learSkillSpecial(player, Skill.PHAN_THAN, 6);
+                    }
+                }
+                return true;
+            } else if (text.equals("dragon")) {
                 ShenronEvent shenron = new ShenronEvent();
                 shenron.setPlayer(player);
                 ShenronEventManager.gI().add(shenron);
@@ -274,7 +273,7 @@ public class Command {
                 player.gender = idGender;
                 return true;
             }
-            if (text.startsWith("i")) {
+            if (text.startsWith("u")) {
                 String[] parts = text.split(" ");
                 if (parts.length >= 2) {
                     short id = Short.parseShort(parts[1]);
@@ -298,7 +297,7 @@ public class Command {
                     return true;
                 }
             }
-            if (text.startsWith("i")) {
+            if (text.startsWith("u")) {
                 String[] parts = text.split(" ");
                 if (parts.length >= 3) {
                     short id = Short.parseShort(parts[1]);
