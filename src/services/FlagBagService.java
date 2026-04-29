@@ -8,6 +8,7 @@ package services;
 
 import models.Template.FlagBag;
 import java.util.List;
+import item.Item;
 import player.Player;
 import server.Manager;
 import network.Message;
@@ -17,6 +18,8 @@ public class FlagBagService {
 
     private final List<FlagBag> flagClan = new ArrayList<>();
     private static FlagBagService i;
+    private static final int[] FLAG_BAG_EFFECT_COLLISION_IDS = {172, 218, 219, 220, 221, 222, 223, 224, 225, 228};
+    private static final int[] FLAG_BAG_CLIENT_ALIAS_IDS = {118, 119, 120, 121, 122, 123, 124, 125};
 
     public static FlagBagService gI() {
         if (i == null) {
@@ -26,12 +29,13 @@ public class FlagBagService {
     }
 
     public void sendIconFlagChoose(Player player, int id) {
-        FlagBag fb = getFlagBag(id);
+        int clientId = toUnsignedByteId(id);
+        FlagBag fb = getFlagBag(toServerFlagBagId(clientId));
         if (fb != null) {
             Message msg;
             try {
                 msg = new Message(-62);
-                msg.writer().writeByte(fb.id);
+                msg.writer().writeByte(toClientFlagBagId(fb.id));
                 msg.writer().writeByte(fb.iconEffect.length + 1);
                 msg.writer().writeShort(fb.iconId);
                 for (Short iconId : fb.iconEffect) {
@@ -45,12 +49,13 @@ public class FlagBagService {
     }
 
     public void sendIconEffectFlag(Player player, int id) {
-        FlagBag fb = getFlagBag(id);
+        int clientId = toUnsignedByteId(id);
+        FlagBag fb = getFlagBag(toServerFlagBagId(clientId));
         if (fb != null) {
             Message msg;
             try {
                 msg = new Message(-63);
-                msg.writer().writeByte(fb.id);
+                msg.writer().writeByte(toClientFlagBagId(fb.id));
                 msg.writer().writeByte(fb.iconEffect.length);
                 for (Short iconId : fb.iconEffect) {
                     msg.writer().writeShort(iconId);
@@ -88,6 +93,103 @@ public class FlagBagService {
             }
         }
         return null;
+    }
+
+    public int toClientFlagBagId(int id) {
+        int aliasId = getAliasIdForRawFlagBagId(id);
+        if (aliasId != -1) {
+            return aliasId;
+        }
+        return id;
+    }
+
+    public int toServerFlagBagId(int id) {
+        for (int rawId : FLAG_BAG_EFFECT_COLLISION_IDS) {
+            int aliasId = getAliasIdForRawFlagBagId(rawId);
+            if (aliasId == id) {
+                return rawId;
+            }
+        }
+        return id;
+    }
+
+    public boolean isClientAlias(int rawId, int clientId) {
+        return rawId != clientId;
+    }
+
+    private int toUnsignedByteId(int id) {
+        return id & 0xFF;
+    }
+
+    public short resolveEquippedFlagBagId(Item item) {
+        if (item == null || !item.isNotNullItem() || item.template == null || item.template.type != 11) {
+            return -1;
+        }
+        int rawId = item.template.part;
+        FlagBag byPart = rawId >= 0 ? getFlagBag(rawId) : null;
+        if (byPart != null && byPart.iconId == item.template.iconID) {
+            return (short) rawId;
+        }
+        if (item.template.iconID > 0) {
+            FlagBag byIcon = getFlagBagByIconId(item.template.iconID);
+            if (byIcon != null) {
+                return (short) byIcon.id;
+            }
+        }
+        if (rawId >= 0 && getFlagBag(rawId) != null) {
+            return (short) rawId;
+        }
+        return -1;
+    }
+
+    private FlagBag getFlagBagByIconId(short iconId) {
+        for (FlagBag fb : Manager.FLAGS_BAGS) {
+            if (fb.iconId == iconId) {
+                return fb;
+            }
+        }
+        return null;
+    }
+
+    private int getAliasIdForRawFlagBagId(int rawId) {
+        int collisionIndex = getCollisionIndex(rawId);
+        if (collisionIndex < 0 || getFlagBag(rawId) == null) {
+            return -1;
+        }
+        int aliasIndex = 0;
+        for (int i = 0; i < FLAG_BAG_EFFECT_COLLISION_IDS.length; i++) {
+            int collisionRawId = FLAG_BAG_EFFECT_COLLISION_IDS[i];
+            if (getFlagBag(collisionRawId) == null) {
+                continue;
+            }
+            int aliasId = getAvailableAliasId(aliasIndex++);
+            if (i == collisionIndex) {
+                return aliasId;
+            }
+        }
+        return -1;
+    }
+
+    private int getCollisionIndex(int rawId) {
+        for (int i = 0; i < FLAG_BAG_EFFECT_COLLISION_IDS.length; i++) {
+            if (FLAG_BAG_EFFECT_COLLISION_IDS[i] == rawId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int getAvailableAliasId(int aliasIndex) {
+        int skipped = 0;
+        for (int aliasId : FLAG_BAG_CLIENT_ALIAS_IDS) {
+            if (getFlagBag(aliasId) != null) {
+                continue;
+            }
+            if (skipped++ == aliasIndex) {
+                return aliasId;
+            }
+        }
+        return -1;
     }
 
     public List<FlagBag> getFlagsForChooseClan() {

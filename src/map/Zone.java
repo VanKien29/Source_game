@@ -27,6 +27,7 @@ import services.PlayerService;
 import services.Service;
 import services.TaskService;
 import services.InventoryService;
+import services.FlagBagService;
 import utils.FileIO;
 import utils.Logger;
 import utils.Util;
@@ -679,6 +680,7 @@ public class Zone {
                         break;
                 }
             }
+            flagbag = FlagBagService.gI().toClientFlagBagId(flagbag);
             msg.writer().writeByte(flagbag); // bag
             msg.writer().writeByte(-1);
             msg.writer().writeShort(plInfo.location.x);

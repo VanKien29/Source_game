@@ -183,7 +183,7 @@ public class ChatGlobalService implements Runnable {
             this.head = player.getHead();
             this.body = player.getBody();
             this.leg = player.getLeg();
-            this.bag = player.getFlagBag();
+            this.bag = (short) FlagBagService.gI().toClientFlagBagId(player.getFlagBag());
             this.text = text;
             transformText(this);
         }

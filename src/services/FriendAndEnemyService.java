@@ -100,7 +100,7 @@ public class FriendAndEnemyService {
                     f.head = pl.getHead();
                     f.body = pl.getBody();
                     f.leg = pl.getLeg();
-                    f.bag = (byte) pl.getFlagBag();
+                    f.bag = (byte) FlagBagService.gI().toClientFlagBagId(pl.getFlagBag());
                 } catch (Exception e) {
                 }
                 f.online = true;
@@ -119,7 +119,7 @@ public class FriendAndEnemyService {
                     e.head = pl.getHead();
                     e.body = pl.getBody();
                     e.leg = pl.getLeg();
-                    e.bag = (byte) pl.getFlagBag();
+                    e.bag = (byte) FlagBagService.gI().toClientFlagBagId(pl.getFlagBag());
                 } catch (Exception ex) {
                 }
                 e.online = true;
@@ -258,7 +258,7 @@ public class FriendAndEnemyService {
             friend.head = pl.getHead();
             friend.body = pl.getBody();
             friend.leg = pl.getLeg();
-            friend.bag = (byte) pl.getFlagBag();
+            friend.bag = (byte) FlagBagService.gI().toClientFlagBagId(pl.getFlagBag());
             player.friends.add(friend);
             Service.gI().sendThongBao(player, "Kết bạn thành công");
             Service.gI().chatPrivate(player, pl, player.name + " vừa mới kết bạn với " + pl.name);
@@ -313,7 +313,7 @@ public class FriendAndEnemyService {
             e.head = enemy.getHead();
             e.body = enemy.getBody();
             e.leg = enemy.getLeg();
-            e.bag = (byte) enemy.getFlagBag();
+            e.bag = (byte) FlagBagService.gI().toClientFlagBagId(enemy.getFlagBag());
             player.enemies.add(e);
         }
     }
