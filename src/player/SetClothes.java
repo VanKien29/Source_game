@@ -9,6 +9,12 @@ import item.Item;
 
 public class SetClothes {
 
+    public static final int OPTION_SKH_LEVEL_START = 256;
+    public static final int OPTION_SKH_LEVEL_END = 261;
+    public static final int OPTION_SKH_FULL_SET_BONUS = 262;
+    private static final int[] SKH_LEVEL_EFFECT_PERCENT = {25, 50, 75, 100, 125, 150};
+    private static final int[] SKH_LEVEL_FULL_SET_PERCENT = {0, 1, 3, 5, 8, 12};
+
     private Player player;
 
     public SetClothes(Player player) {
@@ -34,6 +40,7 @@ public class SetClothes {
     public byte cadicM;
     
     public byte hdpe;
+    public byte skhFullSetLevel;
 
     public byte worldcup;
     public byte setDHD;
@@ -48,6 +55,7 @@ public class SetClothes {
         setDefault();
         setupSKT();
         setupSKHNew();
+        setupSKHLevel();
         this.godClothes = true;
         for (int i = 0; i < 5; i++) {
             Item item = this.player.inventory.itemsBody.get(i);
@@ -228,6 +236,117 @@ public class SetClothes {
         }
     }
 
+    private void setupSKHLevel() {
+        int[] count = new int[13];
+        int[] minLevel = new int[13];
+        for (int i = 0; i < minLevel.length; i++) {
+            minLevel[i] = 5;
+        }
+        for (int i = 0; i < 5; i++) {
+            Item item = this.player.inventory.itemsBody.get(i);
+            if (!item.isNotNullItem()) {
+                break;
+            }
+            int setIndex = -1;
+            for (Item.ItemOption io : item.itemOptions) {
+                setIndex = getOldSKHSetIndex(io.optionTemplate.id);
+                if (setIndex >= 0) {
+                    break;
+                }
+            }
+            if (setIndex >= 0) {
+                int level = getSKHLevel(item);
+                count[setIndex]++;
+                if (level < minLevel[setIndex]) {
+                    minLevel[setIndex] = level;
+                }
+            }
+        }
+        for (int i = 0; i < count.length; i++) {
+            if (count[i] == 5) {
+                this.skhFullSetLevel = (byte) minLevel[i];
+                return;
+            }
+        }
+    }
+
+    public static int getOldSKHSetIndex(int optionId) {
+        switch (optionId) {
+            case 129:
+            case 141:
+                return 0;
+            case 127:
+            case 139:
+                return 1;
+            case 128:
+            case 140:
+                return 2;
+            case 131:
+            case 143:
+                return 3;
+            case 132:
+            case 144:
+                return 4;
+            case 130:
+            case 142:
+                return 5;
+            case 135:
+            case 138:
+                return 6;
+            case 133:
+            case 136:
+                return 7;
+            case 134:
+            case 137:
+                return 8;
+            case 250:
+            case 253:
+                return 9;
+            case 251:
+            case 254:
+                return 10;
+            case 252:
+            case 255:
+                return 11;
+            case 179:
+            case 180:
+                return 12;
+            default:
+                return -1;
+        }
+    }
+
+    public static boolean isOldSKHOption(int optionId) {
+        return (optionId >= 127 && optionId <= 144)
+                || (optionId >= 250 && optionId <= 255)
+                || optionId == 179 || optionId == 180;
+    }
+
+    public static int getSKHLevel(Item item) {
+        if (item == null || !item.isNotNullItem()) {
+            return 0;
+        }
+        for (Item.ItemOption io : item.itemOptions) {
+            if (io != null && io.optionTemplate != null
+                    && io.optionTemplate.id >= OPTION_SKH_LEVEL_START
+                    && io.optionTemplate.id <= OPTION_SKH_LEVEL_END) {
+                if (io.optionTemplate.id == OPTION_SKH_LEVEL_START && io.param > 0) {
+                    return Math.min(io.param, OPTION_SKH_LEVEL_END - OPTION_SKH_LEVEL_START);
+                }
+                return io.optionTemplate.id - OPTION_SKH_LEVEL_START;
+            }
+        }
+        return 0;
+    }
+
+    public int getSKHLevelEffectPercent() {
+        return SKH_LEVEL_EFFECT_PERCENT[this.skhFullSetLevel];
+    }
+
+    public int getSKHFullSetBonusPercent() {
+        return SKH_LEVEL_FULL_SET_PERCENT[this.skhFullSetLevel];
+    }
+
     private void setDefault() {
         this.songoku = 0;
         this.thienXinHang = 0;
@@ -242,6 +361,7 @@ public class SetClothes {
         this.nappa = 0;
         this.hdpe = 0;
         this.giamSatThuong = 0;
+        this.skhFullSetLevel = 0;
 
         this.thanVuTruKaio = 0;
 

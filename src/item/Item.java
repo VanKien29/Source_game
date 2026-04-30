@@ -3,6 +3,7 @@ package item;
 import models.Template;
 import models.Template.ItemTemplate;
 import services.ItemService;
+import player.SetClothes;
 import utils.Util;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,7 +158,7 @@ public class Item {
 
     public boolean isSKH() {
         for (ItemOption itemOption : itemOptions) {
-            if (itemOption.optionTemplate.id >= 127 && itemOption.optionTemplate.id <= 135) {
+            if (SetClothes.isOldSKHOption(itemOption.optionTemplate.id)) {
                 return true;
             }
         }

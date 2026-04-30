@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.BlackBallWar.BlackBallWarService;
+import models.Combine.manifest.NangCapLevelKichHoat;
 
 public class InventoryService {
 
@@ -689,6 +690,7 @@ public class InventoryService {
                 if (!item.isNotNullItem()) {
                     continue;
                 }
+                NangCapLevelKichHoat.ensureLevelZero(item);
                 msg.writer().writeShort(item.template.id);
                 msg.writer().writeInt(item.quantity);
                 msg.writer().writeUTF(item.getInfo());
@@ -709,7 +711,7 @@ public class InventoryService {
                         msg.writer().writeInt(opId);
                         msg.writer().writeInt(param);
                     } else {
-                        msg.writer().writeInt(item.itemOptions.get(j).optionTemplate.id);
+                        msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(player, item, item.itemOptions.get(j)));
                         msg.writer().writeInt(item.itemOptions.get(j).param);
                     }
                 }
@@ -750,6 +752,7 @@ public class InventoryService {
                     msg.writer().writeShort(-1);
                     continue;
                 }
+                NangCapLevelKichHoat.ensureLevelZero(item);
 
                 msg.writer().writeShort(item.template.id);
                 msg.writer().writeInt(item.quantity);
@@ -773,7 +776,7 @@ public class InventoryService {
                         msg.writer().writeInt(opId);
                         msg.writer().writeInt(param);
                     } else {
-                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(player, item, itemOption));
                         msg.writer().writeInt(itemOption.param);
                     }
                 }

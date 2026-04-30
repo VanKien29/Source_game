@@ -654,12 +654,13 @@ public final class Manager {
             Logger.success("Successfully loaded map item template (" + ITEM_TEMPLATES.size() + ")\n");
 
             // load item option template
-            ps = con.prepareStatement("select id, name from item_option_template");
+            ps = con.prepareStatement("select id, name, type from item_option_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 ItemOptionTemplate optionTemp = new ItemOptionTemplate();
                 optionTemp.id = rs.getInt("id");
                 optionTemp.name = rs.getString("name");
+                optionTemp.type = rs.getInt("type");
                 ITEM_OPTION_TEMPLATES.add(optionTemp);
             }
             Logger.success("Successfully loaded map item option template (" + ITEM_OPTION_TEMPLATES.size() + ")\n");

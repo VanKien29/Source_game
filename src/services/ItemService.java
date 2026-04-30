@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import map.Zone;
 import models.Combine.CombineService;
+import models.Combine.manifest.NangCapLevelKichHoat;
 import shop.Shop;
 import shop.TabShop;
 
@@ -2053,6 +2054,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(127, 0));
             ao.itemOptions.add(new Item.ItemOption(139, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2074,6 +2076,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(128, 0));
             ao.itemOptions.add(new Item.ItemOption(140, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2095,6 +2098,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(129, 0));
             ao.itemOptions.add(new Item.ItemOption(141, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2116,6 +2120,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(130, 0));
             ao.itemOptions.add(new Item.ItemOption(142, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2137,6 +2142,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(131, 0));
             ao.itemOptions.add(new Item.ItemOption(143, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 4) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2158,6 +2164,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(132, 0));
             ao.itemOptions.add(new Item.ItemOption(144, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2179,6 +2186,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(251, 0));
             ao.itemOptions.add(new Item.ItemOption(254, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2200,6 +2208,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(133, 0));
             ao.itemOptions.add(new Item.ItemOption(136, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2221,6 +2230,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(134, 0));
             ao.itemOptions.add(new Item.ItemOption(137, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -2242,6 +2252,7 @@ public class ItemService {
             Item ao = ItemService.gI().otpkh((short) doskh[ramdom]);
             ao.itemOptions.add(new Item.ItemOption(135, 0));
             ao.itemOptions.add(new Item.ItemOption(138, 0));
+            NangCapLevelKichHoat.ensureLevelZero(ao);
             ao.itemOptions.add(new Item.ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);

@@ -175,6 +175,7 @@ public class NangCapKichHoat {
                     newItem.itemOptions.add(new Item.ItemOption(optionId, 0));
                 }
             }
+            NangCapLevelKichHoat.ensureLevelZero(newItem);
             InventoryService.gI().addItemBag(player, newItem);
             InventoryService.gI().subQuantityItemsBag(player, trangbiHuyDiet, 1);
             InventoryService.gI().subQuantityItemsBag(player, daKichHoat, 1);
