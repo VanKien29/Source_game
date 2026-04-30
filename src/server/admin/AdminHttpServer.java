@@ -49,6 +49,9 @@ public class AdminHttpServer {
             server.createContext("/internal/runtime/bosses/update", this::handleBossUpdate);
             server.createContext("/internal/runtime/bosses/configs", this::handleBossConfigs);
             server.createContext("/internal/runtime/map-mobs", this::handleMapMobs);
+            server.createContext("/internal/runtime/buffs/mail", this::handleBuffMail);
+            server.createContext("/internal/runtime/buffs/account", this::handleBuffAccount);
+            server.createContext("/internal/runtime/player/inventory", this::handlePlayerInventory);
             server.setExecutor(Executors.newFixedThreadPool(2));
             server.start();
             System.out.println("[AdminRuntime] Listening on http://" + config.host + ":" + config.port);
@@ -59,20 +62,20 @@ public class AdminHttpServer {
     }
 
     private void handleHealth(HttpExchange exchange) throws IOException {
-        handle(exchange, "GET", () -> AdminResponse.ok("RUNTIME_OK", "Game runtime API dang hoat dong"));
+        handle(exchange, "GET", () -> AdminResponse.ok("RUNTIME_OK", "Game runtime API đang hoạt động"));
     }
 
     private void handleReloadShop(HttpExchange exchange) throws IOException {
         handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("shop.reload", config.commandTimeoutMillis, () -> {
             boolean ok = Manager.gI().updateShop();
             return ok
-                    ? AdminResponse.ok("SHOP_RELOADED", "Reload shop thanh cong")
-                    : AdminResponse.fail(500, "SHOP_RELOAD_FAILED", "Reload shop that bai");
+                    ? AdminResponse.ok("SHOP_RELOADED", "Reload shop thành công")
+                    : AdminResponse.fail(500, "SHOP_RELOAD_FAILED", "Reload shop thất bại");
         }));
     }
 
     private void handleBossesList(HttpExchange exchange) throws IOException {
-        handle(exchange, "GET", () -> AdminResponse.ok("BOSSES_LISTED", "Lay danh sach boss thanh cong", BossManager.runtimeBossesJson()));
+        handle(exchange, "GET", () -> AdminResponse.ok("BOSSES_LISTED", "Lấy danh sách boss thành công", BossManager.runtimeBossesJson()));
     }
 
     private void handleBossCreate(HttpExchange exchange) throws IOException {
@@ -81,12 +84,12 @@ public class AdminHttpServer {
             int bossId = intValue(body.get("boss_id"), 0);
             int count = intValue(body.get("count"), 1);
             if (bossId == 0) {
-                return AdminResponse.fail(422, "BOSS_ID_REQUIRED", "Thieu boss_id");
+                return AdminResponse.fail(422, "BOSS_ID_REQUIRED", "Thiếu boss_id");
             }
             String dataJson = body.containsKey("name") || body.containsKey("outfit") || body.containsKey("group_members") || body.containsKey("custom")
                     ? BossManager.runtimeCreateCustomBoss(body)
                     : BossManager.runtimeCreateBoss(bossId, count);
-            return AdminResponse.ok("BOSS_CREATED", "Tao boss runtime thanh cong", dataJson);
+            return AdminResponse.ok("BOSS_CREATED", "Tạo boss runtime thành công", dataJson);
         }));
     }
 
@@ -105,8 +108,8 @@ public class AdminHttpServer {
                 default -> false;
             };
             return ok
-                    ? AdminResponse.ok("BOSS_ACTION_OK", "Thuc hien lenh boss thanh cong")
-                    : AdminResponse.fail(404, "BOSS_ACTION_FAILED", "Khong tim thay boss hoac action khong hop le");
+                    ? AdminResponse.ok("BOSS_ACTION_OK", "Thực hiện lệnh boss thành công")
+                    : AdminResponse.fail(404, "BOSS_ACTION_FAILED", "Không tìm thấy boss hoặc action không hợp lệ");
         }));
     }
 
@@ -115,15 +118,15 @@ public class AdminHttpServer {
             JSONObject body = parseBody(readBodySafely(exchange));
             boolean ok = BossManager.runtimeUpdateBoss(body);
             return ok
-                    ? AdminResponse.ok("BOSS_UPDATED", "Cap nhat boss runtime thanh cong")
-                    : AdminResponse.fail(404, "BOSS_UPDATE_FAILED", "Khong tim thay boss");
+                    ? AdminResponse.ok("BOSS_UPDATED", "Cập nhật boss runtime thành công")
+                    : AdminResponse.fail(404, "BOSS_UPDATE_FAILED", "Không tìm thấy boss");
         }));
     }
 
     private void handleBossConfigs(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         if ("GET".equalsIgnoreCase(method)) {
-            handle(exchange, "GET", () -> AdminResponse.ok("BOSS_CONFIGS_LISTED", "Lay cau hinh boss thanh cong", BossManager.runtimeConfigsJson()));
+            handle(exchange, "GET", () -> AdminResponse.ok("BOSS_CONFIGS_LISTED", "Lấy cấu hình boss thành công", BossManager.runtimeConfigsJson()));
             return;
         }
         handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("boss.config.save", config.commandTimeoutMillis, () -> {
@@ -132,7 +135,7 @@ public class AdminHttpServer {
             JSONObject result = parseBody(dataJson);
             boolean saved = Boolean.parseBoolean(String.valueOf(result.get("saved")));
             return saved
-                    ? AdminResponse.ok("BOSS_CONFIG_SAVED", "Luu cau hinh boss thanh cong", dataJson)
+                    ? AdminResponse.ok("BOSS_CONFIG_SAVED", "Lưu cấu hình boss thành công", dataJson)
                     : AdminResponse.fail(422, "BOSS_CONFIG_SAVE_FAILED", stringValue(result.get("message")));
         }));
     }
@@ -140,7 +143,7 @@ public class AdminHttpServer {
     private void handleMapMobs(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         if ("GET".equalsIgnoreCase(method)) {
-            handle(exchange, "GET", () -> AdminResponse.ok("MAP_MOBS_LISTED", "Lay danh sach map mob thanh cong", Manager.runtimeMapMobsJson()));
+            handle(exchange, "GET", () -> AdminResponse.ok("MAP_MOBS_LISTED", "Lấy danh sách map mob thành công", Manager.runtimeMapMobsJson()));
             return;
         }
         handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("map_mob.save", config.commandTimeoutMillis, () -> {
@@ -149,8 +152,44 @@ public class AdminHttpServer {
             JSONObject result = parseBody(dataJson);
             boolean saved = Boolean.parseBoolean(String.valueOf(result.get("saved")));
             return saved
-                    ? AdminResponse.ok("MAP_MOBS_SAVED", "Luu va reload mob thanh cong", dataJson)
+                    ? AdminResponse.ok("MAP_MOBS_SAVED", "Lưu và reload mob thành công", dataJson)
                     : AdminResponse.fail(422, "MAP_MOBS_SAVE_FAILED", stringValue(result.get("message")));
+        }));
+    }
+
+    private void handleBuffMail(HttpExchange exchange) throws IOException {
+        handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("buff.mail", config.commandTimeoutMillis, () -> {
+            JSONObject body = parseBody(readBodySafely(exchange));
+            String dataJson = AdminBuffService.buffMail(body);
+            JSONObject result = parseBody(dataJson);
+            boolean saved = Boolean.parseBoolean(String.valueOf(result.get("ok")));
+            return saved
+                    ? AdminResponse.ok("BUFF_MAIL_OK", stringValue(result.get("message")), dataJson)
+                    : AdminResponse.fail(422, stringValue(result.get("code")), stringValue(result.get("message")));
+        }));
+    }
+
+    private void handleBuffAccount(HttpExchange exchange) throws IOException {
+        handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("buff.account", config.commandTimeoutMillis, () -> {
+            JSONObject body = parseBody(readBodySafely(exchange));
+            String dataJson = AdminBuffService.buffAccount(body);
+            JSONObject result = parseBody(dataJson);
+            boolean saved = Boolean.parseBoolean(String.valueOf(result.get("ok")));
+            return saved
+                    ? AdminResponse.ok("BUFF_ACCOUNT_OK", stringValue(result.get("message")), dataJson)
+                    : AdminResponse.fail(422, stringValue(result.get("code")), stringValue(result.get("message")));
+        }));
+    }
+
+    private void handlePlayerInventory(HttpExchange exchange) throws IOException {
+        handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("player.inventory", config.commandTimeoutMillis, () -> {
+            JSONObject body = parseBody(readBodySafely(exchange));
+            String dataJson = AdminPlayerService.syncInventory(body);
+            JSONObject result = parseBody(dataJson);
+            boolean saved = Boolean.parseBoolean(String.valueOf(result.get("ok")));
+            return saved
+                    ? AdminResponse.ok("PLAYER_INVENTORY_OK", stringValue(result.get("message")), dataJson)
+                    : AdminResponse.fail(422, stringValue(result.get("code")), stringValue(result.get("message")));
         }));
     }
 

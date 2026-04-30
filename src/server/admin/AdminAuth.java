@@ -21,7 +21,7 @@ public class AdminAuth {
     public AdminResponse verify(HttpExchange exchange, String body) {
         String ip = exchange.getRemoteAddress().getAddress().getHostAddress();
         if (!config.allowedIps.contains(ip)) {
-            return AdminResponse.fail(403, "IP_DENIED", "IP khong duoc phep goi runtime API");
+            return AdminResponse.fail(403, "IP_DENIED", "IP không được phép gọi runtime API");
         }
 
         String key = header(exchange, "X-Game-Admin-Key");
@@ -30,10 +30,10 @@ public class AdminAuth {
         String signature = header(exchange, "X-Game-Admin-Signature");
 
         if (!constantEquals(config.key, key)) {
-            return AdminResponse.fail(401, "BAD_KEY", "Runtime key khong hop le");
+            return AdminResponse.fail(401, "BAD_KEY", "Runtime key không hợp lệ");
         }
         if (timestamp == null || nonce == null || signature == null || nonce.length() < 8 || nonce.length() > 128) {
-            return AdminResponse.fail(401, "MISSING_AUTH", "Thieu thong tin xac thuc runtime");
+            return AdminResponse.fail(401, "MISSING_AUTH", "Thiếu thông tin xác thực runtime");
         }
 
         long ts;
@@ -43,17 +43,17 @@ public class AdminAuth {
                 ts *= 1000L;
             }
         } catch (Exception e) {
-            return AdminResponse.fail(401, "BAD_TIMESTAMP", "Timestamp khong hop le");
+            return AdminResponse.fail(401, "BAD_TIMESTAMP", "Timestamp không hợp lệ");
         }
 
         long now = System.currentTimeMillis();
         cleanupNonces(now);
         if (Math.abs(now - ts) > config.allowedSkewMillis) {
-            return AdminResponse.fail(401, "STALE_REQUEST", "Request runtime da het hieu luc");
+            return AdminResponse.fail(401, "STALE_REQUEST", "Request runtime đã hết hiệu lực");
         }
         Long previous = usedNonces.putIfAbsent(nonce, now);
         if (previous != null) {
-            return AdminResponse.fail(409, "REPLAY_REQUEST", "Request runtime bi lap lai");
+            return AdminResponse.fail(409, "REPLAY_REQUEST", "Request runtime bị lặp lại");
         }
 
         String canonical = exchange.getRequestMethod().toUpperCase()
@@ -63,7 +63,7 @@ public class AdminAuth {
                 + "\n" + body;
         String expected = hmacSha256Hex(config.secret, canonical);
         if (!constantEquals(expected, signature)) {
-            return AdminResponse.fail(401, "BAD_SIGNATURE", "Chu ky runtime khong hop le");
+            return AdminResponse.fail(401, "BAD_SIGNATURE", "Chu kỳ runtime không hợp lệ");
         }
         return null;
     }

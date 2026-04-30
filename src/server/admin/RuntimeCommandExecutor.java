@@ -29,10 +29,10 @@ public class RuntimeCommandExecutor {
             return future.get(timeoutMillis, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            return AdminResponse.fail(504, "COMMAND_TIMEOUT", "Lenh runtime qua thoi gian cho phep: " + commandName);
+            return AdminResponse.fail(504, "COMMAND_TIMEOUT", "Lệnh runtime quá thời gian cho phép: " + commandName);
         } catch (Exception e) {
             e.printStackTrace();
-            return AdminResponse.fail(500, "COMMAND_FAILED", "Lenh runtime that bai: " + commandName);
+            return AdminResponse.fail(500, "COMMAND_FAILED", "Lệnh runtime thất bại: " + commandName);
         }
     }
 }
