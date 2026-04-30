@@ -218,6 +218,7 @@ public class NangCapKichHoatVip {
                     newItem.itemOptions.add(new Item.ItemOption(optionId, 0));
                 }
             }
+            NangCapLevelKichHoat.ensureLevelZero(newItem);
             InventoryService.gI().addItemBag(player, newItem);
             InventoryService.gI().subQuantityItemsBag(player, trangBiThienSu, 1);
             InventoryService.gI().subQuantityItemsBag(player, daKichHoatVip, 1);

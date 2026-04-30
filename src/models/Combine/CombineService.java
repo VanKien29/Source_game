@@ -20,6 +20,7 @@ import models.Combine.manifest.NangCapBongTai3;
 import models.Combine.manifest.NangCapChanMenh;
 import models.Combine.manifest.NangCapKichHoat;
 import models.Combine.manifest.NangCapKichHoatVip;
+import models.Combine.manifest.NangCapLevelKichHoat;
 import models.Combine.manifest.NangCapSachTuyetKy;
 import models.Combine.manifest.NangCapSaoPhaLe;
 import models.Combine.manifest.NangCapVatPham;
@@ -78,6 +79,7 @@ public class CombineService {
     public static final int NANG_CHI_SO_BONG_TAI = 517;
     public static final int NANG_CAP_KICH_HOAT = 518;
     public static final int NANG_CAP_KICH_HOAT_VIP = 519;
+    public static final int NANG_CAP_LEVEL_KICH_HOAT = 535;
     public static final int NANG_CAP_DO_TL = 530;
     public static final int NANG_CHI_SO_BONG_TAI3 = 531;
     public static final int NANG_CAP_BONG_TAI3 = 532;
@@ -171,6 +173,8 @@ public class CombineService {
                 NangCapKichHoat.showInfoCombine(player);
             case NANG_CAP_KICH_HOAT_VIP ->
                 NangCapKichHoatVip.showInfoCombine(player);
+            case NANG_CAP_LEVEL_KICH_HOAT ->
+                NangCapLevelKichHoat.showInfoCombine(player);
             case DOI_DO_THAN ->
                 DoiVeHDCongHoan.showInfoCombine(player);
             case DAP_DO_AO_HOA ->
@@ -251,6 +255,8 @@ public class CombineService {
                 NangCapKichHoat.startCombine(player);
             case NANG_CAP_KICH_HOAT_VIP ->
                 NangCapKichHoatVip.startCombine(player);
+            case NANG_CAP_LEVEL_KICH_HOAT ->
+                NangCapLevelKichHoat.startCombine(player);
             case DOI_DO_THAN ->
                 DoiVeHDCongHoan.startCombine(player);
             case DAP_DO_AO_HOA ->
@@ -558,6 +564,8 @@ public class CombineService {
                 "Ta sẽ phù phép\nchế tạo trang bị Huỷ Diệt\nthành trang bị Kích Hoạt";
             case NANG_CAP_KICH_HOAT_VIP ->
                 "Ta sẽ phù phép\nchế tạo trang bị Thiên Sứ\nthành trang bị Kích Hoạt Vip";
+            case NANG_CAP_LEVEL_KICH_HOAT ->
+                "Ta sẽ nâng cấp Level SKH cho con nhé";
             case NANG_CAP_DO_TL ->
                 "Ta sẽ phù phép\nchế tạo trang bị Thần Linh\nthành trang bị Hủy Diệt";
             case GIA_HAN_VAT_PHAM ->
@@ -641,6 +649,8 @@ public class CombineService {
                 "Vào hành trang\nChọn 1 trang bị Huỷ Diệt\nChọn 1 viên đá Kích Hoạt\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_KICH_HOAT_VIP ->
                 "Vào hành trang\nChọn 1 trang bị Thiên Sứ\nChọn 1 viên đá Kích Hoạt Vip\nSau đó chọn 'Nâng cấp'";
+            case NANG_CAP_LEVEL_KICH_HOAT ->
+                "Vào hành trang\nChọn 1 món SKH level 0\nChọn 1 Đá SKH thường hoặc vip\nCần thêm thỏi vàng và vàng\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_DO_TL ->
                 "Vào hành trang\nChọn 1 trang bị Thần Linh\nChọn 1 viên đá Kích Hoạt Vip\nSau đó chọn 'Nâng cấp'";
             case DAP_DO_AO_HOA ->

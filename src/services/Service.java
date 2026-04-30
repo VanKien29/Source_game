@@ -24,6 +24,7 @@ import java.util.List;
 import item.Item;
 import map.ItemMap;
 import mob.Mob;
+import models.Combine.manifest.NangCapLevelKichHoat;
 import player.Pet;
 import item.Item.ItemOption;
 import map.Zone;
@@ -738,6 +739,7 @@ public class Service {
                 if (!item.isNotNullItem()) {
                     msg.writer().writeShort(-1);
                 } else {
+                    NangCapLevelKichHoat.ensureLevelZero(item);
                     msg.writer().writeShort(item.template.id);
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
@@ -746,7 +748,7 @@ public class Service {
                     msg.writer().writeByte(itemOptions.size());
                     // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
-                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl, item, itemOption));
                         msg.writer().writeInt(itemOption.param);
                     }
                 }
@@ -761,6 +763,7 @@ public class Service {
                 if (!item.isNotNullItem()) {
                     msg.writer().writeShort(-1);
                 } else {
+                    NangCapLevelKichHoat.ensureLevelZero(item);
                     msg.writer().writeShort(item.template.id);
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
@@ -769,7 +772,7 @@ public class Service {
                     msg.writer().writeByte(itemOptions.size());
                     // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
-                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl, item, itemOption));
                         msg.writer().writeInt(itemOption.param);
                     }
                 }
@@ -784,6 +787,7 @@ public class Service {
                 if (!item.isNotNullItem()) {
                     msg.writer().writeShort(-1);
                 } else {
+                    NangCapLevelKichHoat.ensureLevelZero(item);
                     msg.writer().writeShort(item.template.id);
                     msg.writer().writeInt(item.quantity);
                     msg.writer().writeUTF(item.getInfo());
@@ -792,7 +796,7 @@ public class Service {
                     msg.writer().writeByte(itemOptions.size());
                     // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
-                        msg.writer().writeInt(itemOption.optionTemplate.id);
+                        msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl, item, itemOption));
                         msg.writer().writeInt(itemOption.param);
                     }
                 }
@@ -1641,6 +1645,7 @@ public class Service {
                     if (!item.isNotNullItem()) {
                         msg.writer().writeShort(-1);
                     } else {
+                        NangCapLevelKichHoat.ensureLevelZero(item);
                         msg.writer().writeShort(item.template.id);
                         msg.writer().writeInt(item.quantity);
                         msg.writer().writeUTF(item.getInfo());
@@ -1650,7 +1655,7 @@ public class Service {
                         msg.writer().writeByte(countOption);
                         // mở option item cho src
                         for (ItemOption iop : item.itemOptions) {
-                            msg.writer().writeInt(iop.optionTemplate.id);
+                            msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl.pet, item, iop));
                             msg.writer().writeInt(iop.param);
                         }
                     }

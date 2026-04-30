@@ -36,6 +36,7 @@ import utils.Util;
 import java.util.ArrayList;
 
 import models.Achievement.AchievementService;
+import models.Combine.manifest.NangCapLevelKichHoat;
 import models.Training.TrainingService;
 import npc.npc_manifest.TienCap;
 import server.ServerNotify;
@@ -973,6 +974,28 @@ public class Mob {
 //            it.options.add(new Item.ItemOption(30, 0));
 //            list.add(it);
 //        }
+
+        // Set kich hoat level 0
+        if (Util.isTrue(100, 100) && MapService.gI().isMapUpSKH(mapid)) {
+            int skhLevel = 0;
+            short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
+            ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
+            List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);
+            if (!ops.isEmpty()) {
+                it.options = new ArrayList<>(ops);
+            }
+
+            int[] opsrand = ItemService.gI().randOptionItemKichHoat(player.gender);
+            it.options.add(new Item.ItemOption(NangCapLevelKichHoat.OPTION_SKH_LEVEL_START + skhLevel, 0));
+            it.options.add(new Item.ItemOption(opsrand[0], 0));
+            it.options.add(new Item.ItemOption(opsrand[1], NangCapLevelKichHoat.getEffectOptionParam(opsrand[1], skhLevel)));
+            int fullSetPercent = NangCapLevelKichHoat.getFullSetPercent(skhLevel);
+            if (fullSetPercent > 0) {
+                it.options.add(new Item.ItemOption(NangCapLevelKichHoat.OPTION_SKH_FULL_SET_BONUS, fullSetPercent));
+            }
+            it.options.add(new Item.ItemOption(30, 0));
+            list.add(it);
+        }
 
         // Sao pha le
         if (Util.isTrue(1, 350) || (player.nPoint.isDoSPL && Util.isTrue(3, 400))) {

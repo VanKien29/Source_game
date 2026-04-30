@@ -127,7 +127,7 @@ public class BaHatMit extends Npc {
                                 case 1 ->
                                     this.createOtherMenu(player, ConstMenu.MENU_CHUYEN_HOA_SKH,
                                             "Ta sẽ nâng trang bị hủy diệt của người\nlên một tầm cao mới hoàn toàn khác",
-                                            "Nâng cấp\nSKH thường", "Nâng cấp\nSKH VIP", "Đập đồ\nẢo hóa", "Đập ấn\nTrang bị");
+                                            "Nâng cấp\nSKH thường", "Nâng cấp\nSKH VIP", "Nâng level\nSKH", "Đập đồ\nẢo hóa", "Đập ấn\nTrang bị");
                                 case 2 ->
                                     ChangeMapService.gI().changeMapNonSpaceship(player, 112,
                                             200 + Util.nextInt(-100, 100), 408);
@@ -157,10 +157,13 @@ public class BaHatMit extends Npc {
                                 case 1: // Nâng cấp skh vip
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_KICH_HOAT_VIP);
                                     break;
-                                case 2: // Đập đồ ảo hóa
+                                case 2:
+                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_LEVEL_KICH_HOAT);
+                                    break;
+                                case 3: // Đập đồ ảo hóa
                                     CombineService.gI().openTabCombine(player, CombineService.DAP_DO_AO_HOA);
                                     break;
-                                case 3:
+                                case 4:
                                     CombineService.gI().openTabCombine(player, CombineService.AN_TRANG_BI);
                                     break;// Name: HOANDZ
                             }
@@ -280,7 +283,7 @@ public class BaHatMit extends Npc {
                                     }
                                 }
 
-                                case CombineService.NANG_CAP_DO_TL, CombineService.NANG_CAP_KICH_HOAT_VIP, CombineService.NANG_CAP_KICH_HOAT, CombineService.NANG_CAP_SAO_PHA_LE, CombineService.DANH_BONG_SAO_PHA_LE, CombineService.CUONG_HOA_LO_SAO_PHA_LE, CombineService.TAO_DA_HEMATITE, CombineService.EP_SAO_TRANG_BI, CombineService.DAP_DO_AO_HOA, CombineService.PS_HOA_TRANG_BI, CombineService.TAY_PS_HOA_TRANG_BI, CombineService.SIEU_HOA, CombineService.AN_TRANG_BI, CombineService.TINH_THACH_HOA, CombineService.NANG_GIAP_LUYEN_TAP, CombineService.MO_KHOA_ITEM, CombineService.GIA_HAN_VAT_PHAM, CombineService.DOI_DO_THAN, CombineService.TAY_GIAP_LUYEN_TAP, CombineService.NANG_CAP_CHAN_MENH -> {
+                                case CombineService.NANG_CAP_DO_TL, CombineService.NANG_CAP_KICH_HOAT_VIP, CombineService.NANG_CAP_KICH_HOAT, CombineService.NANG_CAP_LEVEL_KICH_HOAT, CombineService.NANG_CAP_SAO_PHA_LE, CombineService.DANH_BONG_SAO_PHA_LE, CombineService.CUONG_HOA_LO_SAO_PHA_LE, CombineService.TAO_DA_HEMATITE, CombineService.EP_SAO_TRANG_BI, CombineService.DAP_DO_AO_HOA, CombineService.PS_HOA_TRANG_BI, CombineService.TAY_PS_HOA_TRANG_BI, CombineService.SIEU_HOA, CombineService.AN_TRANG_BI, CombineService.TINH_THACH_HOA, CombineService.NANG_GIAP_LUYEN_TAP, CombineService.MO_KHOA_ITEM, CombineService.GIA_HAN_VAT_PHAM, CombineService.DOI_DO_THAN, CombineService.TAY_GIAP_LUYEN_TAP, CombineService.NANG_CAP_CHAN_MENH -> {
                                     switch (select) {
                                         case 0:
                                             CombineService.gI().startCombine(player);
