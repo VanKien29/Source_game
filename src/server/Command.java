@@ -22,6 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import minigame.LuckyNumber.LuckyNumber;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.GiftCode.GiftCodeManager;
 import models.ShenronEvent.ShenronEvent;
 import models.ShenronEvent.ShenronEventManager;
@@ -169,6 +170,9 @@ public class Command {
                 return true;
             } else if (text.equals("topxu")) {
                 Service.gI().sendThongBaoOK(player, TopService.getTopQuocVuong());
+                return true;
+            } else if (text.equals("thangthu") || text.equals("cnwthangthu")) {
+                ClanNamekWarService.gI().forceDefenderWin(player);
                 return true;
             } else if (text.equals("ad")) { // menu admin kiendeptrai
                 Input.gI().createFormAdmin(player);//đây là lệnh admin ( ctrl click chuột phải vào createFormAdmin

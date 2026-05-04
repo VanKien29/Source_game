@@ -37,6 +37,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.DragonNamecWar.TranhNgoc;
 import models.DragonNamecWar.TranhNgocService;
 import npc.NonInteractiveNPC;
@@ -442,6 +443,9 @@ public class Zone {
     public void pickItem(Player player, int itemMapId) {
         ItemMap itemMap = getItemMapByItemMapId(itemMapId);
         if (itemMap != null && itemMap.itemTemplate != null) {
+            if (ClanNamekWarService.gI().tryPickDragonEnergy(player, itemMap)) {
+                return;
+            }
             if (itemMap.itemTemplate.type == 22) {
                 return;
             }

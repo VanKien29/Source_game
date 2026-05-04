@@ -5,6 +5,7 @@ import java.util.Random;
 import jdbc.daos.PlayerDAO;
 import map.Map;
 import map.Zone;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.Template.SkillTemplate;
 import player.Player;
 import server.Manager;
@@ -33,6 +34,10 @@ public class Bot extends Player {
     public ShopBot shop;
     public Sanb boss;
     public Mobb mo1;
+    public long clanWarNextMoveAt;
+    public long clanWarNextSkillAt;
+    public long clanWarNextRouteAt;
+    public int clanWarRouteStep;
 
     private Player plAttack;
 
@@ -50,6 +55,7 @@ public class Bot extends Player {
         this.type = type;
         this.isBot = true;
         this.flag_ = flag;
+        this.head = head;
 
     }
 
@@ -128,33 +134,33 @@ public class Bot extends Player {
 
     @Override
     public short getHead() {
-        if (effectSkill.isMonkey) {
-            return (short) ConstPlayer.HEADMONKEY[effectSkill.levelMonkey - 1];
-        } else {
-            return this.head_;
+        if (this.type == 99) {
+            return super.getHead();
         }
+        return effectSkill.isMonkey ? (short) ConstPlayer.HEADMONKEY[effectSkill.levelMonkey - 1] : this.head_;
     }
 
     @Override
     public short getBody() {
-        if (effectSkill.isMonkey) {
-            return 193;
-        } else {
-            return this.body_;
+        if (this.type == 99) {
+            return super.getBody();
         }
+        return effectSkill.isMonkey ? 193 : this.body_;
     }
 
     @Override
     public short getLeg() {
-        if (effectSkill.isMonkey) {
-            return 194;
-        } else {
-            return this.leg_;
+        if (this.type == 99) {
+            return super.getLeg();
         }
+        return effectSkill.isMonkey ? 194 : this.leg_;
     }
 
     @Override
     public short getFlagBag() {
+        if (this.type == 99) {
+            return super.getFlagBag();
+        }
         return this.flag_;
     }
 
@@ -173,6 +179,9 @@ public class Bot extends Player {
                 break;
             case 2:
                 this.boss.update();
+                break;
+            case 99:
+                ClanNamekWarService.gI().updateTestBot(this);
                 break;
         }
         if (this.isDie()) {

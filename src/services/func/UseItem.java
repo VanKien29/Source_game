@@ -2227,6 +2227,11 @@ public class UseItem {
 //        }
 //    }
     public void choseMapCapsule(Player pl, int index) {
+        if (pl.zone != null && MapService.gI().isMapPhoBan(pl.zone.map.mapId)) {
+            Service.gI().sendThongBao(pl, "Không thể sử dụng Capsule trong bản đồ này");
+            Service.gI().hideWaitDialog(pl);
+            return;
+        }
 
         if (pl.idNRNM != -1) {
             Service.gI().sendThongBao(pl, "Không thể mang ngọc rồng này lên Phi thuyền");
@@ -2246,7 +2251,8 @@ public class UseItem {
         if (zoneChose.getNumOfPlayers() > 25
                 || MapService.gI().isMapDoanhTrai(zoneChose.map.mapId)
                 || MapService.gI().isMapMaBu(zoneChose.map.mapId)
-                || MapService.gI().isMapHuyDiet(zoneChose.map.mapId)) {
+                || MapService.gI().isMapHuyDiet(zoneChose.map.mapId)
+                || MapService.gI().isMapPhoBan(zoneChose.map.mapId)) {
             Service.gI().sendThongBao(pl, "Hiện tại không thể vào được khu!");
             return;
         }

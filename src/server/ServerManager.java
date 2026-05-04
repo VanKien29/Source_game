@@ -51,6 +51,7 @@ import java.io.DataOutputStream;
 import jdbc.daos.EventDAO;
 //import minigame.Taixiu.TaiXiu;
 import models.WorldMartialArtsTournament.WorldMartialArtsTournamentManager;
+import models.ClanNamekWar.ClanNamekWarService;
 import network.MessageSendCollect;
 import models.ShenronEvent.ShenronEventManager;
 import models.SuperRank.SuperRankManager;
@@ -104,6 +105,7 @@ public class ServerManager {
         new Thread(WorldMartialArtsTournamentManager.gI(), "Update WMAT").start();
         new Thread(AutoMaintenance.gI(), "Update Bảo Trì Tự Động").start();
         new Thread(ShenronEventManager.gI(), "Update Shenron").start();
+        new Thread(ClanNamekWarService.gI(), "Update Clan Namek War").start();
 //         new Thread(UpdateManager.gI(), "Update Manager").start();
 //         new Thread(RemoteServerManager.gI(), "Remote Server Manager").start();
         BossManager.gI().loadBoss();

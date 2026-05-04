@@ -5,6 +5,7 @@ package services;
  *
  * @author CongHoan
  */
+import consts.ConstClanNamekWar;
 import consts.ConstMap;
 import map.Map;
 import map.WayPoint;
@@ -395,11 +396,15 @@ public class MapService {
      */
     public List<Zone> getMapCapsule(Player pl) {
         List<Zone> list = new ArrayList<>();
+        if (pl == null || pl.zone == null || isMapPhoBan(pl.zone.map.mapId)) {
+            return list;
+        }
         if (pl.mapBeforeCapsule != null
                 && pl.mapBeforeCapsule.map.mapId != 21
                 && pl.mapBeforeCapsule.map.mapId != 22
                 && pl.mapBeforeCapsule.map.mapId != 23
-                && !isMapTuongLai(pl.mapBeforeCapsule.map.mapId)) {
+                && !isMapTuongLai(pl.mapBeforeCapsule.map.mapId)
+                && !isMapPhoBan(pl.mapBeforeCapsule.map.mapId)) {
             addListMapCapsule(pl, list, pl.mapBeforeCapsule);
         }
         addListMapCapsule(pl, list, getMapCanJoin(pl, 21 + pl.gender, 0));
@@ -478,6 +483,10 @@ public class MapService {
         return mapId >= 85 && mapId <= 91;
     }
 
+    public boolean isMapClanNamekWar(int mapId) {
+        return ConstClanNamekWar.isWarMap(mapId);
+    }
+
     public boolean isMapMaBu(int mapId) {
         return mapId >= 114 && mapId <= 120;
     }
@@ -551,7 +560,7 @@ public class MapService {
 
     public boolean isMapPhoBan(int mapId) {
         return isMapBanDoKhoBau(mapId) || isMapDoanhTrai(mapId) || isMapConDuongRanDoc(mapId)
-                || isMapKhiGasHuyDiet(mapId);
+                || isMapKhiGasHuyDiet(mapId) || isMapClanNamekWar(mapId);
     }
 
     public boolean isMapTuongLai(int mapId) {

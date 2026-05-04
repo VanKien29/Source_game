@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import lombok.NonNull;
 import models.Achievement.AchievementService;
 import models.Card.RadarService;
+import models.ClanNamekWar.ClanNamekWarService;
 import npc.NonInteractiveNPC;
 import server.ServerNotify;
 import services.func.EffectMapService;
@@ -672,9 +673,13 @@ public class SkillService {
                 EffectSkillService.gI().sendEffectUseSkill(player, Skill.SOCOLA);
                 int timeSocola = SkillUtil.getTimeSocola();
                 if (plTarget != null) {
-                    EffectSkillService.gI().setSocola(plTarget, System.currentTimeMillis(), timeSocola);
-                    Service.gI().Send_Caitrang(plTarget);
-                    ItemTimeService.gI().sendItemTime(plTarget, 4133, timeSocola / 1000);
+                    if (ClanNamekWarService.gI().canApplyControl(plTarget)) {
+                        timeSocola = ClanNamekWarService.gI().normalizeControlTime(plTarget, timeSocola);
+                        EffectSkillService.gI().setSocola(plTarget, System.currentTimeMillis(), timeSocola);
+                        Service.gI().Send_Caitrang(plTarget);
+                        ItemTimeService.gI().sendItemTime(plTarget, 4133, timeSocola / 1000);
+                        ClanNamekWarService.gI().markControlApplied(plTarget);
+                    }
                 }
                 if (mobTarget != null) {
                     EffectSkillService.gI().sendMobToSocola(player, mobTarget, timeSocola);
@@ -689,11 +694,15 @@ public class SkillService {
                     }
                     Service.gI().setPos(player, plTarget.location.x, plTarget.location.y);
                     playerAttackPlayer(player, plTarget, miss);
-                    EffectSkillService.gI().setBlindDCTT(plTarget, System.currentTimeMillis(), timeChoangDCTT);
-                    EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
-                            EffectSkillService.BLIND_EFFECT);
-                    PlayerService.gI().sendInfoHpMpMoney(plTarget);
-                    ItemTimeService.gI().sendItemTime(plTarget, 3779, timeChoangDCTT / 1000);
+                    if (ClanNamekWarService.gI().canApplyControl(plTarget)) {
+                        timeChoangDCTT = ClanNamekWarService.gI().normalizeControlTime(plTarget, timeChoangDCTT);
+                        EffectSkillService.gI().setBlindDCTT(plTarget, System.currentTimeMillis(), timeChoangDCTT);
+                        EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
+                                EffectSkillService.BLIND_EFFECT);
+                        PlayerService.gI().sendInfoHpMpMoney(plTarget);
+                        ItemTimeService.gI().sendItemTime(plTarget, 3779, timeChoangDCTT / 1000);
+                        ClanNamekWarService.gI().markControlApplied(plTarget);
+                    }
                 }
                 if (mobTarget != null) {
                     Service.gI().setPos(player, mobTarget.location.x, mobTarget.location.y);
@@ -709,10 +718,14 @@ public class SkillService {
                 EffectSkillService.gI().sendEffectUseSkill(player, Skill.THOI_MIEN);
                 int timeSleep = SkillUtil.getTimeThoiMien(player.playerSkill.skillSelect.point);
                 if (plTarget != null) {
-                    EffectSkillService.gI().setThoiMien(plTarget, System.currentTimeMillis(), timeSleep);
-                    EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
-                            EffectSkillService.SLEEP_EFFECT);
-                    ItemTimeService.gI().sendItemTime(plTarget, 3782, timeSleep / 1000);
+                    if (ClanNamekWarService.gI().canApplyControl(plTarget)) {
+                        timeSleep = ClanNamekWarService.gI().normalizeControlTime(plTarget, timeSleep);
+                        EffectSkillService.gI().setThoiMien(plTarget, System.currentTimeMillis(), timeSleep);
+                        EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
+                                EffectSkillService.SLEEP_EFFECT);
+                        ItemTimeService.gI().sendItemTime(plTarget, 3782, timeSleep / 1000);
+                        ClanNamekWarService.gI().markControlApplied(plTarget);
+                    }
                 }
                 if (mobTarget != null) {
                     mobTarget.effectSkill.setThoiMien(System.currentTimeMillis(), timeSleep);
@@ -726,11 +739,14 @@ public class SkillService {
                 int timeHold = SkillUtil.getTimeTroi(player.playerSkill.skillSelect.point);
                 EffectSkillService.gI().setUseTroi(player, System.currentTimeMillis(), timeHold);
                 if (plTarget != null && (!plTarget.playerSkill.prepareQCKK && !plTarget.playerSkill.prepareLaze
-                        && !plTarget.playerSkill.prepareTuSat)) {
+                        && !plTarget.playerSkill.prepareTuSat)
+                        && ClanNamekWarService.gI().canApplyControl(plTarget)) {
+                    timeHold = ClanNamekWarService.gI().normalizeControlTime(plTarget, timeHold);
                     player.effectSkill.plAnTroi = plTarget;
                     EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
                             EffectSkillService.HOLD_EFFECT);
                     EffectSkillService.gI().setAnTroi(plTarget, player, System.currentTimeMillis(), timeHold);
+                    ClanNamekWarService.gI().markControlApplied(plTarget);
                 }
                 if (mobTarget != null) {
                     player.effectSkill.mobAnTroi = mobTarget;
@@ -789,10 +805,14 @@ public class SkillService {
                                 if (player.isPet && ((Pet) player).master.equals(pl)) {
                                     continue;
                                 }
-                                String[] text = {"Mắt của ta", "Chói mắt quá", "Đui mắt rồi", "Mù mắt rồi"};
-                                Service.gI().chat(pl, text[Util.nextInt(text.length)]);
-                                EffectSkillService.gI().startStun(pl, System.currentTimeMillis(), timeStun);
-                                players.add(pl);
+                                if (ClanNamekWarService.gI().canApplyControl(pl)) {
+                                    int realTimeStun = ClanNamekWarService.gI().normalizeControlTime(pl, timeStun);
+                                    String[] text = {"Mắt của ta", "Chói mắt quá", "Đui mắt rồi", "Mù mắt rồi"};
+                                    Service.gI().chat(pl, text[Util.nextInt(text.length)]);
+                                    EffectSkillService.gI().startStun(pl, System.currentTimeMillis(), realTimeStun);
+                                    ClanNamekWarService.gI().markControlApplied(pl);
+                                    players.add(pl);
+                                }
                             }
                         }
                     }
