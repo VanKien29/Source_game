@@ -63,6 +63,7 @@ import java.util.Timer;
 import lombok.Getter;
 import lombok.Setter;
 import models.BlackBallWar.BlackBallWarService;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.The23rdMartialArtCongress.The23rdMartialArtCongressManager;
 import map.ItemMap;
 import map.MaBuHold;
@@ -1561,6 +1562,7 @@ public class Player implements Runnable {
             this.mobMe = null;
         }
         Service.gI().charDie(this);
+        ClanNamekWarService.gI().onPlayerKilled(plAtt, this);
         // add kẻ thù
         if (!this.isPet && !this.isNewPet && !this.isNewPet1 && !this.isBoss && plAtt != null && !plAtt.isPet
                 && !plAtt.isNewPet && !plAtt.isNewPet1 && !plAtt.isBoss && !plAtt.isBot) {

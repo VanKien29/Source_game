@@ -34,6 +34,7 @@ import utils.TimeUtil;
 import java.util.List;
 
 import models.BlackBallWar.BlackBallWarService;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.DragonNamecWar.TranhNgocService;
 import server.Manager;
 import services.InventoryService;
@@ -75,6 +76,10 @@ public class ChangeMapService {
             msg = new Message(-91);
             switch (pl.iDMark.getTypeChangeMap()) {
                 case ConstMap.CHANGE_CAPSULE:
+                    if (pl.zone != null && MapService.gI().isMapPhoBan(pl.zone.map.mapId)) {
+                        Service.gI().sendThongBao(pl, "Không thể sử dụng Capsule trong bản đồ này");
+                        return;
+                    }
                     list = (pl.mapCapsule = MapService.gI().getMapCapsule(pl));
                     msg.writer().writeByte(list.size());
                     for (int i = 0; i < pl.mapCapsule.size(); i++) {
@@ -361,7 +366,7 @@ public class ChangeMapService {
             zoneJoin = checkMapCanJoinByYardart(pl, zoneJoin);
         }
         zoneJoin = checkMapCanJoin(pl, zoneJoin);
-        if (pl.idNRNM != -1 && !NgocRongNamecService.gI().isMapNRNM(zoneJoin.map.mapId)) {
+        if (zoneJoin != null && pl.idNRNM != -1 && !NgocRongNamecService.gI().isMapNRNM(zoneJoin.map.mapId)) {
             NgocRongNamecService.gI().dropNamekBall(pl);
         }
         if (pl.iDMark.getTranhNgoc() != -1) {
@@ -516,6 +521,16 @@ public class ChangeMapService {
             }
         }
         if (zoneJoin != null) {
+            if (!ClanNamekWarService.gI().canEnterDefenseMap(player, player.zone, zoneJoin)) {
+                resetPoint(player);
+                Service.gI().sendThongBao(player, "Chưa phá đủ 2 trụ lá chắn, không thể vào map bảo vệ.");
+                return;
+            }
+            if (!ClanNamekWarService.gI().canEnterAttackMap(player, player.zone, zoneJoin)) {
+                resetPoint(player);
+                Service.gI().sendThongBao(player, "Phe thủ không thể vào map xuất phát của phe công.");
+                return;
+            }
             // Change Map Khi Gas
             if (MapService.gI().shouldChangeMap(player.zone.map.mapId, zoneJoin.map.mapId)) {
                 player.iDMark.setZoneKhiGasHuyDiet(zoneJoin);
@@ -919,7 +934,6 @@ public class ChangeMapService {
         if (player.isPet || player.isBoss || player.getSession() != null && player.isAdmin()) {
             return zoneJoin;
         }
-
         if (zoneJoin != null) {
             switch (zoneJoin.map.mapId) {
                 case 1: // đồi hoa cúc
