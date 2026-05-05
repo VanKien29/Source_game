@@ -1562,6 +1562,7 @@ public class Player implements Runnable {
             this.mobMe = null;
         }
         Service.gI().charDie(this);
+        ClanNamekWarService.gI().onPlayerDied(this);
         ClanNamekWarService.gI().onPlayerKilled(plAtt, this);
         // add kẻ thù
         if (!this.isPet && !this.isNewPet && !this.isNewPet1 && !this.isBoss && plAtt != null && !plAtt.isPet

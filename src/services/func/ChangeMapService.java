@@ -70,6 +70,10 @@ public class ChangeMapService {
      * Mở tab chuyển map
      */
     public void openChangeMapTab(Player pl) {
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+            Service.gI().sendThongBao(pl, "Không thể sử dụng chức năng chuyển map trong trận Bảo Vệ Trưởng Lão Namek.");
+            return;
+        }
         List<Zone> list = null;
         Message msg = null;
         try {
@@ -133,6 +137,10 @@ public class ChangeMapService {
             Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
             return;
         }
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+            Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong trận Bảo Vệ Trưởng Lão Namek.");
+            return;
+        }
         if (!pl.isAdmin()) {
             if (MapService.gI().isMapOffline(pl.zone.map.mapId)) {
                 Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
@@ -187,6 +195,10 @@ public class ChangeMapService {
             NpcService.gI().createTutorial(pl, -1, "Không thể đến khu vực này");
             return;
         }
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+            NpcService.gI().createTutorial(pl, -1, "Không thể đổi khu vực trong trận Bảo Vệ Trưởng Lão Namek.");
+            return;
+        }
         if (!pl.isAdmin() && !pl.isBoss) {
             if (MapService.gI().isMapOffline(pl.zone.map.mapId)) {
                 NpcService.gI().createTutorial(pl, -1, "Không thể đến khu vực này");
@@ -236,6 +248,10 @@ public class ChangeMapService {
      * @param x
      */
     public void changeMapBySpaceShip(Player pl, int mapId, int zone, int x) {
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+            Service.gI().sendThongBao(pl, "Không thể sử dụng tàu vũ trụ trong trận Bảo Vệ Trưởng Lão Namek.");
+            return;
+        }
         if (!pl.isBoss) {
             changeMap(pl, null, mapId, zone, x, 5, AUTO_SPACE_SHIP);
             if (pl.isDie()) {
@@ -254,6 +270,10 @@ public class ChangeMapService {
     }
 
     public void changeMapBySpaceShip(Player pl, Zone zoneJoin, int x) {
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+            Service.gI().sendThongBao(pl, "Không thể sử dụng tàu vũ trụ trong trận Bảo Vệ Trưởng Lão Namek.");
+            return;
+        }
         if (pl.isDie()) {
             if (pl.haveTennisSpaceShip) {
                 Service.gI().hsChar(pl, pl.nPoint.hpMax, pl.nPoint.mpMax);

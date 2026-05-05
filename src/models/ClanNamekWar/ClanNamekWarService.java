@@ -45,6 +45,7 @@ public class ClanNamekWarService implements Runnable {
     private final List<Clan> registeredClans = Collections.synchronizedList(new ArrayList<>());
     private final List<ClanNamekWarMatch> matches = Collections.synchronizedList(new ArrayList<>());
     private final Map<Long, Long> controlImmuneUntil = new ConcurrentHashMap<>();
+    private final Map<Long, Long> warRespawnAt = new ConcurrentHashMap<>();
 
     private Phase phase = Phase.REGISTERING;
     private int nextMatchId = 1;
@@ -62,6 +63,7 @@ public class ClanNamekWarService implements Runnable {
             Service.gI().sendThongBao(player, "Sự kiện chưa cấu hình map.");
             return;
         }
+        reopenRegistrationIfIdle();
         if (phase != Phase.REGISTERING) {
             Service.gI().sendThongBao(player, "Đã hết thời gian đăng ký.");
             return;
@@ -74,7 +76,7 @@ public class ClanNamekWarService implements Runnable {
             Service.gI().sendThongBao(player, "Chỉ bang chủ mới được đăng ký.");
             return;
         }
-        if (player.clan.members.size() < ConstClanNamekWar.MIN_CLAN_MEMBERS_REGISTER) {
+        if (!player.isAdmin() && player.clan.members.size() < ConstClanNamekWar.MIN_CLAN_MEMBERS_REGISTER) {
             Service.gI().sendThongBao(player, "Bang cần tối thiểu "
                     + ConstClanNamekWar.MIN_CLAN_MEMBERS_REGISTER + " thành viên.");
             return;
@@ -250,6 +252,11 @@ public class ClanNamekWarService implements Runnable {
         return null;
     }
 
+    public boolean isLockedInRunningMatch(Player player) {
+        ClanNamekWarMatch match = findMatch(player);
+        return match != null && match.state == ClanNamekWarMatch.State.RUNNING && match.isParticipant(player);
+    }
+
     public boolean tryPickDragonEnergy(Player player, ItemMap itemMap) {
         synchronized (matches) {
             for (ClanNamekWarMatch match : matches) {
@@ -273,6 +280,28 @@ public class ClanNamekWarService implements Runnable {
         ClanNamekWarMatch victimMatch = findMatch(victim);
         if (killerMatch == victimMatch) {
             killerMatch.onPlayerKilled(killer, victim);
+        }
+    }
+
+    public void onPlayerDied(Player victim) {
+        if (victim == null) {
+            return;
+        }
+        ClanNamekWarMatch match = findMatch(victim);
+        if (match == null || match.state != ClanNamekWarMatch.State.RUNNING || !match.isParticipant(victim)) {
+            return;
+        }
+        scheduleWarRespawn(victim);
+    }
+
+    private void scheduleWarRespawn(Player player) {
+        if (player == null) {
+            return;
+        }
+        long respawnAt = System.currentTimeMillis() + ConstClanNamekWar.RESPAWN_DELAY_MS;
+        if (warRespawnAt.putIfAbsent(player.id, respawnAt) == null && player.isPl()) {
+            Service.gI().sendThongBao(player, "Bạn sẽ hồi sinh tại điểm xuất phát sau "
+                    + (ConstClanNamekWar.RESPAWN_DELAY_MS / 1000) + " giây.");
         }
     }
 
@@ -352,7 +381,7 @@ public class ClanNamekWarService implements Runnable {
             return;
         }
         if (bot.zone == null || bot.isDie()) {
-            reviveAndReturnTestBot(bot, match);
+            scheduleWarRespawn(bot);
             return;
         }
         if (bot.playerSkill.skills.isEmpty()) {
@@ -375,28 +404,6 @@ public class ClanNamekWarService implements Runnable {
         moveX = clampMapX(bot.zone, moveX);
         PlayerService.gI().playerMove(bot, moveX, target.location.y);
         SkillService.gI().useSkill(bot, target, null, -1, null);
-    }
-
-    private void reviveAndReturnTestBot(Bot bot, ClanNamekWarMatch match) {
-        Zone spawnZone = match.isAttacker(bot) ? match.getAttackZone() : match.getDefenseZone();
-        int x = match.isAttacker(bot) ? ConstClanNamekWar.ATTACKER_SPAWN_X : ConstClanNamekWar.DEFENDER_SPAWN_X;
-        int y = match.isAttacker(bot) ? ConstClanNamekWar.ATTACKER_SPAWN_Y : ConstClanNamekWar.DEFENDER_SPAWN_Y;
-        if (spawnZone == null) {
-            return;
-        }
-        if (bot.zone == null) {
-            bot.location.x = x + Util.nextInt(-60, 60);
-            bot.location.y = y;
-            ChangeMapService.gI().goToMap(bot, spawnZone);
-            spawnZone.load_Me_To_Another(bot);
-        } else if (bot.zone != spawnZone) {
-            ChangeMapService.gI().changeMap(bot, spawnZone, x + Util.nextInt(-60, 60), y);
-        }
-        Service.gI().hsChar(bot, bot.nPoint.hpMax, bot.nPoint.mpMax);
-        Service.gI().changeFlag(bot, match.isAttacker(bot)
-                ? ConstClanNamekWar.ATTACKER_FLAG : ConstClanNamekWar.DEFENDER_FLAG);
-        bot.clanWarNextRouteAt = System.currentTimeMillis() + Util.nextInt(1200, 2500);
-        bot.clanWarNextSkillAt = System.currentTimeMillis() + Util.nextInt(800, 1500);
     }
 
     private void routeTestBot(Bot bot, ClanNamekWarMatch match) {
@@ -531,7 +538,9 @@ public class ClanNamekWarService implements Runnable {
         if (phase != Phase.FIGHTING) {
             return;
         }
+        long now = System.currentTimeMillis();
         synchronized (matches) {
+            updateWarRespawns(now);
             for (ClanNamekWarMatch match : matches) {
                 match.update();
                 if (match.state == ClanNamekWarMatch.State.RUNNING && (match.elderKilled || match.isTurnTimeout())) {
@@ -550,6 +559,40 @@ public class ClanNamekWarService implements Runnable {
                 }
             }
         }
+        reopenRegistrationIfIdle();
+    }
+
+    private void updateWarRespawns(long now) {
+        if (warRespawnAt.isEmpty()) {
+            return;
+        }
+        for (ClanNamekWarMatch match : matches) {
+            if (match == null || match.state != ClanNamekWarMatch.State.RUNNING) {
+                continue;
+            }
+            updateWarRespawns(match.participantsA, match, now);
+            updateWarRespawns(match.participantsB, match, now);
+        }
+    }
+
+    private void updateWarRespawns(List<Player> players, ClanNamekWarMatch match, long now) {
+        for (Player player : players) {
+            if (player == null) {
+                continue;
+            }
+            Long respawnAt = warRespawnAt.get(player.id);
+            if (respawnAt == null) {
+                continue;
+            }
+            if (!player.isDie() && player.zone != null) {
+                warRespawnAt.remove(player.id);
+                continue;
+            }
+            if (now >= respawnAt) {
+                match.respawnAtSpawn(player);
+                warRespawnAt.remove(player.id);
+            }
+        }
     }
 
     private void clearMatches() {
@@ -562,6 +605,7 @@ public class ClanNamekWarService implements Runnable {
             }
             matches.clear();
         }
+        warRespawnAt.clear();
     }
 
     private void startWaitingMatches() {
@@ -825,6 +869,28 @@ public class ClanNamekWarService implements Runnable {
             return null;
         }
         return candidates.get(Util.nextInt(0, candidates.size() - 1));
+    }
+
+    private void reopenRegistrationIfIdle() {
+        if (phase == Phase.REGISTERING || hasActiveMatches()) {
+            return;
+        }
+        phase = Phase.REGISTERING;
+        warRespawnAt.clear();
+        synchronized (registeredClans) {
+            registeredClans.clear();
+        }
+    }
+
+    private boolean hasActiveMatches() {
+        synchronized (matches) {
+            for (ClanNamekWarMatch match : matches) {
+                if (match != null && match.state != ClanNamekWarMatch.State.FINISHED) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private int getSeasonId() {

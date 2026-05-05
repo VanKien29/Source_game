@@ -84,7 +84,7 @@ public class Command {
                 NpcService.gI().createMenuConMeo(player, 206783, 206783, "|7| Menu bot\n"
                         + "Player online : " + Client.gI().getPlayers().size() + "\n"
                         + "Bot online : " + BotManager.gI().bot.size(),
-                        "Bot\nPem Quái", "Bot\nBán Item", "Bot\nSăn Boss", "Đóng");
+                        "Bot\nPem Quái", "Bot\nBán Item", "Bot\nSăn Boss", "Bot\nSmart", "Đóng");
             } else if (text.equals("at")) {
                 AnTromManager.gI().showListBoss(player);
                 return true;
