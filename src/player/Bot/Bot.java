@@ -25,6 +25,15 @@ import utils.Util;
  */
 public class Bot extends Player {
 
+    public static final int TYPE_TRAIN_MOB = 0;
+    public static final int TYPE_SHOP = 1;
+    public static final int TYPE_HUNT_BOSS = 2;
+    public static final int TYPE_SMART = 3;
+    public static final int TYPE_CLAN_NAMEK_WAR = 99;
+    public static final int SMART_MODE_FARM = 0;
+    public static final int SMART_MODE_SOCIAL = 1;
+    public static final int SMART_MODE_PET_TRAIN = 2;
+
     private short head_;
     private short body_;
     private short leg_;
@@ -38,6 +47,15 @@ public class Bot extends Player {
     public long clanWarNextSkillAt;
     public long clanWarNextRouteAt;
     public int clanWarRouteStep;
+    public long smartNextThinkAt;
+    public long smartNextMapAt;
+    public long smartNextBossAt;
+    public long smartNextRoamAt;
+    public int smartPartyId;
+    public long smartLeaderId;
+    public int smartPreferredMapId = -1;
+    public int smartTargetMobId = -1;
+    public int smartMode = SMART_MODE_FARM;
 
     private Player plAttack;
 
@@ -132,9 +150,21 @@ public class Bot extends Player {
         }
     }
 
+    public int getBotType() {
+        return this.type;
+    }
+
+    public boolean isSmartBot() {
+        return this.type == TYPE_SMART;
+    }
+
+    private boolean isProfileOutfitBot() {
+        return this.type == TYPE_SMART || this.type == TYPE_CLAN_NAMEK_WAR;
+    }
+
     @Override
     public short getHead() {
-        if (this.type == 99) {
+        if (isProfileOutfitBot()) {
             return super.getHead();
         }
         return effectSkill.isMonkey ? (short) ConstPlayer.HEADMONKEY[effectSkill.levelMonkey - 1] : this.head_;
@@ -142,7 +172,7 @@ public class Bot extends Player {
 
     @Override
     public short getBody() {
-        if (this.type == 99) {
+        if (isProfileOutfitBot()) {
             return super.getBody();
         }
         return effectSkill.isMonkey ? 193 : this.body_;
@@ -150,7 +180,7 @@ public class Bot extends Player {
 
     @Override
     public short getLeg() {
-        if (this.type == 99) {
+        if (isProfileOutfitBot()) {
             return super.getLeg();
         }
         return effectSkill.isMonkey ? 194 : this.leg_;
@@ -158,7 +188,7 @@ public class Bot extends Player {
 
     @Override
     public short getFlagBag() {
-        if (this.type == 99) {
+        if (isProfileOutfitBot()) {
             return super.getFlagBag();
         }
         return this.flag_;
@@ -169,23 +199,57 @@ public class Bot extends Player {
     @Override
     public void update() {
         super.update();
+        this.updateBotPassive();
         this.increasePoint();
         switch (this.type) {
-            case 0:
+            case TYPE_TRAIN_MOB:
                 this.mo1.update();
                 break;
-            case 1:
+            case TYPE_SHOP:
                 this.shop.update();
                 break;
-            case 2:
+            case TYPE_HUNT_BOSS:
                 this.boss.update();
                 break;
-            case 99:
+            case TYPE_SMART:
+                SmartBotAI.gI().update(this);
+                break;
+            case TYPE_CLAN_NAMEK_WAR:
                 ClanNamekWarService.gI().updateTestBot(this);
                 break;
         }
-        if (this.isDie() && this.type != 99) {
+        if (this.isDie() && this.type != TYPE_CLAN_NAMEK_WAR) {
             Service.gI().hsChar(this, nPoint.hpMax, nPoint.mpMax);
+        }
+    }
+
+    private void updateBotPassive() {
+        try {
+            if (nPoint != null) {
+                nPoint.update();
+            }
+            if (fusion != null) {
+                fusion.update();
+            }
+            if (effectSkill != null) {
+                effectSkill.update();
+            }
+            if (mobMe != null) {
+                mobMe.update();
+            }
+            if (effectSkin != null) {
+                effectSkin.update();
+            }
+            if (satellite != null) {
+                satellite.update();
+            }
+            if (pet != null) {
+                pet.update();
+            }
+            if (newPet != null) {
+                newPet.update();
+            }
+        } catch (Exception ignored) {
         }
     }
 
@@ -205,6 +269,9 @@ public class Bot extends Player {
     }
 
     public boolean UseLastTimeSkill() {
+        if (this.playerSkill == null || this.playerSkill.skillSelect == null) {
+            return false;
+        }
         if (this.playerSkill.skillSelect.lastTimeUseThisSkillbot < (System.currentTimeMillis() - this.playerSkill.skillSelect.coolDown)) {
             this.playerSkill.skillSelect.lastTimeUseThisSkillbot = System.currentTimeMillis();
             return true;

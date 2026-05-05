@@ -138,6 +138,9 @@ public class TaskService {
 
     // số lượng đã hoàn thành
     public void sendUpdateCountSubTask(Player player) {
+        if (player != null && player.isBot) {
+            return;
+        }
         Message msg = null;
         try {
             msg = new Message(43);
@@ -157,6 +160,9 @@ public class TaskService {
 
     // chuyển sub task tiếp theo
     public void sendNextSubTask(Player player) {
+        if (player != null && player.isBot) {
+            return;
+        }
         Message msg = null;
         try {
             msg = new Message(41);

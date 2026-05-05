@@ -106,6 +106,9 @@ public class Mob {
     }
 
     private void hutItem(Player player, List<ItemMap> items) {
+        if (player == null || items == null || items.isEmpty() || isBotControlled(player)) {
+            return;
+        }
         if (!player.isPet && !player.isNewPet && !player.isBot) {
             if (player.charms.tdThuHut > System.currentTimeMillis()) {
                 for (ItemMap item : items) {
@@ -654,7 +657,8 @@ public class Mob {
             msg.writer().writeByte(this.id);
             msg.writeLongByHoandz(Util.maxIntValue(dameHit), cn.readInt);
             msg.writer().writeBoolean(plKill.nPoint.isCrit); // crit
-            List<ItemMap> items = mobReward(plKill, this.dropItemTask(plKill), msg);
+            ItemMap itemTask = isBotControlled(plKill) ? null : this.dropItemTask(plKill);
+            List<ItemMap> items = mobReward(plKill, itemTask, msg);
             Service.gI().sendMessAllPlayerInMap(this.zone, msg);
             msg.cleanup();
             hutItem(plKill, items);
@@ -663,11 +667,12 @@ public class Mob {
     }
 
     private List<ItemMap> mobReward(Player player, ItemMap itemTask, Message msg) {
-        if (player.isBot) {
-            return null;
-        }
         List<ItemMap> itemReward = new ArrayList<>();
         try {
+            if (isBotControlled(player)) {
+                msg.writer().writeByte(0);
+                return itemReward;
+            }
             itemReward = this.getItemMobReward(player, this.location.x + Util.nextInt(-10, 10),
                     this.zone.map.yPhysicInTop(this.location.x, this.location.y));
             if (itemTask != null) {
@@ -690,7 +695,7 @@ public class Mob {
     public List<ItemMap> getItemMobReward(Player player, int x, int yEnd) {
         List<ItemMap> list = new ArrayList<>();
 
-        if (player.isBoss) {
+        if (player == null || player.isBoss || isBotControlled(player)) {
             return list;
         }
 
@@ -1085,6 +1090,9 @@ public class Mob {
     }
 
     private ItemMap dropItemTask(Player player) {
+        if (isBotControlled(player)) {
+            return null;
+        }
         ItemMap itemMap = null;
         switch (tempId) {
             case ConstMob.KHUNG_LONG:
@@ -1135,6 +1143,14 @@ public class Mob {
             return itemMap;
         }
         return null;
+    }
+
+    private boolean isBotControlled(Player player) {
+        if (player == null || player.isBot) {
+            return true;
+        }
+        return player.isPet && player instanceof Pet && ((Pet) player).master != null
+                && ((Pet) player).master.isBot;
     }
 
     private void sendMobStillAliveAffterAttacked(long dameHit, boolean crit) {

@@ -84,6 +84,17 @@ public class NewBot {
   
    
    public void runBot(int type , ShopBot shop , int slot){
+          if (type == Bot.TYPE_SMART) {
+              for (int i = 0; i < slot; i++) {
+                  Bot b = BotProfileService.gI().createSmartBot();
+                  b.mo1 = new Mobb(b);
+                  b.boss = new Sanb(b);
+                  BotManager.gI().bot.add(b);
+                  SmartBotAI.gI().update(b);
+              }
+              SmartBotAI.gI().updateParties(BotManager.gI().bot);
+              return;
+          }
           LoadPart();
             for(int i = 0; i < slot ; i++){
                int Gender = new Random().nextInt(3);

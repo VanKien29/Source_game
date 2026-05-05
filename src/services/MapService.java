@@ -302,17 +302,26 @@ public class MapService {
 
     public Zone getZone(int mapId) {
         Map map = getMapById(mapId);
-        if (map == null) {
+        if (map == null || map.zones == null || map.zones.isEmpty()) {
             return null;
         }
 
-        // int z = Util.nextInt(0, map.zones.size() - 1);
-        int z = 0;
-        while (map.zones.get(z).getNumOfPlayers() >= map.zones.get(z).maxPlayer) {
-            // z = Util.nextInt(0, map.zones.size() - 1);
-            z++;
+        Zone leastBusyZone = null;
+        int leastBusyCount = Integer.MAX_VALUE;
+        for (Zone zone : map.zones) {
+            if (zone == null) {
+                continue;
+            }
+            int count = zone.getNumOfPlayers();
+            if (count < zone.maxPlayer) {
+                return zone;
+            }
+            if (count < leastBusyCount) {
+                leastBusyZone = zone;
+                leastBusyCount = count;
+            }
         }
-        return map.zones.get(z);
+        return leastBusyZone;
     }
 
     private Zone getZoneByMapIDAndZoneID(int mapId, int zoneId) {

@@ -14,6 +14,7 @@ public class BotManager implements Runnable {
     public static BotManager i;
     
     public List<Bot> bot =  new ArrayList<>();
+    private long lastSmartPartyUpdate;
     
     
     public static BotManager gI(){
@@ -27,10 +28,17 @@ public class BotManager implements Runnable {
         while (ServerManager.isRunning) {
             try {
                 long st = System.currentTimeMillis();
-                for (Bot bot : this.bot) {
-                    bot.update();
+                if (System.currentTimeMillis() - lastSmartPartyUpdate >= 5_000) {
+                    SmartBotAI.gI().updateParties(this.bot);
+                    lastSmartPartyUpdate = System.currentTimeMillis();
                 }
-                Thread.sleep(150 - (System.currentTimeMillis() - st));
+                for (Bot bot : new ArrayList<>(this.bot)) {
+                    if (bot != null) {
+                        bot.update();
+                    }
+                }
+                long sleep = 150 - (System.currentTimeMillis() - st);
+                Thread.sleep(Math.max(10, sleep));
             } catch (Exception ignored) {
             }
 

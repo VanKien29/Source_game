@@ -35,6 +35,7 @@ import jdbc.daos.NDVSqlFetcher;
 import jdbc.daos.PlayerDAO;
 //import minigame.Taixiu.TaiXiu;
 import network.SessionManager;
+import player.Bot.Bot;
 import player.Bot.NewBot;
 import player.Bot.ShopBot;
 
@@ -53,6 +54,7 @@ public class Input {
     public static final int BOTQUAI = 206783;
     public static final int BOTITEM = 206762;
     public static final int BOTBOSS = 2067683;
+    public static final int BOTSMART = 2067684;
     public static final int ADMIN_BCH = 712;
     public static final int CHANGE_PASSWORD = 500;
     public static final int GIFT_CODE = 501;
@@ -183,6 +185,12 @@ public class Input {
                     slot = Integer.parseInt(text[0]);
                     new Thread(() -> {
                         NewBot.gI().runBot(0, null, slot);
+                    }).start();
+                    break;
+                case BOTSMART:
+                    slot = Integer.parseInt(text[0]);
+                    new Thread(() -> {
+                        NewBot.gI().runBot(Bot.TYPE_SMART, null, slot);
                     }).start();
                     break;
                 case SEND_ITEM: {
@@ -806,6 +814,11 @@ public class Input {
 
     public void createFormBotBoss(Player pl) {
         createForm(pl, BOTBOSS, "Buff Bot Boss",
+                new SubInput("số lượng bot", NUMERIC));
+    }
+
+    public void createFormBotSmart(Player pl) {
+        createForm(pl, BOTSMART, "Buff Bot Smart",
                 new SubInput("số lượng bot", NUMERIC));
     }
 

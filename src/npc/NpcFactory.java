@@ -307,6 +307,9 @@ public class NpcFactory {
                             case 2:
                                 Input.gI().createFormBotBoss(player);
                                 break;
+                            case 3:
+                                Input.gI().createFormBotSmart(player);
+                                break;
                         }
                     }
 //                      case ConstNpc.MENU_TX -> {
