@@ -184,7 +184,7 @@ public class Bot extends Player {
                 ClanNamekWarService.gI().updateTestBot(this);
                 break;
         }
-        if (this.isDie()) {
+        if (this.isDie() && this.type != 99) {
             Service.gI().hsChar(this, nPoint.hpMax, nPoint.mpMax);
         }
     }

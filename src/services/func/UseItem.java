@@ -7,6 +7,7 @@ package services.func;
  */
 import consts.ConstItem;
 import models.Combine.CombineService;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.ShenronEvent.ShenronEventService;
 import models.Card.Card;
 import models.Card.RadarService;
@@ -2227,6 +2228,11 @@ public class UseItem {
 //        }
 //    }
     public void choseMapCapsule(Player pl, int index) {
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+            Service.gI().sendThongBao(pl, "Không thể sử dụng Capsule trong trận Bảo Vệ Trưởng Lão Namek.");
+            Service.gI().hideWaitDialog(pl);
+            return;
+        }
         if (pl.zone != null && MapService.gI().isMapPhoBan(pl.zone.map.mapId)) {
             Service.gI().sendThongBao(pl, "Không thể sử dụng Capsule trong bản đồ này");
             Service.gI().hideWaitDialog(pl);

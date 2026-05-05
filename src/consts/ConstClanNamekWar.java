@@ -13,6 +13,7 @@ public class ConstClanNamekWar {
     public static final int MIN_CLAN_MEMBERS_REGISTER = 5;
     public static final int MAX_PLAYERS_PER_CLAN = 20;
     public static final int TURN_SECONDS = 10 * 60;
+    public static final int RESPAWN_DELAY_MS = 3_000;
 
     public static final byte DEFENDER_FLAG = 1;
     public static final byte ATTACKER_FLAG = 2;

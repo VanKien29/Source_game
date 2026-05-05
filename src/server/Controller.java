@@ -49,6 +49,7 @@ import models.Achievement.AchievementService;
 import shop.ShopService;
 
 import models.BlackBallWar.BlackBallWarService;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.SuperRank.SuperRankService;
 import models.Training.TrainingService;
 import services.MapService;
@@ -378,6 +379,10 @@ public class Controller implements IMessageHandler {
                 // break;
                 case 29:
                     if (player != null) {
+                        if (ClanNamekWarService.gI().isLockedInRunningMatch(player)) {
+                            Service.gI().sendThongBao(player, "Không thể đổi khu vực trong trận Bảo Vệ Trưởng Lão Namek.");
+                            return;
+                        }
                         if (player.zone.map.mapId == ConstTranhNgocNamek.MAP_ID) {
                             Service.gI().sendPopUpMultiLine(player, 0, 7184, "Không thể thực hiện");
                             return;
@@ -387,6 +392,10 @@ public class Controller implements IMessageHandler {
                     break;
                 case 21:
                     if (player != null) {
+                        if (ClanNamekWarService.gI().isLockedInRunningMatch(player)) {
+                            Service.gI().sendThongBao(player, "Không thể đổi khu vực trong trận Bảo Vệ Trưởng Lão Namek.");
+                            return;
+                        }
                         if (player.zone.map.mapId == ConstTranhNgocNamek.MAP_ID) {
                             Service.gI().sendPopUpMultiLine(player, 0, 7184, "Không thể thực hiện");
                             return;
@@ -730,12 +739,20 @@ public class Controller implements IMessageHandler {
                     break;
                 case -15: // về nhà
                     if (player != null) {
+                        if (ClanNamekWarService.gI().isLockedInRunningMatch(player)) {
+                            Service.gI().sendThongBao(player, "Không thể quay về trong trận Bảo Vệ Trưởng Lão Namek.");
+                            return;
+                        }
                         int mapId = MapService.gI().isMapMaBu(player.zone.map.mapId) ? 114 : player.gender + 21;
                         ChangeMapService.gI().changeMapBySpaceShip(player, mapId, 0, -1);
                     }
                     break;
                 case -16: // hồi sinh
                     if (player != null && !player.isPKDHVT) {
+                        if (ClanNamekWarService.gI().isLockedInRunningMatch(player)) {
+                            Service.gI().sendThongBao(player, "Trong trận Bảo Vệ Trưởng Lão Namek, hệ thống sẽ tự hồi sinh sau 3 giây.");
+                            return;
+                        }
                         PlayerService.gI().hoiSinh(player);
                     }
                     break;

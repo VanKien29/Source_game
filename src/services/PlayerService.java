@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.Date;
 
 import jdbc.DBConnecter;
+import models.ClanNamekWar.ClanNamekWarService;
 import models.DragonNamecWar.TranhNgocService;
 import player.Player;
 import network.Message;
@@ -258,6 +259,10 @@ public class PlayerService {
     private static final int COST_GOLD_HOI_SINH_NRSD = 20000000;
 
     public void hoiSinh(Player player) {
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(player)) {
+            Service.gI().sendThongBao(player, "Trong trận Bảo Vệ Trưởng Lão Namek, hệ thống sẽ tự hồi sinh sau 3 giây.");
+            return;
+        }
         if (player.isDie() && player.zone != null && player.zone.map.mapId != 51) {
             if (Util.canDoWithTime(player.lastTimeRevived, 1500)) {
                 boolean canHs;
@@ -295,6 +300,10 @@ public class PlayerService {
     }
 
     public void hoiSinhMaBu(Player player) {
+        if (ClanNamekWarService.gI().isLockedInRunningMatch(player)) {
+            Service.gI().sendThongBao(player, "Trong trận Bảo Vệ Trưởng Lão Namek, hệ thống sẽ tự hồi sinh sau 3 giây.");
+            return;
+        }
         if (player.isDie()) {
             boolean canHs = false;
             if (MapService.gI().isMapMaBu(player.zone.map.mapId)) {

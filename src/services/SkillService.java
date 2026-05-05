@@ -1002,6 +1002,13 @@ public class SkillService {
                     }
                     for (Player pl : players) {
                         try {
+                            boolean isDie = pl.isDie();
+                            if (isDie && ClanNamekWarService.gI().isLockedInRunningMatch(pl)) {
+                                if (player.isPl()) {
+                                    Service.gI().sendThongBao(player, "Không thể hồi sinh người chơi trong trận Bảo Vệ Trưởng Lão Namek.");
+                                }
+                                continue;
+                            }
                             msg = new Message(-60);
                             msg.writer().writeInt((int) player.id); // id pem
                             msg.writer().writeByte(player.playerSkill.skillSelect.skillId); // skill pem
@@ -1009,7 +1016,6 @@ public class SkillService {
                             msg.writer().writeInt((int) pl.id); // id ăn pem
                             msg.writer().writeByte(0); // read continue
                             Service.gI().sendMessAllPlayerInMap(pl, msg);
-                            boolean isDie = pl.isDie();
                             player.nPoint.setHp(Util.maxIntValue(
                                     player.nPoint.getHP() + (player.nPoint.hpMax * percentTriThuong / 100)));
                             pl.nPoint.setHp(

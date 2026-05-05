@@ -288,6 +288,49 @@ public class ClanNamekWarMatch {
         return player != null && (participantsA.contains(player) || participantsB.contains(player));
     }
 
+    public void respawnAtSpawn(Player player) {
+        if (player == null || !isParticipant(player)) {
+            return;
+        }
+        boolean attackerTeam = isAttacker(player);
+        Zone spawnZone = attackerTeam ? attackZone : defenseZone;
+        if (spawnZone == null || player.location == null) {
+            return;
+        }
+        int x = attackerTeam ? ConstClanNamekWar.ATTACKER_SPAWN_X : ConstClanNamekWar.DEFENDER_SPAWN_X;
+        int y = attackerTeam ? ConstClanNamekWar.ATTACKER_SPAWN_Y : ConstClanNamekWar.DEFENDER_SPAWN_Y;
+        if (player instanceof Bot) {
+            x += Util.nextInt(-60, 60);
+        }
+        if (spawnZone.map != null) {
+            x = Math.max(40, Math.min(Math.max(40, spawnZone.map.mapWidth - 40), x));
+        }
+        if (player.zone == null) {
+            player.location.x = x;
+            player.location.y = y;
+            ChangeMapService.gI().goToMap(player, spawnZone);
+            spawnZone.load_Me_To_Another(player);
+        } else if (player.zone != spawnZone) {
+            ChangeMapService.gI().changeMap(player, spawnZone, x, y);
+        } else {
+            player.location.x = x;
+            player.location.y = y;
+        }
+        Service.gI().hsChar(player, player.nPoint.hpMax, player.nPoint.mpMax);
+        Service.gI().changeFlag(player, attackerTeam
+                ? ConstClanNamekWar.ATTACKER_FLAG : ConstClanNamekWar.DEFENDER_FLAG);
+        if (player instanceof Bot) {
+            Bot bot = (Bot) player;
+            long now = System.currentTimeMillis();
+            bot.clanWarNextRouteAt = now + Util.nextInt(1200, 2500);
+            bot.clanWarNextSkillAt = now + Util.nextInt(800, 1500);
+            bot.clanWarNextMoveAt = now + Util.nextInt(800, 1600);
+        }
+        if (player.isPl()) {
+            Service.gI().sendThongBao(player, "Bạn đã hồi sinh tại điểm xuất phát của phe mình.");
+        }
+    }
+
     public synchronized long recordElderDamage(Player attackerPlayer, long damage) {
         if (!isAttacker(attackerPlayer)) {
             return 0;
