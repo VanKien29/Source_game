@@ -192,7 +192,7 @@ public class Map implements Runnable {
         }
     }
 
-    public void initMob(byte[] mobTemp, byte[] mobLevel, int[] mobHp, short[] mobX, short[] mobY) {
+    public void initMob(byte[] mobTemp, byte[] mobLevel, long[] mobHp, short[] mobX, short[] mobY) {
         for (int i = 0; i < mobTemp.length; i++) {
             int mobTempId = mobTemp[i];
             Template.MobTemplate temp = Manager.getMobTemplateByTemp(mobTempId);
@@ -240,7 +240,7 @@ public class Map implements Runnable {
         }
     }
 
-    public void reloadMobs(byte[] mobTemp, byte[] mobLevel, int[] mobHp, short[] mobX, short[] mobY) {
+    public void reloadMobs(byte[] mobTemp, byte[] mobLevel, long[] mobHp, short[] mobX, short[] mobY) {
         for (Zone zone : this.zones) {
             synchronized (zone.mobs) {
                 zone.mobs.clear();
