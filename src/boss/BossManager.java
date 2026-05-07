@@ -1760,6 +1760,16 @@ public class BossManager implements Runnable {
         this.createBoss(BossID.BA_CON_SOI);
         this.createBoss(BossID.BE_NA, 5);
         runtimeApplyPersistentConfigs();
+        ensureDefaultBoss(BossID.BA_CON_SOI);
+    }
+
+    private void ensureDefaultBoss(int bossID) {
+        for (Boss boss : runtimeBossSnapshot(this)) {
+            if (boss != null && boss.id == bossID) {
+                return;
+            }
+        }
+        this.createBoss(bossID);
     }
 
     public void createBoss(int bossID, int total) {

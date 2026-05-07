@@ -7,6 +7,7 @@ package models.The23rdMartialArtCongress;
  */
 
 import map.Zone;
+import map.Map;
 import player.Player;
 import network.Message;
 import services.MapService;
@@ -24,9 +25,10 @@ public class The23rdMartialArtCongressService {
         return i;
     }
 
-    public void startChallenge(Player player) {
+    public boolean startChallenge(Player player) {
         if (The23rdMartialArtCongressManager.gI().plCheck(player)) {
-            return;
+            Service.gI().sendThongBao(player, "Bạn đang trong trận đấu rồi");
+            return false;
         }
         Zone zone = getMapChallenge(129);
         if (zone != null) {
@@ -45,8 +47,11 @@ public class The23rdMartialArtCongressService {
                 player.lastTimePKDHVT23 = System.currentTimeMillis();
                 mc.endChallenge = false;
             }, 500);
+            return true;
         } else {
+            Service.gI().sendThongBao(player, "Hiện không có võ đài trống, vui lòng thử lại sau");
         }
+        return false;
     }
 
     public static void setTimeout(Runnable runnable, int delay) {
@@ -72,9 +77,14 @@ public class The23rdMartialArtCongressService {
     }
 
     public Zone getMapChallenge(int mapId) {
-        Zone map = MapService.gI().getMapWithRandZone(mapId);
-        if (map.getNumOfBosses() < 1) {
-            return map;
+        Map map = MapService.gI().getMapById(mapId);
+        if (map == null || map.zones == null || map.zones.isEmpty()) {
+            return null;
+        }
+        for (Zone zone : map.zones) {
+            if (zone != null && zone.getNumOfBosses() < 1) {
+                return zone;
+            }
         }
         return null;
     }

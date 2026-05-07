@@ -80,11 +80,12 @@ public class GhiDanh extends Npc {
                                         if (InventoryService.gI().finditemWoodChest(player)) {
                                             if (select == 1) {
                                                 if (player.inventory.ruby >= rubychallenge) {
-                                                    The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.ruby -= (rubychallenge);
-                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                    player.goldChallenge += 50000000;
-                                                    player.rubyChallenge += 100;
+                                                    if (The23rdMartialArtCongressService.gI().startChallenge(player)) {
+                                                        player.inventory.ruby -= (rubychallenge);
+                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                        player.goldChallenge += 50000000;
+                                                        player.rubyChallenge += 100;
+                                                    }
                                                 } else {
                                                     Service.gI().sendThongBao(player,
                                                             "Bạn không đủ hồng ngọc, còn thiếu "
@@ -94,11 +95,12 @@ public class GhiDanh extends Npc {
                                                 }
                                             } else {
                                                 if (player.inventory.gold >= goldchallenge) {
-                                                    The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.gold -= (goldchallenge);
-                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                    player.goldChallenge += 50000000;
-                                                    player.rubyChallenge += 100;
+                                                    if (The23rdMartialArtCongressService.gI().startChallenge(player)) {
+                                                        player.inventory.gold -= (goldchallenge);
+                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                        player.goldChallenge += 50000000;
+                                                        player.rubyChallenge += 100;
+                                                    }
                                                 } else {
                                                     Service.gI().sendThongBao(player,
                                                             "Bạn không đủ vàng, còn thiếu "
@@ -127,11 +129,12 @@ public class GhiDanh extends Npc {
                                         if (InventoryService.gI().finditemWoodChest(player)) {
                                             if (select == 1) {
                                                 if (player.inventory.ruby >= rubychallenge) {
-                                                    The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.ruby -= (rubychallenge);
-                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                    player.goldChallenge += 50000000;
-                                                    player.rubyChallenge += 100;
+                                                    if (The23rdMartialArtCongressService.gI().startChallenge(player)) {
+                                                        player.inventory.ruby -= (rubychallenge);
+                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                        player.goldChallenge += 50000000;
+                                                        player.rubyChallenge += 100;
+                                                    }
                                                 } else {
                                                     Service.gI().sendThongBao(player,
                                                             "Bạn không đủ hồng ngọc, còn thiếu "
@@ -141,11 +144,12 @@ public class GhiDanh extends Npc {
                                                 }
                                             } else {
                                                 if (player.inventory.gold >= goldchallenge) {
-                                                    The23rdMartialArtCongressService.gI().startChallenge(player);
-                                                    player.inventory.gold -= (goldchallenge);
-                                                    PlayerService.gI().sendInfoHpMpMoney(player);
-                                                    player.goldChallenge += 50000000;
-                                                    player.rubyChallenge += 100;
+                                                    if (The23rdMartialArtCongressService.gI().startChallenge(player)) {
+                                                        player.inventory.gold -= (goldchallenge);
+                                                        PlayerService.gI().sendInfoHpMpMoney(player);
+                                                        player.goldChallenge += 50000000;
+                                                        player.rubyChallenge += 100;
+                                                    }
                                                 } else {
                                                     Service.gI().sendThongBao(player,
                                                             "Bạn không đủ vàng, còn thiếu "
