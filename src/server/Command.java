@@ -255,13 +255,16 @@ public class Command {
                     e.printStackTrace();
                 }
             }
-            if (text.startsWith("adminnnv")) {
+            if (text.startsWith("nnv")) {
                 try {
-                    int idTask = Integer.parseInt(text.replaceAll("nnv", ""));
+                    int idTask = Integer.parseInt(text.replace("nnv", ""));
+
                     player.playerTask.taskMain.id = idTask - 1;
                     player.playerTask.taskMain.index = 0;
+
                     TaskService.gI().sendNextTaskMain(player);
                     return true;
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

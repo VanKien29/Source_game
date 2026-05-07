@@ -2351,13 +2351,11 @@ public class NPoint {
             }
         }
         if (type == 4) {
-            tiemNangUse = 50000000L;
-            for (int i = 0; i < this.critg; i++) {
-                tiemNangUse *= 5L;
-            }
-            if ((this.critg + point) <= powerLimit.getCritical()) {
+            short pointCrit = 1;
+            if ((this.critg + pointCrit) <= powerLimit.getCritical()) {
+                tiemNangUse = getCritTiemNangUse(this.critg, pointCrit);
                 if (doUseTiemNang(tiemNangUse)) {
-                    critg += point;
+                    critg += pointCrit;
                     updatePoint = true;
                 }
             } else {
@@ -2533,6 +2531,23 @@ public class NPoint {
     // }
     // Service.gI().point(player);
     // }
+    private long getCritTiemNangUse(int startCrit, int point) {
+        long total = 0;
+        for (int i = 0; i < point; i++) {
+            long cost = getCritTiemNangUseAt(startCrit + i);
+            if (Long.MAX_VALUE - total < cost) {
+                return Long.MAX_VALUE;
+            }
+            total += cost;
+        }
+        return total;
+    }
+
+    private long getCritTiemNangUseAt(int crit) {
+        int critCostLevel = Math.max(1, crit - 3);
+        return 15000000000L * critCostLevel;
+    }
+
     private boolean doUseTiemNang(long tiemNang) {
         if (this.tiemNang < tiemNang) {
             Service.gI().sendThongBaoOK(player, "Bạn không đủ tiềm năng");
@@ -2562,7 +2577,7 @@ public class NPoint {
             tng = ((defg * (500000L + (500000L + (defg - 1L) * 100000L))) / 2L);
         }
         if (critg > 0) {
-            tncm = ((50L * (((long) Math.pow(5L, critg) - 1L)) / (5L - 1L) * 1000000L));
+            tncm = getCritTiemNangUse(0, this.critg);
         }
         return tnhp + tnki + tnsd + tng + tncm;
     }

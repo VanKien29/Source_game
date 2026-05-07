@@ -9,12 +9,12 @@ import consts.ConstNpc;
 import models.Training.TrainingService;
 import npc.Npc;
 import player.Player;
-import services.InventoryService;
+// import services.InventoryService;
 import services.NpcService;
 import services.Service;
 import services.func.ChangeMapService;
-import services.func.LuckyRound;
-import shop.ShopService;
+// import services.func.LuckyRound;
+// import shop.ShopService;
 
 public class ThuongDe extends Npc {
 
@@ -38,17 +38,23 @@ public class ThuongDe extends Npc {
                             this.createOtherMenu(player, ConstNpc.BASE_MENU,
                                     "Pôpô là đệ tử của ta, luyện tập với Pôpô con sẽ có thêm nhiều kinh nghiệm\nđánh bại được Pôpô ta sẽ dạy võ công cho con",
                                     player.dangKyTapTuDong ? "Hủy đăng\nký tập\ntự động" : "Đăng ký\ntập\ntự động",
-                                    "Tập luyện\nvới\nMr.PôPô", "Thách đấu\nMr.PôPô", "Đến\nKaio", "Quay ngọc\nMay mắn");
+                                    "Tập luyện\nvới\nMr.PôPô", "Thách đấu\nMr.PôPô", "Đến\nKaio"
+                                    // , "Quay ngọc\nMay mắn"
+                            );
                         case 3 ->
                             this.createOtherMenu(player, ConstNpc.BASE_MENU,
                                     "Từ nay con sẽ là đệ tử của ta. Ta sẽ truyền cho con tất cả tuyệt kĩ",
                                     player.dangKyTapTuDong ? "Hủy đăng\nký tập\ntự động" : "Đăng ký\ntập\ntự động",
-                                    "Tập luyện\nvới\nThượng Đế", "Thách đấu\nThượng Đế", "Đến\nKaio", "Quay ngọc\nMay mắn");
+                                    "Tập luyện\nvới\nThượng Đế", "Thách đấu\nThượng Đế", "Đến\nKaio"
+                                    // , "Quay ngọc\nMay mắn"
+                            );
                         default ->
                             this.createOtherMenu(player, ConstNpc.BASE_MENU,
                                     "Con đã mạnh hơn ta, ta sẽ chỉ đường cho con đến Kaio\nđể gặp thần Vũ Trụ Phương Bắc\nNgài là thần cai quản vũ trụ này, hãy theo ngài ấy học võ công.",
                                     player.dangKyTapTuDong ? "Hủy đăng\nký tập\ntự động" : "Đăng ký\ntập\ntự động",
-                                    "Tập luyện\nvới\nMr.PôPô", "Tập luyện\nvới\nThượng Đế", "Đến\nKaio", "Quay ngọc\nMay mắn");
+                                    "Tập luyện\nvới\nMr.PôPô", "Tập luyện\nvới\nThượng Đế", "Đến\nKaio"
+                                    // , "Quay ngọc\nMay mắn"
+                            );
                     }
                 }
                 case 141 ->
@@ -111,17 +117,20 @@ public class ThuongDe extends Npc {
                             }
                             case 3 ->
                                 ChangeMapService.gI().changeMapBySpaceShip(player, 48, -1, 354);
-                             case 4 -> { // ĐÃ TẮT chức năng "Quay ngọc May mắn"
-                                 this.createOtherMenu(player, ConstNpc.MENU_CHOOSE_LUCKY_ROUND,
-                                         "Con muốn làm gì nào?", "Quay bằng\nthỏi vàng",
-                                         "Vòng quay\nđặc biệt",
-                                         "Rương phụ\n("
-                                                 + (player.inventory.itemsBoxCrackBall.size()
-                                                         - InventoryService.gI().getCountEmptyListItem(
-                                                                 player.inventory.itemsBoxCrackBall))
-                                                 + " món)",
-                                         "Xóa hết\ntrong rương", "Đóng");
-                             }
+
+                            /*
+                            case 4 -> { // ĐÃ TẮT chức năng "Quay ngọc May mắn"
+                                this.createOtherMenu(player, ConstNpc.MENU_CHOOSE_LUCKY_ROUND,
+                                        "Con muốn làm gì nào?", "Quay bằng\nthỏi vàng",
+                                        "Vòng quay\nđặc biệt",
+                                        "Rương phụ\n("
+                                                + (player.inventory.itemsBoxCrackBall.size()
+                                                        - InventoryService.gI().getCountEmptyListItem(
+                                                                player.inventory.itemsBoxCrackBall))
+                                                + " món)",
+                                        "Xóa hết\ntrong rương", "Đóng");
+                            }
+                            */
                         }
                     } else if (player.iDMark.getIndexMenu() == 2001) {
                         switch (select) {
@@ -152,23 +161,25 @@ public class ThuongDe extends Npc {
                                 TrainingService.gI().callBoss(player, BossID.THUONG_DE, false);
                         }
                     }
-                     else if (player.iDMark.getIndexMenu() == ConstNpc.MENU_CHOOSE_LUCKY_ROUND) {
-                         // ĐÃ TẮT xử lý "Quay ngọc May mắn"
-                         switch (select) {
-                             case 0 ->
-                                 LuckyRound.gI().openCrackBallUI(player, LuckyRound.USING_TICKET);
-                             case 1 ->
-                                 LuckyRound.gI().openCrackBallUI(player, LuckyRound.USING_GEM);
-                             case 2 ->
-                                 ShopService.gI().opendShop(player, "ITEMS_LUCKY_ROUND", true);
-                             case 3 ->
-                                 NpcService.gI().createMenuConMeo(player,
-                                         ConstNpc.CONFIRM_REMOVE_ALL_ITEM_LUCKY_ROUND, this.avartar,
-                                         "Con có chắc muốn xóa hết vật phẩm trong rương phụ? Sau khi xóa "
-                                                 + "sẽ không thể khôi phục!",
-                                         "Đồng ý", "Hủy bỏ");
-                         }
-                     }
+
+                    /*
+                    else if (player.iDMark.getIndexMenu() == ConstNpc.MENU_CHOOSE_LUCKY_ROUND) {
+                        switch (select) {
+                            case 0 ->
+                                LuckyRound.gI().openCrackBallUI(player, LuckyRound.USING_TICKET);
+                            case 1 ->
+                                LuckyRound.gI().openCrackBallUI(player, LuckyRound.USING_GEM);
+                            case 2 ->
+                                ShopService.gI().opendShop(player, "ITEMS_LUCKY_ROUND", true);
+                            case 3 ->
+                                NpcService.gI().createMenuConMeo(player,
+                                        ConstNpc.CONFIRM_REMOVE_ALL_ITEM_LUCKY_ROUND, this.avartar,
+                                        "Con có chắc muốn xóa hết vật phẩm trong rương phụ? Sau khi xóa "
+                                                + "sẽ không thể khôi phục!",
+                                        "Đồng ý", "Hủy bỏ");
+                        }
+                    }
+                    */
                 }
                 case 141 -> {
                     switch (select) {

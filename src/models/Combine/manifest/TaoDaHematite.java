@@ -62,7 +62,7 @@ public class TaoDaHematite {
         }
         CombineService.gI().baHatMit.npcChat(player, "Bư cô lô, ba cô la, bư ra bư zô...");
         Item daHematite = ItemService.gI().createNewItem((short) 1423);
-        daHematite.itemOptions.add(new Item.ItemOption(30, 0));
+//        daHematite.itemOptions.add(new Item.ItemOption(30, 0));
         daHematite.itemOptions.add(new Item.ItemOption(87, 0));
         CombineService.gI().sendEffectCombineItem(player, (byte) 7, (short) daHematite.template.iconID, (short) -1);
         InventoryService.gI().addItemBag(player, daHematite);
