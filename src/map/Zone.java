@@ -548,9 +548,24 @@ public class Zone {
     }
 
     public void addItem(ItemMap itemMap) {
+        if (isBotOwnedItem(itemMap)) {
+            return;
+        }
         if (itemMap != null && !items.contains(itemMap)) {
             items.add(0, itemMap);
         }
+    }
+
+    public boolean isBotOwnedItem(ItemMap itemMap) {
+        if (itemMap == null || itemMap.playerId == -1) {
+            return false;
+        }
+        for (Player player : this.players) {
+            if (player != null && player.isBot && Math.abs(player.id) == itemMap.playerId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void removeItemMap(ItemMap itemMap) {
