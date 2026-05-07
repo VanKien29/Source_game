@@ -581,7 +581,7 @@ public class ItemService {
 
             player.inventory.event++;
 
-            Service.gI().sendThongBao(player, "Bạn đã nhận được set TNSM HDPE!");
+            Service.gI().sendThongBao(player, "Bạn đã nhận được set tnsm Horizon!");
             CombineService.gI().sendEffectOpenItem(player, icon[0], icon[1]);
 
         } catch (Exception e) {

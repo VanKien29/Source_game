@@ -68,7 +68,7 @@ public class ToriBot extends Npc {
                             this.createOtherMenu(player, 3422,
                                     "|7| Kick Vip Đi nè"
                                     + (player.vip == 1 ? "\n|7|Status VIP : VIP 1" : player.vip == 2 ? "\n|7|Trạng Thái VIP : VIP 2" : player.vip == 3 ? "\n|7|Trạng Thái VIP : VIP 3" : "")
-                                    + "\n|0|Cảm Ơn Đã Ủng Hộ Ngọc Rồng Hdpe",
+                                    + "\n|0|Cảm Ơn Đã Ủng Hộ Ngọc Rồng Horizon",
                                     //  + (player.timevip > 0 ? "\nHạn còn : " + Util.msToThang(player.timevip) : ""),
                                     "Đóng");
                     }

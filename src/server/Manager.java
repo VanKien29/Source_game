@@ -221,7 +221,7 @@ public final class Manager {
                         }
                     }
                     long timeDo = System.currentTimeMillis() - st;
-                    long frame = 1000;
+                    long frame = PerformanceConfig.gI().mapTickMillis;
                     long sleep = frame - timeDo;
                     if (sleep > 0) {
                         Thread.sleep(sleep);

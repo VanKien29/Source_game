@@ -54,7 +54,7 @@ public class SoSuMenh extends Npc {
 
             String[] menus = menu.toArray(new String[0]);
             createOtherMenu(player, ConstNpc.BASE_MENU,
-                    "SỔ VŨ TRỤ NGỌC RỒNG HDPE MÙA 1\nChào mừng đến với bình nguyên vô vọng", menus);
+                    "SỔ VŨ TRỤ NGỌC RỒNG HORIZON MÙA 1\nChào mừng đến với bình nguyên vô vọng", menus);
         }
     }
 
@@ -156,7 +156,7 @@ public class SoSuMenh extends Npc {
                                 ? "\b|5|(Đã mở sổ Vip)"
                                 : "\b|3|(Chưa mở sổ Vip)";
 
-                        String message = "\b|5|Cấp độ Sổ Hdpe hiện tại: " + level + " " + vip
+                        String message = "\b|5|Cấp độ Sổ Horizon hiện tại: " + level + " " + vip
                                 + "\n" + levelProgress
                                 + "\n\n\b|2|--- Nhiệm vụ đã hoàn thành ---\n" + name
                                 + "\n\b|3|--- Nhiệm vụ chưa hoàn thành ---\n" + name1;
