@@ -786,14 +786,14 @@ public final class Manager {
                     dataArray = (JSONArray) JSONValue.parse(rs.getString("mobs").replaceAll("\\\"", ""));
                     mapTemplate.mobTemp = new byte[dataArray.size()];
                     mapTemplate.mobLevel = new byte[dataArray.size()];
-                    mapTemplate.mobHp = new int[dataArray.size()];
+                    mapTemplate.mobHp = new long[dataArray.size()];
                     mapTemplate.mobX = new short[dataArray.size()];
                     mapTemplate.mobY = new short[dataArray.size()];
                     for (int j = 0; j < dataArray.size(); j++) {
                         JSONArray dtm = (JSONArray) JSONValue.parse(String.valueOf(dataArray.get(j)));
                         mapTemplate.mobTemp[j] = Byte.parseByte(String.valueOf(dtm.get(0)));
                         mapTemplate.mobLevel[j] = Byte.parseByte(String.valueOf(dtm.get(1)));
-                        mapTemplate.mobHp[j] = Integer.parseInt(String.valueOf(dtm.get(2)));
+                        mapTemplate.mobHp[j] = Long.parseLong(String.valueOf(dtm.get(2)));
                         mapTemplate.mobX[j] = Short.parseShort(String.valueOf(dtm.get(3)));
                         mapTemplate.mobY[j] = Short.parseShort(String.valueOf(dtm.get(4)));
                         dtm.clear();
@@ -1232,7 +1232,7 @@ public final class Manager {
 
         byte[] mobTemp = new byte[mobs.size()];
         byte[] mobLevel = new byte[mobs.size()];
-        int[] mobHp = new int[mobs.size()];
+        long[] mobHp = new long[mobs.size()];
         short[] mobX = new short[mobs.size()];
         short[] mobY = new short[mobs.size()];
         JSONArray persistMobs = new JSONArray();
@@ -1264,7 +1264,7 @@ public final class Manager {
                 return "{\"saved\":false,\"message\":\"Mob template khong ton tai: " + tempId + "\"}";
             }
             int level = Math.max(0, Math.min(127, intValue(mob.get("level"), 1)));
-            int hp = Math.max(1, intValue(mob.get("hp"), 1));
+            long hp = Math.max(1, longValue(mob.get("hp"), 1));
             int x = Math.max(0, Math.min(Short.MAX_VALUE, intValue(mob.get("x"), 0)));
             int y = Math.max(0, Math.min(Short.MAX_VALUE, intValue(mob.get("y"), 0)));
             int percentDame = Math.max(0, Math.min(100, intValue(mob.get("percent_dame"),
@@ -1890,6 +1890,14 @@ public final class Manager {
     private static int intValue(Object value, int fallback) {
         try {
             return Integer.parseInt(String.valueOf(value));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private static long longValue(Object value, long fallback) {
+        try {
+            return Long.parseLong(String.valueOf(value));
         } catch (Exception e) {
             return fallback;
         }

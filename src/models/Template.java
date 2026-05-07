@@ -122,7 +122,7 @@ public class Template {
 
         public byte[] mobTemp;
         public byte[] mobLevel;
-        public int[] mobHp;
+        public long[] mobHp;
         public short[] mobX;
         public short[] mobY;
 
