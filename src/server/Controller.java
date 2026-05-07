@@ -1144,7 +1144,7 @@ public class Controller implements IMessageHandler {
     private void sendThongBaoServer(Player player) {
         Service.gI().sendThongBaoFromAdmin(player,
                 "|0|Trò chơi vẫn đang hoàn thiện, mong nhận được góp ý từ bạn để cùng phát triển! ️\n"
-                + "Website chính thức: ngocronghdpe.online");
+                + "Website chính thức: nrohorizon.online");
     }
 
     private void clearVTSK(Player player) {

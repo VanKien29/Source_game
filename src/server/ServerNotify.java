@@ -25,7 +25,7 @@ public class ServerNotify extends Thread {
     private final String notify[] = {
             "Dành cho người chơi trên 18 tuổi. Chơi quá 180 phút một ngày sẽ ảnh hưởng đến sức khỏe.",
             "Trò chơi không có bản quyền chính thức, hãy cân nhắc kỹ trước khi tham gia.",
-            "Ngọc Rồng Hdpe - Trang Chủ: https://ngocronghdpe.online/" };
+            "Ngọc Rồng Horizon - Trang Chủ: https://nrohorizon.online/" };
 
     private static ServerNotify instance;
 

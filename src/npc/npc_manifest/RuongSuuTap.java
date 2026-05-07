@@ -58,7 +58,7 @@ public class RuongSuuTap extends Npc {
                                 + "\n|7|Vật phẩm có thể bỏ: Cải trang, Đeo lưng, Pet, Ván bay"
                                 + "\n|7|Bỏ đủ 20 vật phẩm tăng 1% sức đánh, 3% hp, ki"
                                 + "\n|7|Bỏ đủ 40 vật phẩm tăng 3% sức đánh, 7% hp, ki"
-                                + "\n|0|Cảm Ơn Đã Đọc Mãi Yêu Ngọc Rồng Hdpe",
+                                + "\n|0|Cảm Ơn Đã Đọc Mãi Yêu Ngọc Rồng Horizon",
                                 "Đóng");
                     }
                 }

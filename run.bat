@@ -7,5 +7,5 @@ IF NOT EXIST dist\NROKRAI.jar (
 	EXIT /B 1
 )
 
-java -server -jar -Dfile.encoding=UTF-8 dist/NROKRAI.jar
+java -server -Xms128m -Xmx768m -XX:+UseG1GC -Dfile.encoding=UTF-8 -jar dist/NROKRAI.jar
 PAUSE

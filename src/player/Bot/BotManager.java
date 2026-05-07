@@ -3,6 +3,7 @@ package player.Bot;
 
 import java.util.ArrayList;
 import java.util.List;
+import server.PerformanceConfig;
 import server.ServerManager;
 
 /**
@@ -28,7 +29,8 @@ public class BotManager implements Runnable {
         while (ServerManager.isRunning) {
             try {
                 long st = System.currentTimeMillis();
-                if (System.currentTimeMillis() - lastSmartPartyUpdate >= 5_000) {
+                PerformanceConfig perf = PerformanceConfig.gI();
+                if (System.currentTimeMillis() - lastSmartPartyUpdate >= perf.botPartyUpdateMillis) {
                     SmartBotAI.gI().updateParties(this.bot);
                     lastSmartPartyUpdate = System.currentTimeMillis();
                 }
@@ -37,7 +39,7 @@ public class BotManager implements Runnable {
                         bot.update();
                     }
                 }
-                long sleep = 150 - (System.currentTimeMillis() - st);
+                long sleep = perf.botTickMillis - (System.currentTimeMillis() - st);
                 Thread.sleep(Math.max(10, sleep));
             } catch (Exception ignored) {
             }

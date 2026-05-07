@@ -47,7 +47,7 @@ public class SubMenuService {
                     selects = new String[] { "Oẳn tù tì", "Cừu sát", "Bắn Bluetooth", "Hủy" };
                     // }
                     NpcService.gI().createMenuConMeo(player, ConstNpc.SUB_MENU, -1,
-                            "|0|Ngọc Rồng Hdpe\n" + plTarget.name + " (sức mạnh "
+                            "|0|Ngọc Rồng Horizon\n" + plTarget.name + " (sức mạnh "
                                     + Util.numberToMoney(plTarget.nPoint.power) + ")",
                             selects, plTarget);
                 }

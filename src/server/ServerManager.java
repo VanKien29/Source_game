@@ -136,7 +136,8 @@ public class ServerManager {
                     ConstDataEventSM.isRunningSK = ConstDataEventSM.isActiveEvent();
                     ConstDataEventNAP.isRunningSK = ConstDataEventNAP.isActiveEvent();
                     TopWhisRewardService.gI().checkAndRewardWeekly();
-                    Functions.sleep(Math.max(500 - (System.currentTimeMillis() - st), 10));
+                    long frame = PerformanceConfig.gI().eventCheckMillis;
+                    Functions.sleep(Math.max(frame - (System.currentTimeMillis() - st), 10));
 
                 } catch (Exception e) {
                     e.printStackTrace();

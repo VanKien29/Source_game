@@ -133,7 +133,7 @@ public class QuyLaoKame extends Npc {
                         }
                         case 4 -> {
                             this.createOtherMenu(player, ConstNpc.MAIL_BOX,
-                                    "|0|Website: ngocronghdpe.online\n"
+                                    "|0|Website: nrohorizon.online\n"
                                     + "|7|Lưu ý: Nếu không mở được Hòm Thư <-> Hãy XÓA DỮ LIỆU!",
                                     "Hòm Thư\n(" + (player.inventory.itemsMailBox.size()
                                     - InventoryService.gI()

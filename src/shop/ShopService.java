@@ -550,7 +550,7 @@ public class ShopService {
             msg.writer().writeByte(items.size());
             for (Item item : items) {
                 msg.writer().writeShort(item.template.id);
-                msg.writer().writeUTF("Ngọc Rồng Hdpe");
+                msg.writer().writeUTF("Ngọc Rồng Horizon");
                 msg.writer().writeByte(item.itemOptions.size() + 1);
                 // mở option item cho src
                 for (Item.ItemOption io : item.itemOptions) {
