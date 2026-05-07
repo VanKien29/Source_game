@@ -29,7 +29,9 @@ public class MenuController {
     public void openMenuNPC(MySession session, int idnpc, Player player) {
         TransactionService.gI().cancelTrade(player);
         Npc npc;
-        if (idnpc == ConstNpc.CALICK && player.zone.map.mapId != 102) {
+        if (idnpc == ConstNpc.CALICK && !NpcManager.canSeeCalick(player)) {
+            npc = null;
+        } else if (idnpc == ConstNpc.CALICK && player.zone.map.mapId != 102) {
             npc = NpcManager.getNpc(ConstNpc.CALICK);
         } else if (idnpc == ConstNpc.LY_TIEU_NUONG) {
             npc = NpcManager.getNpc(ConstNpc.LY_TIEU_NUONG);
@@ -52,7 +54,9 @@ public class MenuController {
                 NpcManager.getNpc((byte) npcId).confirmMenu(player, select);
             default -> {
                 Npc npc = null;
-                if (npcId == ConstNpc.CALICK && player.zone.map.mapId != 102) {
+                if (npcId == ConstNpc.CALICK && !NpcManager.canSeeCalick(player)) {
+                    npc = null;
+                } else if (npcId == ConstNpc.CALICK && player.zone.map.mapId != 102) {
                     npc = NpcManager.getNpc(ConstNpc.CALICK);
                 } else if (npcId == ConstNpc.LY_TIEU_NUONG) {
                     npc = NpcManager.getNpc(ConstNpc.LY_TIEU_NUONG);

@@ -275,6 +275,9 @@ public class TaskService {
                         return doneTask(player, ConstTask.TASK_29_0);
                     }
                 }
+                if (player.levelLuyenTap >= 1 && doneTask(player, ConstTask.TASK_10_0)) {
+                    return true;
+                }
                 return doneTask(player, ConstTask.TASK_9_3);
             case ConstNpc.OSIN:
                 return doneTask(player, ConstTask.TASK_30_7);

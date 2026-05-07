@@ -890,6 +890,10 @@ public class ChangeMapService {
     }
 
     public void goToTuongLai(Player player) {
+        if (TaskService.gI().getIdTask(player) < ConstTask.TASK_23_0) {
+            Service.gI().sendThongBao(player, "Hãy hoàn thành nhiệm vụ 22 trước");
+            return;
+        }
         if (!player.iDMark.isGotoFuture()) {
             player.iDMark.setLastTimeGoToFuture(System.currentTimeMillis());
             player.iDMark.setGotoFuture(true);

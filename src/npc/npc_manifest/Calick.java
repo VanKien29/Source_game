@@ -32,9 +32,9 @@ public class Calick extends Npc {
             return;
         }
         player.iDMark.setIndexMenu(ConstNpc.BASE_MENU);
-        if (TaskService.gI().getIdTask(player) < ConstTask.TASK_20_0) {
+        if (TaskService.gI().getIdTask(player) < ConstTask.TASK_23_0) {
             Service.gI().hideWaitDialog(player);
-            Service.gI().sendThongBao(player, "Không thể thực hiện");
+            Service.gI().sendThongBao(player, "Hãy hoàn thành nhiệm vụ 22 trước");
             return;
         }
 
@@ -66,8 +66,10 @@ public class Calick extends Npc {
                     NpcService.gI().createTutorial(player, tempId, this.avartar, ConstNpc.CALICK_KE_CHUYEN);
                 case 1 -> {
                     //đến tương lai
-                    if (TaskService.gI().getIdTask(player) >= ConstTask.TASK_20_0) {
+                    if (TaskService.gI().getIdTask(player) >= ConstTask.TASK_23_0) {
                         ChangeMapService.gI().goToTuongLai(player);
+                    } else {
+                        Service.gI().sendThongBao(player, "Hãy hoàn thành nhiệm vụ 22 trước");
                     }
                 }
                 default ->

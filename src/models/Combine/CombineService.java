@@ -3,7 +3,9 @@ package models.Combine;
 import consts.ConstNpc;
 import item.Item;
 
+import java.util.ArrayList;
 import java.io.IOException;
+import java.util.List;
 
 import models.Combine.manifest.CheTaoTrangBiThienSu;
 import models.Combine.manifest.CuongHoaLoSaoPhaLe;
@@ -14,6 +16,7 @@ import models.Combine.manifest.EpSaoTrangBi;
 import models.Combine.manifest.GiaHanVatPham;
 import models.Combine.manifest.GiamDinhSach;
 import models.Combine.manifest.HoiPhucSach;
+import models.Combine.manifest.LamPhepNhapDa;
 import models.Combine.manifest.MoKhoaItem;
 import models.Combine.manifest.NangCapBongTai;
 import models.Combine.manifest.NangCapBongTai3;
@@ -143,6 +146,8 @@ public class CombineService {
                 NangCapVatPham.showInfoCombine(player);
             case NANG_CAP_BONG_TAI ->
                 NangCapBongTai.showInfoCombine(player);
+            case LAM_PHEP_NHAP_DA ->
+                LamPhepNhapDa.showInfoCombine(player);
             case NANG_CHI_SO_BONG_TAI ->
                 NangChiSoBongTai.showInfoCombine(player);
             case NANG_CAP_BONG_TAI3 ->
@@ -225,6 +230,8 @@ public class CombineService {
                 NangCapVatPham.nangCapVatPham(player, num == 1);
             case NANG_CAP_BONG_TAI ->
                 NangCapBongTai.nangCapBongTai(player);
+            case LAM_PHEP_NHAP_DA ->
+                LamPhepNhapDa.lamPhepNhapDa(player);
             case NANG_CHI_SO_BONG_TAI ->
                 NangChiSoBongTai.nangChiSoBongTai(player);
             case NANG_CAP_BONG_TAI3 ->
@@ -283,10 +290,19 @@ public class CombineService {
                 TayGiapLuyenTap.startCombine(player);
         }
 
-        player.iDMark.setIndexMenu(ConstNpc.IGNORE_MENU);
+        if (!isRepeatableCombine(player.combine.typeCombine)) {
+            player.iDMark.setIndexMenu(ConstNpc.IGNORE_MENU);
+        }
         player.combine.clearParamCombine();
         player.combine.lastTimeCombine = System.currentTimeMillis();
 
+    }
+
+    private boolean isRepeatableCombine(int typeCombine) {
+        return typeCombine == LAM_PHEP_NHAP_DA
+                || typeCombine == TAO_DA_HEMATITE
+                || typeCombine == NANG_CAP_SAO_PHA_LE
+                || typeCombine == DANH_BONG_SAO_PHA_LE;
     }
 
     /**
@@ -429,15 +445,22 @@ public class CombineService {
     public void reOpenItemCombine(Player player) {
         Message msg = null;
         try {
+            List<Integer> indexes = new ArrayList<>();
+            List<Item> validItems = new ArrayList<>();
+            for (Item it : player.combine.itemsCombine) {
+                int index = InventoryService.gI().getIndexItemBag(player, it);
+                if (index >= 0) {
+                    indexes.add(index);
+                    validItems.add(it);
+                }
+            }
+            player.combine.itemsCombine.clear();
+            player.combine.itemsCombine.addAll(validItems);
             msg = new Message(-81);
             msg.writer().writeByte(REOPEN_TAB_COMBINE);
-            msg.writer().writeByte(player.combine.itemsCombine.size());
-            for (Item it : player.combine.itemsCombine) {
-                for (int j = 0; j < player.inventory.itemsBag.size(); j++) {
-                    if (it == player.inventory.itemsBag.get(j)) {
-                        msg.writer().writeByte(j);
-                    }
-                }
+            msg.writer().writeByte(indexes.size());
+            for (int index : indexes) {
+                msg.writer().writeByte(index);
             }
             player.sendMessage(msg);
         } catch (Exception e) {

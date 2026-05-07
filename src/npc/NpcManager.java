@@ -39,6 +39,10 @@ public class NpcManager {
         return null;
     }
 
+    public static boolean canSeeCalick(Player player) {
+        return player != null && TaskService.gI().getIdTask(player) >= ConstTask.TASK_23_0;
+    }
+
     public static List<Npc> getNpcsByMapPlayer(Player player) {
         List<Npc> list = new ArrayList<>();
         if (player.zone != null) {
@@ -46,7 +50,7 @@ public class NpcManager {
                 if (npc.tempId == ConstNpc.QUA_TRUNG && player.mabuEgg == null
                         && player.zone.map.mapId == (21 + player.gender)) {
                     continue;
-                } else if (npc.tempId == ConstNpc.CALICK && TaskService.gI().getIdTask(player) < ConstTask.TASK_21_0) {
+                } else if (npc.tempId == ConstNpc.CALICK && !canSeeCalick(player)) {
                     continue;
                 } else if (npc.tempId == ConstNpc.CALICK && player.zone.map.mapId != 102 && MapService.gI().isMapCalick(player.zone.map.mapId)) {
                     if (System.currentTimeMillis() >= calickTimeChange) {
