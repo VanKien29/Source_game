@@ -1582,6 +1582,9 @@ public class Service {
     }
 
     public void dropItemMap(Zone zone, ItemMap item) {
+        if (zone == null || zone.isBotOwnedItem(item)) {
+            return;
+        }
         Message msg;
         try {
             msg = new Message(68);
@@ -1597,6 +1600,9 @@ public class Service {
     }
 
     public void dropItemMapForMe(Player player, ItemMap item) {
+        if (player == null || player.zone == null || player.zone.isBotOwnedItem(item)) {
+            return;
+        }
         Message msg;
         try {
             msg = new Message(68);
