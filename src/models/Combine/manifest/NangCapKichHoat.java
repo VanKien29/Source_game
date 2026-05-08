@@ -2,6 +2,8 @@ package models.Combine.manifest;
 
 import consts.ConstNpc;
 import item.Item;
+import java.util.ArrayList;
+import java.util.List;
 import models.Combine.CombineService;
 import player.Player;
 import server.Manager;
@@ -17,173 +19,204 @@ import utils.Util;
  */
 public class NangCapKichHoat {
 
+    private static final int ITEM_THOI_VANG = 457;
+    private static final int ITEM_XU_HORIZON = 1705;
+    private static final int ITEM_DA_SKH_THUONG = 1742;
+    private static final int ITEM_DA_SKH_VIP = 1743;
+    private static final int REQUIRED_HUY_DIET = 5;
+    private static final int REQUIRED_THAN_LINH = 10;
+    private static final int REQUIRED_DA_THUONG = 20;
+    private static final int REQUIRED_DA_VIP = 3;
+    private static final int REQUIRED_THOI_VANG = 5000;
+    private static final int REQUIRED_XU_HORIZON = 5000;
+    private static final short[] RADAR_IDS = {57, 58, 59, 184, 185, 186, 187, 278, 279, 280, 281, 561};
+
     public static boolean isDoHuyDiet(Item item) {
-        if (item.template.id >= 650 && item.template.id <= 662) {
-            return true;
-        }
-        return false;
+        return item != null && item.isNotNullItem() && item.template.id >= 650 && item.template.id <= 662;
+    }
+
+    private static boolean isDoThienSu(Item item) {
+        return item != null && item.isNotNullItem() && item.template.id >= 1048 && item.template.id <= 1062;
+    }
+
+    private static boolean isDoThanLinh(Item item) {
+        return item != null && item.isNotNullItem() && item.template.id >= 555 && item.template.id <= 567;
+    }
+
+    private static boolean isDaSkhVip(Item item) {
+        return item != null && item.isNotNullItem() && item.template.id == ITEM_DA_SKH_VIP;
     }
 
     public static void showInfoCombine(Player player) {
-        if (player.combine != null && player.combine.itemsCombine != null && player.combine.itemsCombine.size() == 2) {
-            Item trangbiHuyDiet = null;
-            Item daKichHoat = null;
-            for (Item item : player.combine.itemsCombine) {
-                if (isDoHuyDiet(item)) {
-                    trangbiHuyDiet = item;
-                } else if (item.template.id == 1742) {
-                    daKichHoat = item;
-                }
-            }
-            player.combine.goldCombine = 500_000_000;
-            int goldCombie = player.combine.goldCombine;
-            if (trangbiHuyDiet != null && daKichHoat != null) {
-                String npcSay = "Sau khi cường hoá, sẽ được nâng cấp trang bị Huỷ Diệt thành trang bị Kích hoạt";
-                CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
-                        "Cường hoá\n" + Util.numberToMoney(goldCombie) + " vàng", "Từ chối");
-            } else {
-                Service.gI().sendThongBaoOK(player, "Cần 1 trang bị huỷ diệt và 1 viên đá kích hoạt");
-            }
-        } else {
-            Service.gI().sendThongBaoOK(player, "Cần 1 trang bị huỷ diệt và 1 viên đá kích hoạt");
+        CombineData data = getCombineData(player);
+        if (!isReady(data)) {
+            Service.gI().sendThongBaoOK(player, getMissingMessage(data));
+            return;
         }
+
+        String stoneText = data.useVipStone()
+                ? REQUIRED_DA_VIP + " đá SKH VIP"
+                : REQUIRED_DA_THUONG + " đá SKH thường";
+        String npcSay = "Nâng cấp SKH VIP NEW sẽ đổi đồ Thiên Sứ chính thành SKH NEW cùng món.\n"
+                + "Cần " + REQUIRED_HUY_DIET + " đồ Hủy Diệt bất kỳ, "
+                + REQUIRED_THAN_LINH + " đồ Thần Linh bất kỳ, "
+                + stoneText + ", " + REQUIRED_THOI_VANG + " thỏi vàng và "
+                + REQUIRED_XU_HORIZON + " xu Horizon.";
+        CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
+                "Nâng cấp", "Từ chối");
     }
 
     public static void startCombine(Player player) {
-        if (player.combine.itemsCombine.size() == 2) {
-            int gold = player.combine.goldCombine;
-            if (player.inventory.gold < gold) {
-                Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu " + Util.numberToMoney(gold - player.inventory.gold) + " vàng nữa");
-                Service.gI().sendMoney(player);
-                return;
-            }
+        CombineData data = getCombineData(player);
+        if (!isReady(data)) {
+            Service.gI().sendThongBaoOK(player, getMissingMessage(data));
+            return;
+        }
 
-            Item trangbiHuyDiet = null;
-            Item daKichHoat = null;
+        Item newItem = createNewSkhItem(player, data.thienSu);
+        consumeItems(player, data);
+        InventoryService.gI().addItemBag(player, newItem);
+
+        CombineService.gI().sendEffectSuccessCombine(player);
+        InventoryService.gI().sendItemBag(player);
+        Service.gI().sendMoney(player);
+        CombineService.gI().reOpenItemCombine(player);
+    }
+
+    private static Item createNewSkhItem(Player player, Item thienSu) {
+        int planet = getPlanet(player, thienSu);
+        int slot = thienSu.template.type;
+        short itemId = getRandomTemplateId(planet, slot);
+        Item newItem = ItemService.gI().createNewItem(itemId);
+        RewardService.gI().initBaseOptionClothes(newItem.template.id, newItem.template.type, newItem.itemOptions);
+
+        int[] opsrand = ItemService.gI().randOptionItemKichHoatNew(planet);
+        for (int optionId : opsrand) {
+            newItem.itemOptions.add(new Item.ItemOption(optionId, 0));
+        }
+        newItem.itemOptions.add(new Item.ItemOption(30, 0));
+        return newItem;
+    }
+
+    private static short getRandomTemplateId(int planet, int slot) {
+        if (slot >= 0 && slot <= 3) {
+            int[] pool = Manager.LIST_DO_KHAC_4MON[planet][slot];
+            return (short) pool[Util.nextInt(0, pool.length - 1)];
+        }
+        return RADAR_IDS[Util.nextInt(0, RADAR_IDS.length - 1)];
+    }
+
+    private static int getPlanet(Player player, Item item) {
+        int gender = item.template.gender;
+        if (gender < 0 || gender > 2) {
+            gender = player.gender;
+        }
+        return gender;
+    }
+
+    private static CombineData getCombineData(Player player) {
+        CombineData data = new CombineData();
+        if (player.combine != null && player.combine.itemsCombine != null) {
             for (Item item : player.combine.itemsCombine) {
-                if (isDoHuyDiet(item)) {
-                    trangbiHuyDiet = item;
-                } else if (item.template.id == 1742) {
-                    daKichHoat = item;
+                if (data.thienSu == null && isDoThienSu(item)) {
+                    data.thienSu = item;
+                } else if (isDoHuyDiet(item)) {
+                    data.huyDietItems.add(item);
+                } else if (isDoThanLinh(item)) {
+                    data.thanLinhItems.add(item);
+                } else if (data.daVipSelected == null && isDaSkhVip(item)) {
+                    data.daVipSelected = item;
                 }
             }
-            if (trangbiHuyDiet == null || daKichHoat == null) {
-                Service.gI().sendThongBaoOK(player, "Cần 1 trang bị huỷ diệt và 1 viên đá kích hoạt");
-                return;
-            }
+        }
+        data.daThuong = InventoryService.gI().findItemBag(player, ITEM_DA_SKH_THUONG);
+        data.thoiVang = InventoryService.gI().findItemBag(player, ITEM_THOI_VANG);
+        data.xuHorizon = InventoryService.gI().findItemBag(player, ITEM_XU_HORIZON);
+        return data;
+    }
 
-            int gender = trangbiHuyDiet.template.gender;
-            int playerGender = player.gender;
+    private static boolean isReady(CombineData data) {
+        return data.thienSu != null
+                && data.huyDietItems.size() >= REQUIRED_HUY_DIET
+                && data.thanLinhItems.size() >= REQUIRED_THAN_LINH
+                && hasEnoughStone(data)
+                && hasEnough(data.thoiVang, REQUIRED_THOI_VANG)
+                && hasEnough(data.xuHorizon, REQUIRED_XU_HORIZON);
+    }
 
-            // Set thường vs set hiếm
-            final int W_COMMON = 10;
-            final int W_RARE = 3;
-            // TD (Trái đất)
-            int[][] oldPairsTD = {
-                {129, 141}, // Sôngôku (HIẾM)
-                {127, 139}, // Thên Xin Hăng (thường)
-                {128, 140} // Kirin (thường)
-            };
-            int[] oldWeightTD = {
-                W_RARE, // Sôngôku thấp
-                W_COMMON,
-                W_COMMON
-            };
-            int[] newFullTD = {245, 246, 247, 248}; // Thần Vũ Trụ Kaio (HIẾM)
-            int newWeightTD = W_RARE;
+    private static boolean hasEnoughStone(CombineData data) {
+        if (data.useVipStone()) {
+            return hasEnough(data.daVipSelected, REQUIRED_DA_VIP);
+        }
+        return hasEnough(data.daThuong, REQUIRED_DA_THUONG);
+    }
 
-            // NM (Namếc)
-            int[][] oldPairsNM = {
-                {132, 144}, // Pikkoro Daimao (thường)
-                {131, 143}, // Ốc tiêu (thường)
-                {130, 142}, // Picolo (thường)
-                {251, 254} // Liên Hoàn (HIẾM)
-            };
-            int[] oldWeightNM = {
-                W_COMMON,
-                W_COMMON,
-                W_COMMON,
-                W_RARE // Liên Hoàn thấp
-            };
-            int[] newFullNM = {237, 238, 239, 240}; // Nail chiến binh Namếc (HIẾM)
-            int newWeightNM = W_RARE;
+    private static boolean hasEnough(Item item, int quantity) {
+        return item != null && item.isNotNullItem() && item.quantity >= quantity;
+    }
 
-            // XD (Xayda)
-            int[][] oldPairsXD = {
-                {135, 138}, // Nappa (HIẾM)
-                {133, 136}, // Kakarot (thường)
-                {134, 137} // Ca Đíc (thường)
-            };
-            int[] oldWeightXD = {
-                W_RARE, // Nappa thấp
-                W_COMMON,
-                W_COMMON
-            };
-            int[] newFullXD = {241, 242, 243, 244}; // Cađic M (HIẾM)
-            int newWeightXD = W_RARE;
+    private static String getMissingMessage(CombineData data) {
+        StringBuilder sb = new StringBuilder("Cần 1 đồ Thiên Sứ chính, ")
+                .append(REQUIRED_HUY_DIET).append(" đồ Hủy Diệt bất kỳ, ")
+                .append(REQUIRED_THAN_LINH).append(" đồ Thần Linh bất kỳ, ")
+                .append(REQUIRED_DA_THUONG).append(" đá SKH thường hoặc ")
+                .append(REQUIRED_DA_VIP).append(" đá SKH VIP, ")
+                .append(REQUIRED_THOI_VANG).append(" thỏi vàng và ")
+                .append(REQUIRED_XU_HORIZON).append(" xu Horizon.");
+        if (data.thienSu == null) {
+            sb.append("\nThiếu đồ Thiên Sứ chính.");
+        }
+        if (data.huyDietItems.size() < REQUIRED_HUY_DIET) {
+            sb.append("\nThiếu ").append(REQUIRED_HUY_DIET - data.huyDietItems.size()).append(" đồ Hủy Diệt.");
+        }
+        if (data.thanLinhItems.size() < REQUIRED_THAN_LINH) {
+            sb.append("\nThiếu ").append(REQUIRED_THAN_LINH - data.thanLinhItems.size()).append(" đồ Thần Linh.");
+        }
+        if (!hasEnoughStone(data)) {
+            sb.append("\nThiếu đá SKH.");
+        }
+        if (!hasEnough(data.thoiVang, REQUIRED_THOI_VANG)) {
+            int have = data.thoiVang == null ? 0 : data.thoiVang.quantity;
+            sb.append("\nThiếu ").append(REQUIRED_THOI_VANG - have).append(" thỏi vàng.");
+        }
+        if (!hasEnough(data.xuHorizon, REQUIRED_XU_HORIZON)) {
+            int have = data.xuHorizon == null ? 0 : data.xuHorizon.quantity;
+            sb.append("\nThiếu ").append(REQUIRED_XU_HORIZON - have).append(" xu Horizon.");
+        }
+        return sb.toString();
+    }
 
-            boolean isTD = ((gender == 0 || gender == 3) && playerGender == 0);
-            boolean isNM = ((gender == 1 || gender == 3) && playerGender == 1);
-            
-            int[][] oldPairs;
-            int[] oldWeights;
-            int[] newFull;
-            int newWeight;
+    private static void consumeItems(Player player, CombineData data) {
+        InventoryService.gI().subQuantityItemsBag(player, data.thienSu, 1);
+        consumeItems(player, data.huyDietItems, REQUIRED_HUY_DIET);
+        consumeItems(player, data.thanLinhItems, REQUIRED_THAN_LINH);
+        if (data.useVipStone()) {
+            InventoryService.gI().subQuantityItemsBag(player, data.daVipSelected, REQUIRED_DA_VIP);
+        } else {
+            InventoryService.gI().subQuantityItemsBag(player, data.daThuong, REQUIRED_DA_THUONG);
+        }
+        InventoryService.gI().subQuantityItemsBag(player, data.thoiVang, REQUIRED_THOI_VANG);
+        InventoryService.gI().subQuantityItemsBag(player, data.xuHorizon, REQUIRED_XU_HORIZON);
+    }
 
-            if (isTD) {
-                oldPairs = oldPairsTD;
-                oldWeights = oldWeightTD;
-                newFull = newFullTD; 
-                newWeight = newWeightTD;
-            } else if (isNM) {
-                oldPairs = oldPairsNM;
-                oldWeights = oldWeightNM;
-                newFull = newFullNM;
-                newWeight = newWeightNM;
-            } else {
-                oldPairs = oldPairsXD;
-                oldWeights = oldWeightXD;
-                newFull = newFullXD;
-                newWeight = newWeightXD;
-            }
-            Item newItem;
-            if (trangbiHuyDiet.template.type == 4) {
-                newItem = ItemService.gI().createNewItem((short) 12);
-            } else {
-                newItem = ItemService.gI().createNewItem(Manager.trangBiKichHoat[gender][trangbiHuyDiet.template.type]);
-            }
-            RewardService.gI().initBaseOptionClothes(newItem.template.id, newItem.template.type, newItem.itemOptions);
-            int total = newWeight;
-            for (int w : oldWeights) {
-                total += w;
-            }
+    private static void consumeItems(Player player, List<Item> items, int quantity) {
+        for (int i = 0; i < quantity; i++) {
+            InventoryService.gI().subQuantityItemsBag(player, items.get(i), 1);
+        }
+    }
 
-            int roll = Util.nextInt(1, total);
-            int acc = 0;
-            boolean applied = false;
-            for (int i = 0; i < oldPairs.length; i++) {
-                acc += oldWeights[i];
-                if (roll <= acc) {
-                    newItem.itemOptions.add(new Item.ItemOption(oldPairs[i][0], 0));
-                    newItem.itemOptions.add(new Item.ItemOption(oldPairs[i][1], 0));
-                    applied = true;
-                    break;
-                }
-            }
-            if (!applied) {
-                for (int optionId : newFull) {
-                    newItem.itemOptions.add(new Item.ItemOption(optionId, 0));
-                }
-            }
-            NangCapLevelKichHoat.ensureLevelZero(newItem);
-            InventoryService.gI().addItemBag(player, newItem);
-            InventoryService.gI().subQuantityItemsBag(player, trangbiHuyDiet, 1);
-            InventoryService.gI().subQuantityItemsBag(player, daKichHoat, 1);
+    private static class CombineData {
 
-            CombineService.gI().sendEffectSuccessCombine(player);
-            InventoryService.gI().sendItemBag(player);
-            Service.gI().sendMoney(player);
-            CombineService.gI().reOpenItemCombine(player);
+        private Item thienSu;
+        private Item daVipSelected;
+        private Item daThuong;
+        private Item thoiVang;
+        private Item xuHorizon;
+        private final List<Item> huyDietItems = new ArrayList<>();
+        private final List<Item> thanLinhItems = new ArrayList<>();
+
+        private boolean useVipStone() {
+            return daVipSelected != null;
         }
     }
 }

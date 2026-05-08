@@ -127,7 +127,7 @@ public class BaHatMit extends Npc {
                                 case 1 ->
                                     this.createOtherMenu(player, ConstMenu.MENU_CHUYEN_HOA_SKH,
                                             "Ta sẽ nâng trang bị hủy diệt của người\nlên một tầm cao mới hoàn toàn khác",
-                                            "Nâng cấp\nSKH thường", "Nâng cấp\nSKH VIP", "Nâng level\nSKH", "Đập đồ\nẢo hóa", "Đập ấn\nTrang bị");
+                                            "Nâng cấp\nSKH VIP", "Nâng cấp\nSKH VIP NEW", "Nâng level\nSKH", "Đập đồ\nẢo hóa", "Đập ấn\nTrang bị");
                                 case 2 ->
                                     ChangeMapService.gI().changeMapNonSpaceship(player, 112,
                                             200 + Util.nextInt(-100, 100), 408);
@@ -151,11 +151,11 @@ public class BaHatMit extends Npc {
                         }
                         case ConstMenu.MENU_CHUYEN_HOA_SKH -> {
                             switch (select) {
-                                case 0: // Nâng cấp skh thường
-                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_KICH_HOAT);
-                                    break;
-                                case 1: // Nâng cấp skh vip
+                                case 0: // Nâng cấp skh vip
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_KICH_HOAT_VIP);
+                                    break;
+                                case 1: // Nâng cấp skh vip new
+                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_KICH_HOAT);
                                     break;
                                 case 2:
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_LEVEL_KICH_HOAT);

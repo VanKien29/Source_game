@@ -365,8 +365,6 @@ public class NangCapLevelKichHoat {
                 return 137;
             case 135:
                 return 138;
-            case 250:
-                return 253;
             case 251:
                 return 254;
             default:
@@ -378,7 +376,6 @@ public class NangCapLevelKichHoat {
         switch (optionId) {
             case 136:
             case 138:
-            case 253:
             case 140:
             case 141:
             case 142:
@@ -402,7 +399,6 @@ public class NangCapLevelKichHoat {
             case 142:
             case 143:
             case 144:
-            case 253:
             case 254:
                 return true;
             default:
