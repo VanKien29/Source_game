@@ -309,7 +309,7 @@ public class CombineService {
      * Mở tab đập đồ
      *
      * @param player
-     * @param type kiểu đập đồ
+     * @param type   kiểu đập đồ
      */
     public void openTabCombine(Player player, int type) {
         player.combine.setTypeCombine(type);
@@ -555,7 +555,7 @@ public class CombineService {
                 "Ta sẽ phù phép\ncho bông tai Porata của ngươi\nthành cấp 2";
             case NANG_CHI_SO_BONG_TAI ->
                 "Ta sẽ phù phép\ncho bông tai Porata cấp 2 của ngươi\ncó 1 chỉ số ngẫu nhiên";
-                case NANG_CAP_BONG_TAI3 ->
+            case NANG_CAP_BONG_TAI3 ->
                 "Ta sẽ phù phép\ncho bông tai Porata cấp 2 của ngươi\nthành cấp 3";
             case NANG_CHI_SO_BONG_TAI3 ->
                 "Ta sẽ phù phép\ncho bông tai Porata cấp 3 của ngươi\ncó 1 chỉ số ngẫu nhiên";
@@ -581,12 +581,12 @@ public class CombineService {
                 "Chế tạo\ntrang bị thiên sứ";
             case LAM_PHEP_NHAP_DA ->
                 "Ta sẽ phù phép\n"
-                + "cho 10 mảnh đá vụn\n"
-                + "trở thành 1 đá nâng cấp";
+                        + "cho 10 mảnh đá vụn\n"
+                        + "trở thành 1 đá nâng cấp";
             case NANG_CAP_KICH_HOAT ->
-                "Ta sẽ phù phép\nchế tạo trang bị Huỷ Diệt\nthành trang bị Kích Hoạt";
+                "Ta sẽ phù phép\nchế tạo trang bị Thiên Sứ\nthành trang bị Kích Hoạt VIP NEW";
             case NANG_CAP_KICH_HOAT_VIP ->
-                "Ta sẽ phù phép\nchế tạo trang bị Thiên Sứ\nthành trang bị Kích Hoạt Vip";
+                "Ta sẽ phù phép\nchế tạo trang bị Thiên Sứ\nthành trang bị Kích Hoạt VIP";
             case NANG_CAP_LEVEL_KICH_HOAT ->
                 "Ta sẽ nâng cấp Level SKH cho con nhé";
             case NANG_CAP_DO_TL ->
@@ -664,73 +664,73 @@ public class CombineService {
                 "Cần 1 công thức\nMảnh trang bị tương ứng\n1 đá nâng cấp (tùy chọn)\n1 đá may mắn (tùy chọn)";
             case LAM_PHEP_NHAP_DA ->
                 "Vào hành trang\n"
-                + "Chọn 10 mảnh đá vụn\n"
-                + "Chọn 1 bình nước phép\n"
-                + "(mua tại Uron ở trạm tàu vũ trụ)\n"
-                + "Sau đó chọn 'Làm phép'";
+                        + "Chọn 10 mảnh đá vụn\n"
+                        + "Chọn 1 bình nước phép\n"
+                        + "(mua tại Uron ở trạm tàu vũ trụ)\n"
+                        + "Sau đó chọn 'Làm phép'";
             case NANG_CAP_KICH_HOAT ->
-                "Vào hành trang\nChọn 1 trang bị Huỷ Diệt\nChọn 1 viên đá Kích Hoạt\nSau đó chọn 'Nâng cấp'";
+                "Vào hành trang\nChọn 1 trang bị Thiên Sứ\nChọn 5 trang bị Huỷ Diệt bất kỳ\nChọn 10 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 3 đá VIP, không bỏ thì cần 20 đá SKH thường\nCần 5000 thỏi vàng và 5000 xu Horizon\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_KICH_HOAT_VIP ->
-                "Vào hành trang\nChọn 1 trang bị Thiên Sứ\nChọn 1 viên đá Kích Hoạt Vip\nSau đó chọn 'Nâng cấp'";
+                "Vào hành trang\nChọn 1 trang bị Thiên Sứ\nChọn 2 trang bị Huỷ Diệt bất kỳ\nChọn 5 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 1 đá VIP, không bỏ thì cần 10 đá SKH thường\nCần 500 thỏi vàng và 200 xu Horizon\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_LEVEL_KICH_HOAT ->
                 "Vào hành trang\nChọn 1 món SKH level 0\nChọn 1 Đá SKH thường hoặc vip\nCần thêm thỏi vàng và vàng\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_DO_TL ->
                 "Vào hành trang\nChọn 1 trang bị Thần Linh\nChọn 1 viên đá Kích Hoạt Vip\nSau đó chọn 'Nâng cấp'";
             case DAP_DO_AO_HOA ->
                 "vào hành trang\nChọn trang bị\n(Áo, quần, găng, giày hoặc rađa)"
-                + "\nChọn loại đá quý để nâng cấp\n"
-                + "\nCó thể thêm đá bảo vệ để tránh tụt cấp\n"
-                + "Sau đó chọn 'Nâng cấp'";
+                        + "\nChọn loại đá quý để nâng cấp\n"
+                        + "\nCó thể thêm đá bảo vệ để tránh tụt cấp\n"
+                        + "Sau đó chọn 'Nâng cấp'";
             case NANG_CAP_CHAN_MENH ->
                 " vào hành trang, chọn 'Chân Mệnh',"
-                + "\n99 Đá Ngũ Sắc và 5 Xu elite"
-                + "\nSau đó chọn 'Nâng cấp'";
+                        + "\n99 Đá Ngũ Sắc và 5 Xu elite"
+                        + "\nSau đó chọn 'Nâng cấp'";
             case DOI_DO_THAN ->
                 "Vào hành trang\n Chọn 1 món thần linh bất kì, sau đó chọn 'Nâng câp'";
             case PS_HOA_TRANG_BI ->
                 "Vào hành trang\nChọn 1 trang bị có thể hắc hóa :\n"
-                + "[-- Đeo lưng, Pet, Linh Thú --] và đá pháp sư\n"
-                + "Để nâng cấp chỉ số pháp sư\n"
-                + "Chỉ cần chọn 'Nâng Cấp'";
+                        + "[-- Đeo lưng, Pet, Linh Thú --] và đá pháp sư\n"
+                        + "Để nâng cấp chỉ số pháp sư\n"
+                        + "Chỉ cần chọn 'Nâng Cấp'";
             case MO_KHOA_ITEM ->
                 "vào hành trang\nChọn 1 trang bị khóa giao dịch ( bông tai, item sự kiện, thỏi vàng,..) và Đá Gia Hạn \n "
-                + " để mở khóa giao dịch Item"
-                + "Chỉ cần chọn 'Mở Khóa'";
+                        + " để mở khóa giao dịch Item"
+                        + "Chỉ cần chọn 'Mở Khóa'";
 
             case TAY_PS_HOA_TRANG_BI ->
                 "Vào hành trang\nChọn 1 trang bị có thể tẩy (Đeo lưng, Pet) và đá tẩy \n "
-                + "Để xoá nâng cấp chỉ số trang bị đã Pháp sư hóa\n"
-                + "Chỉ cần chọn 'Nâng Cấp'";
+                        + "Để xoá nâng cấp chỉ số trang bị đã Pháp sư hóa\n"
+                        + "Chỉ cần chọn 'Nâng Cấp'";
 
             case AN_TRANG_BI ->
                 "Vào hành trang\nChọn 1 Trang bị(Áo, Quần ,Giày ,Găng ,Rada) Hủy Diệt hoặc Thiên Sứ và 99 mảnh Ấn\nSau đó chọn 'Làm phép'\n--------\nTinh ấn (5 món +15%SD)\n Nhật ấn (5 món +15%Hp)\n Nguyệt ấn (5 món +15%KI)";
 
             case GIA_HAN_VAT_PHAM ->
                 "Vào hành trang\n"
-                + "Chọn 1 trang bị có hạn sử dụng\n"
-                + "Chọn Đá Gia Hạn\n"
-                + "Sau đó chọn 'Gia hạn'";
+                        + "Chọn 1 trang bị có hạn sử dụng\n"
+                        + "Chọn Đá Gia Hạn\n"
+                        + "Sau đó chọn 'Gia hạn'";
             case SIEU_HOA ->
                 "Vào hành trang\n"
-                + "Chọn 1 Cải trang\n"
-                + "Chọn Đá Siêu Hóa\n"
-                + "Sau đó chọn 'Nâng Cấp'";
+                        + "Chọn 1 Cải trang\n"
+                        + "Chọn Đá Siêu Hóa\n"
+                        + "Sau đó chọn 'Nâng Cấp'";
             case TINH_THACH_HOA ->
                 "Vào hành trang\n"
-                + "Chọn 1 Vật Phẩm (Pet, Linh Thú, VPDL)\n"
-                + "Chọn 1 loại đá Tinh thạch\n"
-                + "Sau đó chọn 'Nâng Cấp'";
+                        + "Chọn 1 Vật Phẩm (Pet, Linh Thú, VPDL)\n"
+                        + "Chọn 1 loại đá Tinh thạch\n"
+                        + "Sau đó chọn 'Nâng Cấp'";
             case TAY_GIAP_LUYEN_TAP ->
                 "Vào hành trang\n"
-                + "Chọn 1 Giáp luyện tập\n"
-                + "Chọn đá tẩy\n"
-                + "Sau đó chọn 'Xóa'";
+                        + "Chọn 1 Giáp luyện tập\n"
+                        + "Chọn đá tẩy\n"
+                        + "Sau đó chọn 'Xóa'";
             case NANG_GIAP_LUYEN_TAP ->
                 "Vào hành trang\n"
-                + "Chọn 1 Giáp luyện tập\n"
-                + "Chọn đá hổ phách\n"
-                + "Sau đó chọn 'Nâng Cấp'";
-            
+                        + "Chọn 1 Giáp luyện tập\n"
+                        + "Chọn đá hổ phách\n"
+                        + "Sau đó chọn 'Nâng Cấp'";
+
             default ->
                 "";
         };
@@ -741,9 +741,9 @@ public class CombineService {
             case PHA_LE_HOA_TRANG_BI:
                 PhaLeHoaTrangBi.phaLeHoa(player, n);
                 break;
-//            case NHAP_NGOC_RONG:
-//                NhapNgocRong.nhapNgocRong(player, n);
-//                break;
+            // case NHAP_NGOC_RONG:
+            // NhapNgocRong.nhapNgocRong(player, n);
+            // break;
         }
 
         player.iDMark.setIndexMenu(ConstNpc.IGNORE_MENU);

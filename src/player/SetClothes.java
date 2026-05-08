@@ -163,11 +163,6 @@ public class SetClothes {
                             isActSet = true;
                             hdpe++;
                             break;
-                        case 250:
-                        case 253:
-                            isActSet = true;
-                            kaioken++;
-                            break;
                         case 251:
                         case 254:
                             isActSet = true;
@@ -274,9 +269,6 @@ public class SetClothes {
             case 134:
             case 137:
                 return 8;
-            case 250:
-            case 253:
-                return 9;
             case 251:
             case 254:
                 return 10;
@@ -351,7 +343,7 @@ public class SetClothes {
 
     public static boolean isOldSKHOption(int optionId) {
         return (optionId >= 127 && optionId <= 144)
-                || (optionId >= 250 && optionId <= 255)
+                || optionId == 251 || optionId == 252 || optionId == 254 || optionId == 255
                 || optionId == 179 || optionId == 180;
     }
 
@@ -450,7 +442,7 @@ public class SetClothes {
             return 87;
         }
         if (isFullSetSameLevel(0) || isFullSetSameLevel(1) || isFullSetSameLevel(2)
-                || isFullSetSameLevel(9) || isFullSetSameLevel(13)) {
+                || isFullSetSameLevel(13)) {
             return 88;
         }
         return -1;

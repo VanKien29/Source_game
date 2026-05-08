@@ -2123,7 +2123,7 @@ public class NPoint {
                 tiemNang += tn * 2;
             }
             if (this.player.setClothes.hdpe == 5) {
-                tiemNang += (tn * 500L / 100L);
+                tiemNang += (tn * 100L / 100L);
             }
             if (this.player.getSession() != null && this.player.getSession().vip > 0
                     || this.player.isPet && ((Pet) this.player).master.getSession() != null

@@ -1004,6 +1004,23 @@ public class Mob {
             list.add(it);
         }
 
+        // Set kich hoat new theo mon
+        if (Util.isTrue(100, 100) && MapService.gI().isMapUpSKH(mapid)) {
+            short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
+            ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
+            List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);
+            if (!ops.isEmpty()) {
+                it.options = new ArrayList<>(ops);
+            }
+
+            int[] opsrand = ItemService.gI().randOptionItemKichHoatNew(player.gender);
+            for (int optionId : opsrand) {
+                it.options.add(new Item.ItemOption(optionId, 0));
+            }
+            it.options.add(new Item.ItemOption(30, 0));
+            list.add(it);
+        }
+
         // Sao pha le
         if (Util.isTrue(1, 350) || (player.nPoint.isDoSPL && Util.isTrue(3, 400))) {
             int rand = Util.nextInt(0, 6);

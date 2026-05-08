@@ -720,8 +720,6 @@ public class ItemService {
                 return 137;
             case 135: // Set HP
                 return 138;
-            case 250: // Set Kaioken
-                return 253;
             case 251: // Set Lien Hoàn
                 return 254;
 
@@ -759,8 +757,6 @@ public class ItemService {
                 return 137;
             case 135: // Set HP
                 return 138;
-            case 250: // Set Kaioken
-                return 253;
             case 251: // Set Lien Hoàn
                 return 254;
 
@@ -1349,8 +1345,8 @@ public class ItemService {
                     op1 = 129;
                     op2 = 141;
                 } else {
-                    op1 = 250;
-                    op2 = 253;
+                    op1 = 129;
+                    op2 = 141;
                 }
             }
             case 1 -> {
