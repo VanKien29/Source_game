@@ -38,7 +38,7 @@ public class XENCON7 extends Boss {
         }
         TaskService.gI().checkDoneTaskKillBoss(plKill, this);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
         if (plKill != null && Util.isTrue(100, 100)) {

@@ -48,7 +48,7 @@ public class Kuku extends Boss {
         }
         SoSuMenhService.gI().updateProgress(plKill, 11, 1);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
     }

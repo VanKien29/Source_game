@@ -16,20 +16,34 @@ public class NangCapLevelKichHoat {
     public static final int OPTION_SKH_FULL_SET_BONUS = SetClothes.OPTION_SKH_FULL_SET_BONUS;
     public static final int OPTION_SKH_FULL_SET_BONUS_INACTIVE = 263;
     private static final int ITEM_THOI_VANG = 457;
+    private static final int ITEM_XU_HORIZON = 1705;
     private static final int ITEM_DA_SKH_THUONG = 1742;
     private static final int ITEM_DA_SKH_VIP = 1743;
     private static final int MAX_SKH_LEVEL = 5;
 
-    private static final int[] EFFECT_PERCENT = {25, 50, 75, 100, 125, 150};
-    private static final int[] FULL_SET_PERCENT = {0, 1, 3, 5, 8, 12};
-    private static final int[] NORMAL_RATIO = {0, 70, 50, 30, 15, 5};
+    private static final int[] EFFECT_PERCENT = { 25, 50, 75, 100, 125, 150 };
+    private static final int[] FULL_SET_PERCENT = { 0, 1, 3, 5, 8, 12 };
+    private static final float[] NORMAL_RATIO = { 0, 80, 50, 15, 5, 0.5f };
+    private static final int[] THOI_VANG_REQUIRED = { 500, 999, 1599, 2599, 3299, 4599 };
+    private static final int[] XU_HORIZON_REQUIRED = { 50, 99, 159, 259, 329, 459 };
 
-    private static int getGold(int nextLevel) {
-        return nextLevel * 100_000_000;
+    private static long getGold(int nextLevel) {
+        return (long) nextLevel * 100_000_000_000L;
     }
 
     private static int getThoiVang(int nextLevel) {
-        return nextLevel;
+        return THOI_VANG_REQUIRED[nextLevel - 1];
+    }
+
+    private static int getXuHorizon(int nextLevel) {
+        return XU_HORIZON_REQUIRED[nextLevel - 1];
+    }
+
+    private static String formatRatio(float ratio) {
+        if (ratio == (long) ratio) {
+            return String.valueOf((long) ratio);
+        }
+        return String.valueOf(ratio);
     }
 
     public static int getEffectPercent(int level) {
@@ -77,7 +91,6 @@ public class NangCapLevelKichHoat {
             return false;
         }
         boolean equippedItem = false;
-        int minLevel = MAX_SKH_LEVEL;
         for (int i = 0; i < 5; i++) {
             Item bodyItem = player.inventory.itemsBody.get(i);
             if (bodyItem == item) {
@@ -86,9 +99,11 @@ public class NangCapLevelKichHoat {
             if (bodyItem == null || !bodyItem.isNotNullItem() || getSKHSetIndex(bodyItem) != itemSetIndex) {
                 return false;
             }
-            minLevel = Math.min(minLevel, SetClothes.getSKHLevel(bodyItem));
+            if (SetClothes.getSKHLevel(bodyItem) != itemLevel) {
+                return false;
+            }
         }
-        return equippedItem && minLevel == itemLevel;
+        return equippedItem;
     }
 
     private static int getSKHSetIndex(Item item) {
@@ -166,11 +181,13 @@ public class NangCapLevelKichHoat {
         }
 
         int nextLevel = level + 1;
-        int gold = getGold(nextLevel);
+        long gold = getGold(nextLevel);
         int thoiVang = getThoiVang(nextLevel);
+        int xuHorizonRequired = getXuHorizon(nextLevel);
         Item tv = InventoryService.gI().findItemBag(player, ITEM_THOI_VANG);
+        Item xuHorizon = InventoryService.gI().findItemBag(player, ITEM_XU_HORIZON);
         boolean vip = daSKH.template.id == ITEM_DA_SKH_VIP;
-        int ratio = vip ? 100 : NORMAL_RATIO[nextLevel];
+        float ratio = vip ? 100 : NORMAL_RATIO[nextLevel];
 
         StringBuilder text = new StringBuilder();
         text.append(ConstFont.BOLD_BLUE).append(trangBi.template.name)
@@ -178,19 +195,24 @@ public class NangCapLevelKichHoat {
                 .append("\n").append(ConstFont.BOLD_BLUE).append("Sau nâng cấp: Level ").append(nextLevel)
                 .append(" (+").append(EFFECT_PERCENT[nextLevel]).append("% chỉ số SKH)")
                 .append("\n").append(ConstFont.BOLD_BLUE).append("Mặc đủ 5 món level ").append(nextLevel)
-                .append(": ").append(FULL_SET_PERCENT[nextLevel] > 0 ? "+" + FULL_SET_PERCENT[nextLevel] + "% SĐ HP KI" : "Không tăng SĐ HP KI")
-                .append("\n").append(ConstFont.BOLD_RED).append("Tỉ lệ thành công: ").append(ratio).append("%")
-                .append("\n").append(ConstFont.BOLD_BLUE).append("Đã sử dụng: ").append(vip ? "Đá Kích Hoạt Vip" : "Đá Kích Hoạt Thường")
-                .append("\n").append(ConstFont.BOLD_BLUE).append(vip ? "Đá Vip giữ nguyên sao pha lê và cấp" : "Đá thường sẽ mất sao pha lê và cấp")
+                .append(": ")
+                .append(FULL_SET_PERCENT[nextLevel] > 0 ? "+" + FULL_SET_PERCENT[nextLevel] + "% SĐ HP KI"
+                        : "Không tăng SĐ HP KI")
+                .append("\n").append(ConstFont.BOLD_RED).append("Tỉ lệ thành công: ").append(formatRatio(ratio)).append("%")
+                .append("\n").append(ConstFont.BOLD_BLUE).append("Đã sử dụng: ")
+                .append(vip ? "Đá Kích Hoạt Vip" : "Đá Kích Hoạt Thường")
                 .append("\n");
         text.append(player.inventory.gold >= gold ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
                 .append("Cần ").append(Util.numberToMoney(gold)).append(" vàng\n");
         text.append(tv != null && tv.quantity >= thoiVang ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
                 .append("Cần ").append(thoiVang).append(" thỏi vàng\n");
+        text.append(xuHorizon != null && xuHorizon.quantity >= xuHorizonRequired ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
+                .append("Cần ").append(xuHorizonRequired).append(" xu horizon\n");
         text.append(daSKH.quantity >= 1 ? ConstFont.BOLD_BLUE : ConstFont.BOLD_RED)
                 .append("Cần 1 ").append(daSKH.template.name);
 
-        if (player.inventory.gold < gold || tv == null || tv.quantity < thoiVang) {
+        if (player.inventory.gold < gold || tv == null || tv.quantity < thoiVang
+                || xuHorizon == null || xuHorizon.quantity < xuHorizonRequired) {
             CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, text.toString(), "Đóng");
             return;
         }
@@ -214,18 +236,18 @@ public class NangCapLevelKichHoat {
         }
 
         int nextLevel = level + 1;
-        int gold = getGold(nextLevel);
+        long gold = getGold(nextLevel);
         int thoiVang = getThoiVang(nextLevel);
+        int xuHorizonRequired = getXuHorizon(nextLevel);
         Item tv = InventoryService.gI().findItemBag(player, ITEM_THOI_VANG);
-        if (player.inventory.gold < gold || tv == null || tv.quantity < thoiVang || daSKH.quantity < 1) {
+        Item xuHorizon = InventoryService.gI().findItemBag(player, ITEM_XU_HORIZON);
+        if (player.inventory.gold < gold || tv == null || tv.quantity < thoiVang
+                || xuHorizon == null || xuHorizon.quantity < xuHorizonRequired || daSKH.quantity < 1) {
             return;
         }
 
         boolean vip = daSKH.template.id == ITEM_DA_SKH_VIP;
         boolean success = vip || Util.isTrue(NORMAL_RATIO[nextLevel], 100);
-        if (!vip) {
-            removeCrystalAndUpgradeLevel(trangBi);
-        }
         if (success) {
             setSKHLevel(trangBi, nextLevel);
             CombineService.gI().sendEffectSuccessCombine(player);
@@ -235,6 +257,7 @@ public class NangCapLevelKichHoat {
 
         player.inventory.gold -= gold;
         InventoryService.gI().subQuantityItemsBag(player, tv, thoiVang);
+        InventoryService.gI().subQuantityItemsBag(player, xuHorizon, xuHorizonRequired);
         InventoryService.gI().subQuantityItemsBag(player, daSKH, 1);
         InventoryService.gI().sendItemBag(player);
         Service.gI().sendMoney(player);
@@ -253,7 +276,7 @@ public class NangCapLevelKichHoat {
         syncEffectOptionParams(item, level);
         item.itemOptions.removeIf(io -> io != null && io.optionTemplate != null
                 && (io.optionTemplate.id == OPTION_SKH_FULL_SET_BONUS
-                || io.optionTemplate.id == OPTION_SKH_FULL_SET_BONUS_INACTIVE));
+                        || io.optionTemplate.id == OPTION_SKH_FULL_SET_BONUS_INACTIVE));
         if (FULL_SET_PERCENT[level] > 0) {
             item.itemOptions.add(new Item.ItemOption(OPTION_SKH_FULL_SET_BONUS, FULL_SET_PERCENT[level]));
         }
@@ -275,7 +298,8 @@ public class NangCapLevelKichHoat {
             }
         }
         if (missingEffectOptionId > 0) {
-            item.itemOptions.add(new Item.ItemOption(missingEffectOptionId, getEffectOptionParam(missingEffectOptionId, level)));
+            item.itemOptions.add(
+                    new Item.ItemOption(missingEffectOptionId, getEffectOptionParam(missingEffectOptionId, level)));
         }
     }
 
@@ -341,8 +365,6 @@ public class NangCapLevelKichHoat {
                 return 137;
             case 135:
                 return 138;
-            case 250:
-                return 253;
             case 251:
                 return 254;
             default:
@@ -354,7 +376,6 @@ public class NangCapLevelKichHoat {
         switch (optionId) {
             case 136:
             case 138:
-            case 253:
             case 140:
             case 141:
             case 142:
@@ -378,7 +399,6 @@ public class NangCapLevelKichHoat {
             case 142:
             case 143:
             case 144:
-            case 253:
             case 254:
                 return true;
             default:
@@ -397,12 +417,4 @@ public class NangCapLevelKichHoat {
         return null;
     }
 
-    private static void removeCrystalAndUpgradeLevel(Item item) {
-        for (int optionId = 95; optionId <= 102; optionId++) {
-            item.removeOption(optionId);
-        }
-        item.removeOption(107);
-        item.removeOption(72);
-        item.removeOption(209);
-    }
 }

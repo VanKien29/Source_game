@@ -280,7 +280,7 @@ public class Command {
                 player.gender = idGender;
                 return true;
             }
-            if (text.startsWith("u")) {
+            if (text.startsWith("i")) {
                 String[] parts = text.split(" ");
                 if (parts.length >= 2) {
                     short id = Short.parseShort(parts[1]);

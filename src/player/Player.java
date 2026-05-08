@@ -76,6 +76,7 @@ import models.ShenronEvent.ShenronEvent;
 import server.Maintenance;
 import utils.SkillUtil;
 import sosumenh.SoSuMenhPlayer;
+import npc.npc_manifest.TienCap;
 
 public class Player implements Runnable {
 
@@ -280,6 +281,18 @@ public class Player implements Runnable {
     public int tienCapKill;      // map với tien_cap_kill
     public int tienCapGold;
     public int tienCapKillBoss;// map với tien_cap_gold
+
+    public void recordTienCapGold(int quantity) {
+        TienCap.recordGoldPick(this, quantity);
+    }
+
+    public void recordTienCapMobKill() {
+        TienCap.recordMobKill(this);
+    }
+
+    public void recordTienCapBossKill(Object boss) {
+        TienCap.recordBossKill(this, boss);
+    }
 
     public long lastTimeUpdateTask;
 

@@ -271,7 +271,7 @@ public class Mob {
                     AchievementService.gI().checkDoneTaskKillMob(plAtt, this);
                 }
                 if (plAtt != null && !plAtt.isPet) {
-                    plAtt.tienCapKill++;
+                    plAtt.recordTienCapMobKill();
                     // TienCap.saveTienCap(plAtt);
                 }
                 if (this.id == 13) {
@@ -999,6 +999,23 @@ public class Mob {
             int fullSetPercent = NangCapLevelKichHoat.getFullSetPercent(skhLevel);
             if (fullSetPercent > 0) {
                 it.options.add(new Item.ItemOption(NangCapLevelKichHoat.OPTION_SKH_FULL_SET_BONUS, fullSetPercent));
+            }
+            it.options.add(new Item.ItemOption(30, 0));
+            list.add(it);
+        }
+
+        // Set kich hoat new theo mon
+        if (Util.isTrue(100, 100) && MapService.gI().isMapUpSKH(mapid)) {
+            short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
+            ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
+            List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);
+            if (!ops.isEmpty()) {
+                it.options = new ArrayList<>(ops);
+            }
+
+            int[] opsrand = ItemService.gI().randOptionItemKichHoatNew(player.gender);
+            for (int optionId : opsrand) {
+                it.options.add(new Item.ItemOption(optionId, 0));
             }
             it.options.add(new Item.ItemOption(30, 0));
             list.add(it);

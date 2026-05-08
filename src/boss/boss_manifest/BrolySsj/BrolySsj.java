@@ -41,7 +41,7 @@ public class BrolySsj extends Boss {
             Service.gI().dropItemMap(this.zone, it);
         }
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
         

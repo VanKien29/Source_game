@@ -42,7 +42,7 @@ public class Rambo extends Boss {
         }
         SoSuMenhService.gI().updateProgress(plKill, 13, 1);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
     }

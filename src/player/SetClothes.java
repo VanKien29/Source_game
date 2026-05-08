@@ -163,11 +163,6 @@ public class SetClothes {
                             isActSet = true;
                             hdpe++;
                             break;
-                        case 250:
-                        case 253:
-                            isActSet = true;
-                            kaioken++;
-                            break;
                         case 251:
                         case 254:
                             isActSet = true;
@@ -237,34 +232,9 @@ public class SetClothes {
     }
 
     private void setupSKHLevel() {
-        int[] count = new int[13];
-        int[] minLevel = new int[13];
-        for (int i = 0; i < minLevel.length; i++) {
-            minLevel[i] = 5;
-        }
-        for (int i = 0; i < 5; i++) {
-            Item item = this.player.inventory.itemsBody.get(i);
-            if (!item.isNotNullItem()) {
-                break;
-            }
-            int setIndex = -1;
-            for (Item.ItemOption io : item.itemOptions) {
-                setIndex = getOldSKHSetIndex(io.optionTemplate.id);
-                if (setIndex >= 0) {
-                    break;
-                }
-            }
-            if (setIndex >= 0) {
-                int level = getSKHLevel(item);
-                count[setIndex]++;
-                if (level < minLevel[setIndex]) {
-                    minLevel[setIndex] = level;
-                }
-            }
-        }
-        for (int i = 0; i < count.length; i++) {
-            if (count[i] == 5) {
-                this.skhFullSetLevel = (byte) minLevel[i];
+        for (int setIndex = 0; setIndex <= 15; setIndex++) {
+            if (isFullSetSameLevel(setIndex)) {
+                this.skhFullSetLevel = (byte) getSKHLevel(this.player.inventory.itemsBody.get(0));
                 return;
             }
         }
@@ -299,9 +269,6 @@ public class SetClothes {
             case 134:
             case 137:
                 return 8;
-            case 250:
-            case 253:
-                return 9;
             case 251:
             case 254:
                 return 10;
@@ -316,9 +283,67 @@ public class SetClothes {
         }
     }
 
+    private static int getSKHSetIndex(int optionId) {
+        int oldSetIndex = getOldSKHSetIndex(optionId);
+        if (oldSetIndex >= 0) {
+            return oldSetIndex;
+        }
+        switch (optionId) {
+            case 245:
+            case 246:
+            case 247:
+            case 248:
+                return 13;
+            case 237:
+            case 238:
+            case 239:
+            case 240:
+                return 14;
+            case 241:
+            case 242:
+            case 243:
+            case 244:
+                return 15;
+            default:
+                return -1;
+        }
+    }
+
+    private int getItemSKHSetIndex(Item item) {
+        if (item == null || !item.isNotNullItem()) {
+            return -1;
+        }
+        for (Item.ItemOption io : item.itemOptions) {
+            if (io != null && io.optionTemplate != null) {
+                int setIndex = getSKHSetIndex(io.optionTemplate.id);
+                if (setIndex >= 0) {
+                    return setIndex;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private boolean isFullSetSameLevel(int setIndex) {
+        int level = -1;
+        for (int i = 0; i < 5; i++) {
+            Item item = this.player.inventory.itemsBody.get(i);
+            if (getItemSKHSetIndex(item) != setIndex) {
+                return false;
+            }
+            int itemLevel = getSKHLevel(item);
+            if (level < 0) {
+                level = itemLevel;
+            } else if (itemLevel != level) {
+                return false;
+            }
+        }
+        return level >= 0;
+    }
+
     public static boolean isOldSKHOption(int optionId) {
         return (optionId >= 127 && optionId <= 144)
-                || (optionId >= 250 && optionId <= 255)
+                || optionId == 251 || optionId == 252 || optionId == 254 || optionId == 255
                 || optionId == 179 || optionId == 180;
     }
 
@@ -408,13 +433,16 @@ public class SetClothes {
     }
 
     public int getSetKichHoatEffectId() {
-        if (kakarot == 5 || cadic == 5 || nappa == 5 || giamSatThuong == 5 || cadicM == 5) {
+        if (isFullSetSameLevel(7) || isFullSetSameLevel(8) || isFullSetSameLevel(6)
+                || isFullSetSameLevel(11) || isFullSetSameLevel(15)) {
             return 86;
         }
-        if (ocTieu == 5 || pikkoroDaimao == 5 || picolo == 5 || lienHoan == 5 || nail == 5) {
+        if (isFullSetSameLevel(3) || isFullSetSameLevel(4) || isFullSetSameLevel(5)
+                || isFullSetSameLevel(10) || isFullSetSameLevel(14)) {
             return 87;
         }
-        if (songoku == 5 || thienXinHang == 5 || kirin == 5 || kaioken == 5 || thanVuTruKaio == 5) {
+        if (isFullSetSameLevel(0) || isFullSetSameLevel(1) || isFullSetSameLevel(2)
+                || isFullSetSameLevel(13)) {
             return 88;
         }
         return -1;
