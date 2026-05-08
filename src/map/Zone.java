@@ -464,7 +464,7 @@ public class Zone {
                     }
                 }
                 if (item.template.id == 457) {              // 457 = ID Thỏi Vàng
-                    player.tienCapGold += item.quantity;    // hoặc += 1 nếu luôn rơi 1
+                    player.recordTienCapGold(item.quantity);
                     //  TienCap.saveTienCap(player);            // lưu lại DB
                 }
 

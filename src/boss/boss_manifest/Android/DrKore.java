@@ -41,7 +41,7 @@ public class DrKore extends Boss {
             }
         }
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
         TaskService.gI().checkDoneTaskKillBoss(plKill, this);

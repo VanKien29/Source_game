@@ -41,7 +41,7 @@ public class XenBoHung extends Boss {
         }
         TaskService.gI().checkDoneTaskKillBoss(plKill, this);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
             // TienCap.saveTienCap(plKill);
         }
     }

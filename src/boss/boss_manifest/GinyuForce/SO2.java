@@ -37,7 +37,7 @@ public class SO2 extends Boss {
         this.pointBoss(plKill);
         super.reward(plKill);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
         //    TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
         if (this.currentLevel == 1) {

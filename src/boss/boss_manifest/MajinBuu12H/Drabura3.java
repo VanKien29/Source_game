@@ -67,7 +67,7 @@ public class Drabura3 extends Boss {
         plKill.fightMabu.changePoint((byte) 20);
         TaskService.gI().checkDoneTaskKillBoss(plKill, this);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
     }
