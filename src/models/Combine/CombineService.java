@@ -584,9 +584,9 @@ public class CombineService {
                         + "cho 10 mảnh đá vụn\n"
                         + "trở thành 1 đá nâng cấp";
             case NANG_CAP_KICH_HOAT ->
-                "Ta sẽ phù phép\nchế tạo trang bị Thiên Sứ\nthành trang bị Kích Hoạt VIP NEW";
+                "Ta sẽ phù phép\nchế tạo trang bị Hủy Diệt\nthành trang bị Kích Hoạt VIP NEW";
             case NANG_CAP_KICH_HOAT_VIP ->
-                "Ta sẽ phù phép\nchế tạo trang bị Thiên Sứ\nthành trang bị Kích Hoạt VIP";
+                "Ta sẽ phù phép\nchế tạo trang bị Hủy Diệt\nthành trang bị Kích Hoạt VIP";
             case NANG_CAP_LEVEL_KICH_HOAT ->
                 "Ta sẽ nâng cấp Level SKH cho con nhé";
             case NANG_CAP_DO_TL ->
@@ -669,9 +669,9 @@ public class CombineService {
                         + "(mua tại Uron ở trạm tàu vũ trụ)\n"
                         + "Sau đó chọn 'Làm phép'";
             case NANG_CAP_KICH_HOAT ->
-                "Vào hành trang\nChọn 1 trang bị Thiên Sứ\nChọn 5 trang bị Huỷ Diệt bất kỳ\nChọn 10 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 3 đá VIP, không bỏ thì cần 20 đá SKH thường\nCần 5000 thỏi vàng và 5000 xu Horizon\nSau đó chọn 'Nâng cấp'";
+                "Vào hành trang\nChọn 3 trang bị Hủy Diệt bất kỳ\nChọn 5 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 2 đá VIP, không bỏ thì cần 10 đá SKH thường\nCần 500 thỏi vàng và 500 xu Horizon\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_KICH_HOAT_VIP ->
-                "Vào hành trang\nChọn 1 trang bị Thiên Sứ\nChọn 2 trang bị Huỷ Diệt bất kỳ\nChọn 5 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 1 đá VIP, không bỏ thì cần 10 đá SKH thường\nCần 500 thỏi vàng và 200 xu Horizon\nSau đó chọn 'Nâng cấp'";
+                "Vào hành trang\nChọn 2 trang bị Hủy Diệt bất kỳ\nChọn 3 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 1 đá VIP, không bỏ thì cần 5 đá SKH thường\nCần 300 thỏi vàng và 300 xu Horizon\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_LEVEL_KICH_HOAT ->
                 "Vào hành trang\nChọn 1 món SKH level 0\nChọn 1 Đá SKH thường hoặc vip\nCần thêm thỏi vàng và vàng\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_DO_TL ->
