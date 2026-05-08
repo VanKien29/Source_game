@@ -42,7 +42,7 @@ public class Cooler extends Boss {
             Service.gI().dropItemMap(this.zone, it);
         }
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
           //  TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
         if (plKill != null && Util.isTrue(100, 100)) {

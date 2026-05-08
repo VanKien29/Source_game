@@ -1,5 +1,7 @@
 package npc.npc_manifest;
 
+import boss.Boss;
+import boss.BossID;
 import consts.ConstNpc;
 import item.Item;
 import java.text.NumberFormat;
@@ -19,12 +21,43 @@ public class TienCap extends Npc {
 
     // ID đá Tiến cấp (hoặc Thỏi Vàng dùng làm đá, tùy bạn cấu hình)
     private static final short DA_TIEN_CAP_ID = 1965;
+    private static final int MAX_TIEN_CAP_LEVEL = 7;
+    private static final int ITEM_BONG_TAI_CAP_2 = 921;
+    private static final int ITEM_CHAN_MENH_LEVEL_5 = 1737;
+    private static final long ONE_BILLION_POWER = 1_000_000_000L;
 
     private static final String SQL_UPDATE_PLAYER_TIEN_CAP = "UPDATE player SET tien_cap_gold = ?, tien_cap_kill = ?, tien_cap_killboss = ?, tien_cap_level = ? WHERE id = ?";
 
     private static final String SQL_SELECT_TIEN_CAP = "SELECT * FROM tien_cap WHERE id = ?";
 
     private static final int MENU_MUA_VUOT_CAP = 31001;
+
+    private static class Requirement {
+
+        final String label;
+        final long current;
+        final long required;
+        final String suffix;
+
+        Requirement(String label, long current, long required) {
+            this(label, current, required, "");
+        }
+
+        Requirement(String label, long current, long required, String suffix) {
+            this.label = label;
+            this.current = Math.max(0, current);
+            this.required = Math.max(1, required);
+            this.suffix = suffix;
+        }
+
+        boolean isDone() {
+            return current >= required;
+        }
+
+        long progress() {
+            return Math.min(current, required);
+        }
+    }
 
     // Lưu tiến độ Tiến cấp vào DB (gọi chỗ nào bạn muốn auto-save)
     public static void saveTienCap(Player player) {
@@ -42,6 +75,49 @@ public class TienCap extends Npc {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void recordGoldPick(Player player, int quantity) {
+        if (player == null || player.isPet || quantity <= 0) {
+            return;
+        }
+        int nextLevel = player.tienCapLevel + 1;
+        if (nextLevel >= 1 && nextLevel <= 3) {
+            player.tienCapGold += quantity;
+        }
+    }
+
+    public static void recordMobKill(Player player) {
+        if (player == null || player.isPet) {
+            return;
+        }
+        int nextLevel = player.tienCapLevel + 1;
+        if (nextLevel == 1 || nextLevel == 6) {
+            player.tienCapKill++;
+        }
+    }
+
+    public static void recordBossKill(Player player, Object bossObject) {
+        if (player == null || player.isPet) {
+            return;
+        }
+        int nextLevel = player.tienCapLevel + 1;
+        int bossId = bossObject instanceof Boss boss ? (int) boss.id : 0;
+        if (nextLevel == 2) {
+            player.tienCapKillBoss++;
+        } else if ((nextLevel == 4 || nextLevel == 7) && isBlackGokuBoss(bossId)) {
+            player.tienCapKillBoss++;
+        } else if (nextLevel == 5 && isXenConBoss(bossId)) {
+            player.tienCapKillBoss++;
+        }
+    }
+
+    private static boolean isBlackGokuBoss(int bossId) {
+        return bossId == BossID.BLACK_GOKU;
+    }
+
+    private static boolean isXenConBoss(int bossId) {
+        return bossId >= BossID.XEN_CON_7 && bossId <= BossID.XEN_CON_1;
     }
 
     public TienCap(int mapId, int status, int cx, int cy, int tempId, int avartar) {
@@ -101,70 +177,29 @@ public class TienCap extends Npc {
 
     private void showTienCapInfo(Player player) {
         int nextLevel = player.tienCapLevel + 1;
-        if (nextLevel > 7) {
+        if (nextLevel > MAX_TIEN_CAP_LEVEL) {
             Service.gI().sendThongBao(player, "Con đã Tiến cấp tối đa rồi!");
             return;
         }
 
-        String dieukien1 = "";
-        String dieukien2 = "";
-        String dieukien3 = "";
-        String dieukien4 = "";
-        String info = "";
-        int[] amounts = new int[] { 0, 0, 0, 0 };
-
-        try (Connection con = DBConnecter.getConnectionServer();
-                PreparedStatement ps = con.prepareStatement(SQL_SELECT_TIEN_CAP)) {
-
-            ps.setInt(1, nextLevel);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    dieukien1 = rs.getString("dieukien1");
-                    dieukien2 = rs.getString("dieukien2");
-                    dieukien3 = rs.getString("dieukien3");
-                    dieukien4 = rs.getString("dieukien4");
-                    info = rs.getString("info");
-                    amounts = parseSoluong(rs.getString("soluong"));
-                } else {
-                    this.npcChat(player, "Chưa cấu hình nhiệm vụ Tiến cấp level " + nextLevel);
-                    return;
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            this.npcChat(player, "Có lỗi khi tải nhiệm vụ Tiến cấp");
+        TienCapConfig config = loadTienCapConfig(player, nextLevel, false);
+        if (config == null) {
             return;
         }
-
-        int requireFullSet = amounts[0];
-        int requireGoldBar = amounts[1];
-        int requirePowerBillion = amounts[2];
-        int requireKill = amounts[3];
-
-        // Tiến độ
-        // Kiểm tra dieukien1 để xác định là số sao hay cấp độ
-        int fullSetCount = dieukien1.toLowerCase().contains("cấp")
-                ? countCapOnSet(player, requireFullSet)
-                : countStarOnSet(player, requireFullSet);
-        int goldProgress = Math.min(getTienCapGold(player), requireGoldBar);
-        long powerCurrentBillion = player.nPoint.power / 1_000_000_000L;
-        long powerProgress = Math.min(powerCurrentBillion, requirePowerBillion);
-        // Kiểm tra dieukien4 để xác định là kill Boss hay Pem Quái
-        int killProgress = dieukien4.toLowerCase().contains("boss")
-                ? Math.min(getTienCapKillBoss(player), requireKill)
-                : Math.min(getTienCapKill(player), requireKill);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Tiến cấp giúp con khai mở các thuộc tính và các ô trang bị\n\n");
         sb.append("Nhiệm vụ Tiến cấp cấp ").append(nextLevel).append(":\n\n");
-        sb.append(dieukien1).append("    TIẾN ĐỘ--").append(fullSetCount).append("/5\n");
-        sb.append(dieukien2).append("    TIẾN ĐỘ--").append(goldProgress).append("/")
-                .append(requireGoldBar).append("\n");
-        sb.append(dieukien3).append("    TIẾN ĐỘ--").append(powerProgress).append("/")
-                .append(requirePowerBillion).append(" tỉ Sức mạnh\n");
-        sb.append(dieukien4).append("    TIẾN ĐỘ--").append(killProgress).append("/")
-                .append(requireKill).append("\n\n");
+        for (Requirement requirement : buildRequirements(player, config)) {
+            sb.append(requirement.label)
+                    .append("    TIẾN ĐỘ--")
+                    .append(requirement.progress())
+                    .append("/")
+                    .append(requirement.required)
+                    .append(requirement.suffix)
+                    .append("\n");
+        }
+        sb.append("\n");
 
         int stoneNeed = nextLevel; // level 2 cần 2 viên, level 3 cần 3 viên,...
         int stoneHave = 0;
@@ -174,7 +209,7 @@ public class TienCap extends Npc {
         }
         sb.append(stoneHave).append("/").append(stoneNeed)
                 .append(" Đá Tiến Cấp ( Săn Sói Bergamo ) ").append("\n\n");
-        sb.append(info);
+        sb.append(config.info);
 
         this.createOtherMenu(player, ConstNpc.TIEN_CAP, sb.toString(),
                 "Tiến cấp\nngay", "Mua vượt\ncấp", "Đóng");
@@ -203,7 +238,7 @@ public class TienCap extends Npc {
 
     private void moMenuMuaVuotCap(Player player) {
         int nextLevel = player.tienCapLevel + 1;
-        if (nextLevel > 7) {
+        if (nextLevel > MAX_TIEN_CAP_LEVEL) {
             Service.gI().sendThongBao(player, "Con đã Tiến cấp tối đa rồi!");
             return;
         }
@@ -224,7 +259,7 @@ public class TienCap extends Npc {
 
     private void muaVuotCap(Player player) {
         int nextLevel = player.tienCapLevel + 1;
-        if (nextLevel > 7) {
+        if (nextLevel > MAX_TIEN_CAP_LEVEL) {
             Service.gI().sendThongBao(player, "Con đã Tiến cấp tối đa rồi!");
             return;
         }
@@ -268,72 +303,21 @@ public class TienCap extends Npc {
 
     private void thucHienTienCap(Player player) {
         int nextLevel = player.tienCapLevel + 1;
-        if (nextLevel > 7) {
+        if (nextLevel > MAX_TIEN_CAP_LEVEL) {
             Service.gI().sendThongBao(player, "Con đã Tiến cấp tối đa rồi!");
             return;
         }
 
-        String dieukien1 = "";
-        String dieukien2 = "";
-        String dieukien3 = "";
-        String dieukien4 = "";
-        int[] amounts = new int[] { 0, 0, 0, 0 };
+        TienCapConfig config = loadTienCapConfig(player, nextLevel, true);
+        if (config == null) {
+            return;
+        }
 
-        try (Connection con = DBConnecter.getConnectionServer();
-                PreparedStatement ps = con.prepareStatement(SQL_SELECT_TIEN_CAP)) {
-
-            ps.setInt(1, nextLevel);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    dieukien1 = rs.getString("dieukien1");
-                    dieukien2 = rs.getString("dieukien2");
-                    dieukien3 = rs.getString("dieukien3");
-                    dieukien4 = rs.getString("dieukien4");
-                    amounts = parseSoluong(rs.getString("soluong"));
-                } else {
-                    Service.gI().sendThongBao(player, "Chưa cấu hình nhiệm vụ Tiến cấp level " + nextLevel);
-                    return;
-                }
+        for (Requirement requirement : buildRequirements(player, config)) {
+            if (!requirement.isDone()) {
+                Service.gI().sendThongBao(player, "Chưa hoàn thành: " + requirement.label);
+                return;
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Service.gI().sendThongBao(player, "Có lỗi khi tải nhiệm vụ Tiến cấp");
-            return;
-        }
-
-        int requireFullSet = amounts[0];
-        int requireGoldBar = amounts[1];
-        int requirePowerBillion = amounts[2];
-        int requireKill = amounts[3];
-
-        // Kiểm tra dieukien1 để xác định là số sao hay cấp độ
-        int fullSetCount = dieukien1.toLowerCase().contains("cấp")
-                ? countCapOnSet(player, requireFullSet)
-                : countStarOnSet(player, requireFullSet);
-        if (fullSetCount < 5) {
-            Service.gI().sendThongBao(player, "Chưa hoàn thành: " + dieukien1);
-            return;
-        }
-
-        if (getTienCapGold(player) < requireGoldBar) {
-            Service.gI().sendThongBao(player, "Chưa hoàn thành: " + dieukien2);
-            return;
-        }
-
-        long powerCurrentBillion = player.nPoint.power / 1_000_000_000L;
-        if (powerCurrentBillion < requirePowerBillion) {
-            Service.gI().sendThongBao(player, "Chưa hoàn thành: " + dieukien3);
-            return;
-        }
-
-        // Kiểm tra dieukien4 để xác định là kill Boss hay Pem Quái
-        int killValue = dieukien4.toLowerCase().contains("boss")
-                ? getTienCapKillBoss(player)
-                : getTienCapKill(player);
-        if (killValue < requireKill) {
-            Service.gI().sendThongBao(player, "Chưa hoàn thành: " + dieukien4);
-            return;
         }
 
         // Check đá Tiến cấp
@@ -383,6 +367,111 @@ public class TienCap extends Npc {
     }
 
     // ================= HỖ TRỢ =================
+
+    private static class TienCapConfig {
+
+        int level;
+        String dieukien1;
+        String dieukien2;
+        String dieukien3;
+        String dieukien4;
+        String info;
+        int[] amounts;
+    }
+
+    private TienCapConfig loadTienCapConfig(Player player, int nextLevel, boolean notify) {
+        TienCapConfig config = new TienCapConfig();
+        config.level = nextLevel;
+        config.amounts = new int[] { 0, 0, 0, 0 };
+        try (Connection con = DBConnecter.getConnectionServer();
+                PreparedStatement ps = con.prepareStatement(SQL_SELECT_TIEN_CAP)) {
+
+            ps.setInt(1, nextLevel);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    String message = "Chưa cấu hình nhiệm vụ Tiến cấp level " + nextLevel;
+                    if (notify) {
+                        Service.gI().sendThongBao(player, message);
+                    } else {
+                        this.npcChat(player, message);
+                    }
+                    return null;
+                }
+                config.dieukien1 = rs.getString("dieukien1");
+                config.dieukien2 = rs.getString("dieukien2");
+                config.dieukien3 = rs.getString("dieukien3");
+                config.dieukien4 = rs.getString("dieukien4");
+                config.info = rs.getString("info");
+                config.amounts = parseSoluong(rs.getString("soluong"));
+                return config;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (notify) {
+                Service.gI().sendThongBao(player, "Có lỗi khi tải nhiệm vụ Tiến cấp");
+            } else {
+                this.npcChat(player, "Có lỗi khi tải nhiệm vụ Tiến cấp");
+            }
+            return null;
+        }
+    }
+
+    private Requirement[] buildRequirements(Player player, TienCapConfig config) {
+        int[] amount = config.amounts;
+        return switch (config.level) {
+            case 1 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, hasPet(player) ? 1 : 0, 1),
+                    new Requirement(config.dieukien2, getTienCapGold(player), amount[1]),
+                    new Requirement(config.dieukien3, getPowerBillion(player), amount[2], " tỉ Sức mạnh"),
+                    new Requirement(config.dieukien4, getTienCapKill(player), amount[3])
+                };
+            case 2 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, countStarOnSet(player, amount[0]), 5),
+                    new Requirement(config.dieukien2, getTienCapGold(player), amount[1]),
+                    new Requirement(config.dieukien3, getPowerBillion(player), amount[2], " tỉ Sức mạnh"),
+                    new Requirement(config.dieukien4, getTienCapKillBoss(player), amount[3])
+                };
+            case 3 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, hasMabuPet(player) ? 1 : 0, 1),
+                    new Requirement(config.dieukien2, countStarOnSet(player, amount[0]), 5),
+                    new Requirement(config.dieukien3, getTienCapGold(player), amount[1]),
+                    new Requirement(config.dieukien4, getPowerBillion(player), amount[2], " tỉ Sức mạnh")
+                };
+            case 4 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, countCapOnSet(player, amount[0]), 5),
+                    new Requirement(config.dieukien2, getPowerBillion(player), amount[1], " tỉ Sức mạnh"),
+                    new Requirement(config.dieukien3, getCompletedMainTask(player), amount[2]),
+                    new Requirement(config.dieukien4, getTienCapKillBoss(player), amount[3])
+                };
+            case 5 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, hasBinhHutPetOrBetter(player) ? 1 : 0, 1),
+                    new Requirement(config.dieukien2, hasItemInAllInventories(player, ITEM_BONG_TAI_CAP_2) ? 1 : 0, 1),
+                    new Requirement(config.dieukien3, getPowerBillion(player), amount[2], " tỉ Sức mạnh"),
+                    new Requirement(config.dieukien4, getTienCapKillBoss(player), amount[3])
+                };
+            case 6 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, countStarOnSet(player, amount[0]), 5),
+                    new Requirement(config.dieukien2, hasItemInAllInventories(player, ITEM_CHAN_MENH_LEVEL_5) ? 1 : 0, 1),
+                    new Requirement(config.dieukien3, getPowerBillion(player), amount[2], " tỉ Sức mạnh"),
+                    new Requirement(config.dieukien4, getTienCapKill(player), amount[3])
+                };
+            case 7 ->
+                new Requirement[] {
+                    new Requirement(config.dieukien1, getWhisLevel(player), amount[0]),
+                    new Requirement(config.dieukien2, getPetPowerBillion(player), amount[1], " tỉ Sức mạnh"),
+                    new Requirement(config.dieukien3, getSoSuMenhLevel(player), amount[2]),
+                    new Requirement(config.dieukien4, getTienCapKillBoss(player), amount[3])
+                };
+            default ->
+                new Requirement[0];
+        };
+    }
 
     private int[] parseSoluong(String soluong) {
         int[] out = new int[] { 0, 0, 0, 0 };
@@ -476,6 +565,46 @@ public class TienCap extends Npc {
             crit += 5;
         }
         return crit;
+    }
+
+    private boolean hasPet(Player player) {
+        return player != null && player.pet != null;
+    }
+
+    private boolean hasMabuPet(Player player) {
+        return hasPet(player) && player.pet.typePet == 1;
+    }
+
+    private boolean hasBinhHutPetOrBetter(Player player) {
+        return hasPet(player) && player.pet.typePet >= 2;
+    }
+
+    private boolean hasItemInAllInventories(Player player, int itemId) {
+        return player != null && InventoryService.gI().findItemInAllInventories(player, itemId) != null;
+    }
+
+    private long getPowerBillion(Player player) {
+        return player == null || player.nPoint == null ? 0 : player.nPoint.power / ONE_BILLION_POWER;
+    }
+
+    private long getPetPowerBillion(Player player) {
+        return !hasPet(player) || player.pet.nPoint == null ? 0 : player.pet.nPoint.power / ONE_BILLION_POWER;
+    }
+
+    private int getCompletedMainTask(Player player) {
+        if (player == null || player.playerTask == null || player.playerTask.taskMain == null) {
+            return 0;
+        }
+        int currentTask = player.playerTask.taskMain.id;
+        return Math.max(0, currentTask - 1);
+    }
+
+    private int getWhisLevel(Player player) {
+        return player == null || player.traning == null ? 0 : player.traning.getTop();
+    }
+
+    private int getSoSuMenhLevel(Player player) {
+        return player == null || player.sosumenhplayer == null ? 0 : player.sosumenhplayer.getLevel();
     }
 
     private int getTienCapGold(Player player) {

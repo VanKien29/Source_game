@@ -271,7 +271,7 @@ public class Mob {
                     AchievementService.gI().checkDoneTaskKillMob(plAtt, this);
                 }
                 if (plAtt != null && !plAtt.isPet) {
-                    plAtt.tienCapKill++;
+                    plAtt.recordTienCapMobKill();
                     // TienCap.saveTienCap(plAtt);
                 }
                 if (this.id == 13) {

@@ -48,7 +48,7 @@ public class TDT extends Boss {
     public void reward(Player plKill) {
         this.pointBoss(plKill);
         if (plKill != null && !plKill.isPet) {
-            plKill.tienCapKillBoss++;
+            plKill.recordTienCapBossKill(this);
         //    TienCap.saveTienCap(plKill); // lưu luôn vào DB
         }
         super.reward(plKill);
