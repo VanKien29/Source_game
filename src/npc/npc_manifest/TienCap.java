@@ -167,7 +167,7 @@ public class TienCap extends Npc {
             return false;
         }
         if (player.getSession().cash < cost) {
-            Service.gI().sendThongBao(player, "Bạn không đủ " + formatCoin(cost) + " COIN!");
+            Service.gI().sendThongBao(player, "Bạn không đủ " + formatCoin(cost) + " Vnd!");
             return false;
         }
         PlayerDAO.subcash(player, cost);
@@ -252,8 +252,8 @@ public class TienCap extends Npc {
                 MENU_MUA_VUOT_CAP,
                 "|5|Mua vượt cấp Tiến Cấp?"
                         + "\nTừ cấp " + player.tienCapLevel + " lên cấp " + nextLevel
-                        + "\n|7|Giá: " + formatCoin(cost) + " COIN"
-                        + "\n\b|7|Bạn đang có: " + formatCoin(player.getSession().cash) + " COIN",
+                        + "\n|7|Giá: " + formatCoin(cost) + " Vnd"
+                        + "\n\b|7|Bạn đang có: " + formatCoin(player.getSession().cash) + " Vnd",
                 "Mua ngay", "Đóng");
     }
 
@@ -298,7 +298,7 @@ public class TienCap extends Npc {
 
         Service.gI().sendThongBao(player,
                 "Mua vượt cấp thành công! Đã tăng lên cấp " + player.tienCapLevel
-                        + " và trừ " + formatCoin(cost) + " COIN.");
+                        + " và trừ " + formatCoin(cost) + " Vnd.");
     }
 
     private void thucHienTienCap(Player player) {

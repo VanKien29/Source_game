@@ -42,7 +42,7 @@ public class TongMonSu extends Npc {
             return false;
         }
         if (player.getSession().cash < cost) {
-            Service.gI().sendThongBao(player, "Bạn không đủ " + cost + " COIN!");
+            Service.gI().sendThongBao(player, "Bạn không đủ " + cost + " Vnd!");
             return false;
         }
 
@@ -119,7 +119,7 @@ public class TongMonSu extends Npc {
                                         + "\b|5|Đệ Goku Daima tăng 20% chỉ số: 255k"
                                         + "\b|5|Đệ Android 21 tăng 35% chỉ số: 380k"
                                         + "\b|5|Đệ Broly SSJ3 tăng 50% chỉ số: 555k"
-                                        + "\n\b|7|Bạn đang có: " + formatCoin(player.getSession().cash) + " COIN",
+                                        + "\n\b|7|Bạn đang có: " + formatCoin(player.getSession().cash) + " Vnd",
                                 "Đệ Mabu",
                                 "Đệ\nBình Hút",
                                 "Đệ\nGoku Daima",
