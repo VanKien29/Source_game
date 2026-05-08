@@ -23,12 +23,12 @@ public class NangCapKichHoat {
     private static final int ITEM_XU_HORIZON = 1705;
     private static final int ITEM_DA_SKH_THUONG = 1742;
     private static final int ITEM_DA_SKH_VIP = 1743;
-    private static final int REQUIRED_HUY_DIET = 5;
-    private static final int REQUIRED_THAN_LINH = 10;
-    private static final int REQUIRED_DA_THUONG = 20;
-    private static final int REQUIRED_DA_VIP = 3;
-    private static final int REQUIRED_THOI_VANG = 5000;
-    private static final int REQUIRED_XU_HORIZON = 5000;
+    private static final int REQUIRED_HUY_DIET = 3;
+    private static final int REQUIRED_THAN_LINH = 5;
+    private static final int REQUIRED_DA_THUONG = 10;
+    private static final int REQUIRED_DA_VIP = 2;
+    private static final int REQUIRED_THOI_VANG = 500;
+    private static final int REQUIRED_XU_HORIZON = 500;
     private static final short[] RADAR_IDS = {57, 58, 59, 184, 185, 186, 187, 278, 279, 280, 281, 561};
 
     public static boolean isDoHuyDiet(Item item) {
@@ -57,7 +57,7 @@ public class NangCapKichHoat {
         String stoneText = data.useVipStone()
                 ? REQUIRED_DA_VIP + " đá SKH VIP"
                 : REQUIRED_DA_THUONG + " đá SKH thường";
-        String npcSay = "Nâng cấp SKH VIP NEW sẽ đổi đồ Thiên Sứ chính thành SKH NEW cùng món.\n"
+        String npcSay = "Nâng cấp SKH VIP NEW sẽ đổi đồ Hủy Diệt đầu tiên thành SKH NEW cùng món.\n"
                 + "Cần " + REQUIRED_HUY_DIET + " đồ Hủy Diệt bất kỳ, "
                 + REQUIRED_THAN_LINH + " đồ Thần Linh bất kỳ, "
                 + stoneText + ", " + REQUIRED_THOI_VANG + " thỏi vàng và "
@@ -73,7 +73,7 @@ public class NangCapKichHoat {
             return;
         }
 
-        Item newItem = createNewSkhItem(player, data.thienSu);
+        Item newItem = createNewSkhItem(player, data.huyDietItems.get(0));
         consumeItems(player, data);
         InventoryService.gI().addItemBag(player, newItem);
 
@@ -83,9 +83,9 @@ public class NangCapKichHoat {
         CombineService.gI().reOpenItemCombine(player);
     }
 
-    private static Item createNewSkhItem(Player player, Item thienSu) {
-        int planet = getPlanet(player, thienSu);
-        int slot = thienSu.template.type;
+    private static Item createNewSkhItem(Player player, Item baseItem) {
+        int planet = getPlanet(player, baseItem);
+        int slot = baseItem.template.type;
         short itemId = getRandomTemplateId(planet, slot);
         Item newItem = ItemService.gI().createNewItem(itemId);
         RewardService.gI().initBaseOptionClothes(newItem.template.id, newItem.template.type, newItem.itemOptions);
@@ -118,9 +118,7 @@ public class NangCapKichHoat {
         CombineData data = new CombineData();
         if (player.combine != null && player.combine.itemsCombine != null) {
             for (Item item : player.combine.itemsCombine) {
-                if (data.thienSu == null && isDoThienSu(item)) {
-                    data.thienSu = item;
-                } else if (isDoHuyDiet(item)) {
+                if (isDoHuyDiet(item)) {
                     data.huyDietItems.add(item);
                 } else if (isDoThanLinh(item)) {
                     data.thanLinhItems.add(item);
@@ -136,8 +134,7 @@ public class NangCapKichHoat {
     }
 
     private static boolean isReady(CombineData data) {
-        return data.thienSu != null
-                && data.huyDietItems.size() >= REQUIRED_HUY_DIET
+        return data.huyDietItems.size() >= REQUIRED_HUY_DIET
                 && data.thanLinhItems.size() >= REQUIRED_THAN_LINH
                 && hasEnoughStone(data)
                 && hasEnough(data.thoiVang, REQUIRED_THOI_VANG)
@@ -156,16 +153,13 @@ public class NangCapKichHoat {
     }
 
     private static String getMissingMessage(CombineData data) {
-        StringBuilder sb = new StringBuilder("Cần 1 đồ Thiên Sứ chính, ")
+        StringBuilder sb = new StringBuilder("Cần ")
                 .append(REQUIRED_HUY_DIET).append(" đồ Hủy Diệt bất kỳ, ")
                 .append(REQUIRED_THAN_LINH).append(" đồ Thần Linh bất kỳ, ")
                 .append(REQUIRED_DA_THUONG).append(" đá SKH thường hoặc ")
                 .append(REQUIRED_DA_VIP).append(" đá SKH VIP, ")
                 .append(REQUIRED_THOI_VANG).append(" thỏi vàng và ")
                 .append(REQUIRED_XU_HORIZON).append(" xu Horizon.");
-        if (data.thienSu == null) {
-            sb.append("\nThiếu đồ Thiên Sứ chính.");
-        }
         if (data.huyDietItems.size() < REQUIRED_HUY_DIET) {
             sb.append("\nThiếu ").append(REQUIRED_HUY_DIET - data.huyDietItems.size()).append(" đồ Hủy Diệt.");
         }
@@ -187,7 +181,6 @@ public class NangCapKichHoat {
     }
 
     private static void consumeItems(Player player, CombineData data) {
-        InventoryService.gI().subQuantityItemsBag(player, data.thienSu, 1);
         consumeItems(player, data.huyDietItems, REQUIRED_HUY_DIET);
         consumeItems(player, data.thanLinhItems, REQUIRED_THAN_LINH);
         if (data.useVipStone()) {
@@ -207,7 +200,6 @@ public class NangCapKichHoat {
 
     private static class CombineData {
 
-        private Item thienSu;
         private Item daVipSelected;
         private Item daThuong;
         private Item thoiVang;
