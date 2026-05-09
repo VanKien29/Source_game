@@ -1534,8 +1534,9 @@ public class ItemService {
     public Item otphd(short tempId) {
         return otphd(tempId, 1);
     }
+
     public Item otpkh(short tempId) {
-        return otpkh (tempId, 1);
+        return otpkh(tempId, 1);
     }
 
     public Item otptl(short tempId, int quantity) {
@@ -1597,7 +1598,7 @@ public class ItemService {
         item.info = item.getInfo();
         return item;
     }
-    
+
     public Item otpkh(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
@@ -1613,7 +1614,7 @@ public class ItemService {
             item.itemOptions.add(new ItemOption(0, 3));
         }
         if (item.template.type == 3) {
-            item.itemOptions.add(new ItemOption(7,20 ));
+            item.itemOptions.add(new ItemOption(7, 20));
         }
         if (item.template.type == 4) {
             item.itemOptions.add(new ItemOption(14, 1));
@@ -2042,6 +2043,7 @@ public class ItemService {
             }
         }
     }
+
     public void setkhkaio(Player player) {
         for (int i = 0; i < 1; i++) {
             Item skh = InventoryService.gI().findItem(player.inventory.itemsBag, 1968 + i);
@@ -2296,20 +2298,39 @@ public class ItemService {
         } else {
             item2 = ItemService.gI().createNewItem((short) vpVip[Util.nextInt(0, vpVip.length - 1)]);
             item2.quantity = 1;
-            // 75% có HSD, 25% không có
-            if (Util.isTrue(85, 100)) {
-                item2.itemOptions.add(new Item.ItemOption(93, 30));
+
+            // Tỉ lệ HSD cho item 1966
+            // 1 ngày  : 35%
+            // 3 ngày  : 25%
+            // 5 ngày  : 18%
+            // 7 ngày  : 12%
+            // 15 ngày : 8%
+            // Vĩnh viễn: 2% - khó nhất, không add option 93
+            int tiLeHsd = Util.nextInt(1, 100);
+
+            if (tiLeHsd <= 35) {
+                item2.itemOptions.add(new Item.ItemOption(93, 1));
+            } else if (tiLeHsd <= 60) {
+                item2.itemOptions.add(new Item.ItemOption(93, 3));
+            } else if (tiLeHsd <= 78) {
+                item2.itemOptions.add(new Item.ItemOption(93, 5));
+            } else if (tiLeHsd <= 90) {
+                item2.itemOptions.add(new Item.ItemOption(93, 7));
+            } else if (tiLeHsd <= 98) {
+                item2.itemOptions.add(new Item.ItemOption(93, 15));
+            } else {
+                // Vĩnh viễn: không add option 93
             }
 
             int combo = Util.nextInt(1, 3);
             if (combo == 1) {
-                item2.itemOptions.add(new Item.ItemOption(50, Util.nextInt(0, 5)));
+                item2.itemOptions.add(new Item.ItemOption(50, Util.nextInt(1, 5)));
                 item2.itemOptions.add(new Item.ItemOption(0, Util.nextInt(500, 5000)));
             } else if (combo == 2) {
-                item2.itemOptions.add(new Item.ItemOption(77, Util.nextInt(0, 5)));
+                item2.itemOptions.add(new Item.ItemOption(77, Util.nextInt(1, 5)));
                 item2.itemOptions.add(new Item.ItemOption(6, Util.nextInt(5000, 50000)));
             } else {
-                item2.itemOptions.add(new Item.ItemOption(103, Util.nextInt(0, 5)));
+                item2.itemOptions.add(new Item.ItemOption(103, Util.nextInt(1, 5)));
                 item2.itemOptions.add(new Item.ItemOption(7, Util.nextInt(5000, 50000)));
             }
         }
