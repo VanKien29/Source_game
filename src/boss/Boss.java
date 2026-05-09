@@ -500,18 +500,27 @@ public class Boss extends Player implements IBoss, IBossOutfit {
 
     protected void notifyJoinMap() {
         if (canSendNotify()) {
-            ServerNotify.gI().notify("BOSS " + this.name + " vừa xuất hiện tại " + this.zone.map.mapName);
+            Zone currentZone = this.zone;
+            if (currentZone != null && currentZone.map != null) {
+                String bossName = this.name;
+                String mapName = currentZone.map.mapName;
+                ServerNotify.gI().notify("BOSS " + bossName + " vừa xuất hiện tại " + mapName);
+            }
         }
     }
 
     private boolean canSendNotify() {
-        return !(this.isNotifyDisabled
-                || this.zone.map.mapId == 140
-                || MapService.gI().isMapPhoBan(this.zone.map.mapId)
-                || MapService.gI().isMapMaBu(this.zone.map.mapId)
-                || MapService.gI().isMapBlackBallWar(this.zone.map.mapId)
-                || MapService.gI().isMapOffline(this.zone.map.mapId)
-                || this.zone.map.mapId == 111 // || this.id != BossID.TAU_PAY_PAY_DONG_NAM_KARIN
+        Zone currentZone = this.zone;
+        if (this.isNotifyDisabled || currentZone == null || currentZone.map == null) {
+            return false;
+        }
+        int mapId = currentZone.map.mapId;
+        return !(mapId == 140
+                || MapService.gI().isMapPhoBan(mapId)
+                || MapService.gI().isMapMaBu(mapId)
+                || MapService.gI().isMapBlackBallWar(mapId)
+                || MapService.gI().isMapOffline(mapId)
+                || mapId == 111 // || this.id != BossID.TAU_PAY_PAY_DONG_NAM_KARIN
                 );
     }
 

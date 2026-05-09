@@ -219,6 +219,8 @@ public class CombineService {
         if (n.length > 0) {
             num = n[0];
         }
+        int[] reopenTemplateIds = getCombineItemTemplateIds(player);
+        player.combine.lastReopenTemplateIds = reopenTemplateIds;
         switch (player.combine.typeCombine) {
             case EP_SAO_TRANG_BI ->
                 EpSaoTrangBi.epSaoTrangBi(player);
@@ -290,19 +292,29 @@ public class CombineService {
                 TayGiapLuyenTap.startCombine(player);
         }
 
-        if (!isRepeatableCombine(player.combine.typeCombine)) {
+        boolean repeatableCombine = isRepeatableCombine(player.combine.typeCombine);
+        if (!repeatableCombine) {
             player.iDMark.setIndexMenu(ConstNpc.IGNORE_MENU);
+            player.combine.clearParamCombine();
+        } else if (isCrystalRepeatableCombine(player.combine.typeCombine)) {
+            reOpenTabCombine(player, reopenTemplateIds);
+        } else {
+            reOpenItemCombine(player, reopenTemplateIds);
         }
-        player.combine.clearParamCombine();
         player.combine.lastTimeCombine = System.currentTimeMillis();
 
     }
 
     private boolean isRepeatableCombine(int typeCombine) {
         return typeCombine == LAM_PHEP_NHAP_DA
-                || typeCombine == TAO_DA_HEMATITE
-                || typeCombine == NANG_CAP_SAO_PHA_LE
-                || typeCombine == DANH_BONG_SAO_PHA_LE;
+                || isCrystalRepeatableCombine(typeCombine);
+    }
+
+    private boolean isCrystalRepeatableCombine(int typeCombine) {
+        return typeCombine == NANG_CAP_SAO_PHA_LE
+                || typeCombine == DANH_BONG_SAO_PHA_LE
+                || typeCombine == CUONG_HOA_LO_SAO_PHA_LE
+                || typeCombine == TAO_DA_HEMATITE;
     }
 
     /**
@@ -443,15 +455,38 @@ public class CombineService {
      * @param player
      */
     public void reOpenItemCombine(Player player) {
+        reOpenItemCombine(player, getReopenTemplateIds(player));
+    }
+
+    public void reOpenTabCombine(Player player, int... fallbackTemplateIds) {
+        if (player == null || player.combine == null) {
+            return;
+        }
+        openTabCombine(player, player.combine.typeCombine);
+        reOpenItemCombine(player, fallbackTemplateIds);
+    }
+
+    public void reOpenItemCombine(Player player, int... fallbackTemplateIds) {
         Message msg = null;
         try {
             List<Integer> indexes = new ArrayList<>();
             List<Item> validItems = new ArrayList<>();
-            for (Item it : player.combine.itemsCombine) {
+            for (int i = 0; i < player.combine.itemsCombine.size(); i++) {
+                Item it = player.combine.itemsCombine.get(i);
                 int index = InventoryService.gI().getIndexItemBag(player, it);
                 if (index >= 0) {
                     indexes.add(index);
                     validItems.add(it);
+                    continue;
+                }
+                int fallbackTemplateId = fallbackTemplateIds != null && i < fallbackTemplateIds.length ? fallbackTemplateIds[i] : -1;
+                Item fallbackItem = findFallbackCombineItem(player, fallbackTemplateId, indexes);
+                if (fallbackItem != null) {
+                    int fallbackIndex = InventoryService.gI().getIndexItemBag(player, fallbackItem);
+                    if (fallbackIndex >= 0) {
+                        indexes.add(fallbackIndex);
+                        validItems.add(fallbackItem);
+                    }
                 }
             }
             player.combine.itemsCombine.clear();
@@ -469,6 +504,52 @@ public class CombineService {
                 msg.cleanup();
             }
         }
+    }
+
+    private int[] getCombineItemTemplateIds(Player player) {
+        if (player == null || player.combine == null || player.combine.itemsCombine == null) {
+            return new int[0];
+        }
+        int[] templateIds = new int[player.combine.itemsCombine.size()];
+        for (int i = 0; i < player.combine.itemsCombine.size(); i++) {
+            Item item = player.combine.itemsCombine.get(i);
+            templateIds[i] = item != null && item.isNotNullItem() && item.template != null ? item.template.id : -1;
+        }
+        return templateIds;
+    }
+
+    private int[] getReopenTemplateIds(Player player) {
+        int[] currentTemplateIds = getCombineItemTemplateIds(player);
+        if (player == null || player.combine == null || player.combine.lastReopenTemplateIds == null
+                || player.combine.lastReopenTemplateIds.length == 0) {
+            return currentTemplateIds;
+        }
+        int[] savedTemplateIds = player.combine.lastReopenTemplateIds;
+        int[] mergedTemplateIds = new int[Math.max(currentTemplateIds.length, savedTemplateIds.length)];
+        for (int i = 0; i < mergedTemplateIds.length; i++) {
+            int templateId = i < currentTemplateIds.length ? currentTemplateIds[i] : -1;
+            if (templateId < 0 && i < savedTemplateIds.length) {
+                templateId = savedTemplateIds[i];
+            }
+            mergedTemplateIds[i] = templateId;
+        }
+        return mergedTemplateIds;
+    }
+
+    private Item findFallbackCombineItem(Player player, int templateId, List<Integer> usedIndexes) {
+        if (player == null || player.inventory == null || player.inventory.itemsBag == null || templateId < 0) {
+            return null;
+        }
+        for (int i = 0; i < player.inventory.itemsBag.size(); i++) {
+            if (usedIndexes.contains(i)) {
+                continue;
+            }
+            Item item = player.inventory.itemsBag.get(i);
+            if (item != null && item.isNotNullItem() && item.template != null && item.template.id == templateId) {
+                return item;
+            }
+        }
+        return null;
     }
 
     /**
@@ -737,6 +818,8 @@ public class CombineService {
     }
 
     public void startCombineVip(Player player, int n) {
+        int[] reopenTemplateIds = getCombineItemTemplateIds(player);
+        player.combine.lastReopenTemplateIds = reopenTemplateIds;
         switch (player.combine.typeCombine) {
             case PHA_LE_HOA_TRANG_BI:
                 PhaLeHoaTrangBi.phaLeHoa(player, n);
@@ -746,8 +829,15 @@ public class CombineService {
             // break;
         }
 
-        player.iDMark.setIndexMenu(ConstNpc.IGNORE_MENU);
-        player.combine.clearParamCombine();
+        boolean repeatableCombine = isRepeatableCombine(player.combine.typeCombine);
+        if (!repeatableCombine) {
+            player.iDMark.setIndexMenu(ConstNpc.IGNORE_MENU);
+            player.combine.clearParamCombine();
+        } else if (isCrystalRepeatableCombine(player.combine.typeCombine)) {
+            reOpenTabCombine(player, reopenTemplateIds);
+        } else {
+            reOpenItemCombine(player, reopenTemplateIds);
+        }
         player.combine.lastTimeCombine = System.currentTimeMillis();
 
     }

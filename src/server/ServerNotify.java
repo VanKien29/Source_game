@@ -11,14 +11,14 @@ import player.Player;
 import network.Message;
 import services.Service;
 import utils.Util;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ServerNotify extends Thread {
 
     private long lastNotifyTime;
 
-    private final List<String> notifies;
+    private final Queue<String> notifies;
 
     private int indexNotify;
 
@@ -30,7 +30,7 @@ public class ServerNotify extends Thread {
     private static ServerNotify instance;
 
     private ServerNotify() {
-        this.notifies = new ArrayList<>();
+        this.notifies = new ConcurrentLinkedQueue<>();
         this.start();
     }
 
@@ -48,8 +48,9 @@ public class ServerNotify extends Thread {
                 // while (!notifies.isEmpty()) {
                 // sendThongBaoBenDuoi(notifies.remove(0));
                 // }
-                if (!notifies.isEmpty()) {
-                    sendChatVip(notifies.remove(0));
+                String notifyText = notifies.poll();
+                if (notifyText != null) {
+                    sendChatVip(notifyText);
                 }
                 // if (Util.canDoWithTime(this.lastNotifyTime, 360000)) {
                 // sendChatVip(notify[indexNotify]);

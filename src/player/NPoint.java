@@ -38,6 +38,13 @@ import utils.TimeUtil;
 public class NPoint {
 
     public static final byte MAX_LIMIT = 13;
+    private static final long[] EARLY_CRIT_TIEM_NANG_COST = {
+        50_000_000L,
+        250_000_000L,
+        1_000_000_000L,
+        5_000_000_000L,
+        15_000_000_000L
+    };
 
     @Setter
     private Player player;
@@ -2544,6 +2551,9 @@ public class NPoint {
     }
 
     private long getCritTiemNangUseAt(int crit) {
+        if (crit >= 0 && crit < EARLY_CRIT_TIEM_NANG_COST.length) {
+            return EARLY_CRIT_TIEM_NANG_COST[crit];
+        }
         int critCostLevel = Math.max(1, crit - 3);
         return 15000000000L * critCostLevel;
     }
