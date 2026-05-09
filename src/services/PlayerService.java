@@ -51,21 +51,36 @@ public class PlayerService {
     }
 
     public void sendMessageAllPlayer(Message msg) {
+        byte command = msg.command;
+        byte[] data = msg.getData();
         for (Player pl : Client.gI().getPlayers()) {
             if (pl != null) {
-                pl.sendMessage(msg);
+                pl.sendMessage(copyMessage(command, data));
             }
         }
         msg.cleanup();
     }
 
     public void sendMessageIgnore(Player plIgnore, Message msg) {
+        byte command = msg.command;
+        byte[] data = msg.getData();
         for (Player pl : Client.gI().getPlayers()) {
             if (pl != null && !pl.equals(plIgnore)) {
-                pl.sendMessage(msg);
+                pl.sendMessage(copyMessage(command, data));
             }
         }
         msg.cleanup();
+    }
+
+    private Message copyMessage(byte command, byte[] data) {
+        Message copy = new Message(command);
+        try {
+            if (data != null) {
+                copy.writer().write(data);
+            }
+        } catch (Exception ignored) {
+        }
+        return copy;
     }
 
     public void sendInfoHp(Player player) {
