@@ -100,8 +100,7 @@ public class NangCapKichHoat {
 
     private static short getRandomTemplateId(int planet, int slot) {
         if (slot >= 0 && slot <= 3) {
-            int[] pool = Manager.LIST_DO_KHAC_4MON[planet][slot];
-            return (short) pool[Util.nextInt(0, pool.length - 1)];
+            return (short) Manager.randomDoKichHoat4Mon(planet, slot);
         }
         return RADAR_IDS[Util.nextInt(0, RADAR_IDS.length - 1)];
     }

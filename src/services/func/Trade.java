@@ -112,11 +112,11 @@ public class Trade {
                         removeItemTrade(pl, index);
                         return;
                     }
-                    if (item.template.id == 457) {
-                        Service.gI().sendThongBao(pl, "Không thể giao dịch thỏi vàng khóa");
-                        removeItemTrade(pl, index);
-                        return;
-                    }
+//                    if (item.template.id == 457) {
+//                        Service.gI().sendThongBao(pl, "Không thể giao dịch thỏi vàng khóa");
+//                        removeItemTrade(pl, index);
+//                        return;
+//                    }
                     if (quantity > item.quantity || quantity < 0) {
                         return;
                     }
