@@ -16,6 +16,7 @@ public class Combine {
 
     public List<Item> itemsCombine;
     public int typeCombine;
+    public int[] lastReopenTemplateIds;
 
     public int goldCombine;
     public int gemCombine;
@@ -49,6 +50,7 @@ public class Combine {
         this.DiemNangcap = 0;
         this.DaNangcap = 0;
         this.TileNangcap = 0;
+        this.lastReopenTemplateIds = null;
 
     }
 
