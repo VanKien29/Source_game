@@ -357,12 +357,12 @@ public class InventoryService {
             return sItem;
         }
         // Kiểm tra item 1966 có hSD (option 93)
-        if (item.template.id == 1966 && InventoryService.gI().haveOption(item, 93)) {
-            Service.gI().sendThongBao(
-                    player.isPet ? ((Pet) player).master : player,
-                    "Vật phẩm này có HSD không thể đeo cho đệ!");
-            return sItem;
-        }
+//        if (item.template.id == 1966 && InventoryService.gI().haveOption(item, 93)) {
+//            Service.gI().sendThongBao(
+//                    player.isPet ? ((Pet) player).master : player,
+//                    "Vật phẩm này có HSD không thể đeo cho đệ!");
+//            return sItem;
+//        }
         long powerRequire = item.template.strRequire;
         for (Item.ItemOption io : item.itemOptions) {
             if (io.optionTemplate.id == 21) {

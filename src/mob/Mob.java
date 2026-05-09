@@ -829,36 +829,36 @@ public class Mob {
                 list.add(new ItemMap(zone, 20, 1, x, yEnd, player.id));
             }
         }
-        if (Util.isTrue(1, 190)) {
-            ItemMap it = new ItemMap(zone, ConstItem.THIT_HEO, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(86, 0));
-            list.add(it);
-        }
-        if (Util.isTrue(1, 190)) {
-            ItemMap it = new ItemMap(zone, ConstItem.THUNG_NEP, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(86, 0));
-            list.add(it);
-        }
-        if (Util.isTrue(1, 190)) {
-            ItemMap it = new ItemMap(zone, 750, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(86, 0));
-            list.add(it);
-        }
-        if (Util.isTrue(1, 190) && this.tempId != 0) {
-            ItemMap it = new ItemMap(zone, ConstItem.LA_DONG, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(86, 0));
-            list.add(it);
-        }
-        if (Util.isTrue(1, 190) && MapService.gI().isMapPhoBan(mapid)) {
-            ItemMap it = new ItemMap(zone, ConstItem.DAU_XANH, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(86, 0));
-            list.add(it);
-        }
-        if (Util.isTrue(1, 300)) {
-            ItemMap it = new ItemMap(zone, ConstItem.TRUNG_VIT_MUOI, 1, x, yEnd, player.id);
-            it.options.add(new Item.ItemOption(86, 0));
-            list.add(it);
-        }
+//        if (Util.isTrue(1, 190)) {
+//            ItemMap it = new ItemMap(zone, ConstItem.THIT_HEO, 1, x, yEnd, player.id);
+//            it.options.add(new Item.ItemOption(86, 0));
+//            list.add(it);
+//        }
+//        if (Util.isTrue(1, 190)) {
+//            ItemMap it = new ItemMap(zone, ConstItem.THUNG_NEP, 1, x, yEnd, player.id);
+//            it.options.add(new Item.ItemOption(86, 0));
+//            list.add(it);
+//        }
+//        if (Util.isTrue(1, 190)) {
+//            ItemMap it = new ItemMap(zone, 750, 1, x, yEnd, player.id);
+//            it.options.add(new Item.ItemOption(86, 0));
+//            list.add(it);
+//        }
+//        if (Util.isTrue(1, 190) && this.tempId != 0) {
+//            ItemMap it = new ItemMap(zone, ConstItem.LA_DONG, 1, x, yEnd, player.id);
+//            it.options.add(new Item.ItemOption(86, 0));
+//            list.add(it);
+//        }
+//        if (Util.isTrue(1, 190) && MapService.gI().isMapPhoBan(mapid)) {
+//            ItemMap it = new ItemMap(zone, ConstItem.DAU_XANH, 1, x, yEnd, player.id);
+//            it.options.add(new Item.ItemOption(86, 0));
+//            list.add(it);
+//        }
+//        if (Util.isTrue(1, 300)) {
+//            ItemMap it = new ItemMap(zone, ConstItem.TRUNG_VIT_MUOI, 1, x, yEnd, player.id);
+//            it.options.add(new Item.ItemOption(86, 0));
+//            list.add(it);
+//        }
 
         if (MapService.gI().isMapPhoBan(mapid) && this.tempId != 22) {
             // if (Util.isTrue(10, 100) || (player.actived() && Util.isTrue(20, 50))) {
@@ -983,7 +983,7 @@ public class Mob {
 //        }
 
         // Set kich hoat level 0
-        if (Util.isTrue(1, 150) && MapService.gI().isMapUpSKH(mapid)) {
+        if (Util.isTrue(1, 80) && MapService.gI().isMapUpSKH(mapid)) {
             int skhLevel = 0;
             short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
             ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
@@ -1005,7 +1005,7 @@ public class Mob {
         }
 
         // Set kich hoat new theo mon
-        if (Util.isTrue(1, 15000) && MapService.gI().isMapUpSKH(mapid)) {
+        if (Util.isTrue(1, 500) && MapService.gI().isMapUpSKH(mapid)) {
             short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
             ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
             List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);

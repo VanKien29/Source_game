@@ -2123,9 +2123,9 @@ public class NPoint {
             if (this.player.charms.tdTriTue4 > System.currentTimeMillis()) {
                 tiemNang += tn * 3;
             }
-            if (this.player.charms.tdTriTue4 > System.currentTimeMillis()) {
-                tiemNang += tn * 3;
-            }
+//            if (this.player.charms.tdTriTue4 > System.currentTimeMillis()) {
+//                tiemNang += tn * 3;
+//            }
             if (this.player.effectSkill.isChibi && this.player.typeChibi == 2) {
                 tiemNang += tn * 2;
             }
@@ -2183,7 +2183,7 @@ public class NPoint {
                 tiemNang *= 2;
             }
             if (MapService.gI().isMapNguHanhSon(this.player.zone.map.mapId)) {
-                tiemNang *= 2;
+                tiemNang *= 1.5f;
             }
             if (MapService.gI().isMapBanDoKhoBau(this.player.zone.map.mapId)) {
                 tiemNang *= 2;
