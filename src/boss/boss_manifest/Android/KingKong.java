@@ -59,7 +59,7 @@ public class KingKong extends Boss {
 
     @Override
     public void joinMap() {
-        super.joinMap(); // To change body of generated methods, choose Tools | Templates.
+        super.joinMap();
         st = System.currentTimeMillis();
     }
 

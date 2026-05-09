@@ -139,11 +139,11 @@ public class BaHatMit extends Npc {
                                     this.createOtherMenu(player, ConstMenu.CHUC_NANG_BHM_KHAC,
                                             "Ngươi tìm ta có việc gì?\n",
                                             //   "Đập đồ\nẢo Hóa",
-                                            "Build Đồ",
+                                            // "Build Đồ",
                                             "Pháp sư hoá",
                                             "Tẩy pháp sư hoá",
                                             //    "Siêu hóa\n Cải trang",
-                                            //  "Tinh ấn\ntrang bị",
+                                            "Tinh ấn\ntrang bị",
                                             //     "Tinh thạch\ntrang bị",
                                             "Nâng cấp\nGiáp LT",
                                             "Tẩy chỉ số\nGiáp LT");
@@ -173,24 +173,24 @@ public class BaHatMit extends Npc {
 //                                case 0: // Đập đồ ảo hóa
 //                                    CombineService.gI().openTabCombine(player, CombineService.DAP_DO_AO_HOA);
 //                                    break;
-                                case 0: // Build Đồ
-                                    this.createOtherMenu(player, ConstMenu.BUILD_DO_BHM, "|7|\bChi Tiết:\n|0|"
-                                            + "\nGia hạn Vật Phẩm: tỉ lệ thành công 30% + 3 - 7 ngày, 70% + 1 ngày",
-                                            //    + "\nTẩy đồ: tẩy sao pha lê, chỉ số đặc biệt một số trang bị",
-                                            "Gia hạn\n Vật Phẩm");
-                                    break;
-                                case 1: // Pháp sư hóa trang bị
+//                                case 0: // Build Đồ
+//                                    this.createOtherMenu(player, ConstMenu.BUILD_DO_BHM, "|7|\bChi Tiết:\n|0|"
+//                                            + "\nGia hạn Vật Phẩm: tỉ lệ thành công 30% + 3 - 7 ngày, 70% + 1 ngày",
+//                                            //    + "\nTẩy đồ: tẩy sao pha lê, chỉ số đặc biệt một số trang bị",
+//                                            "Gia hạn\n Vật Phẩm");
+//                                    break;
+                                case 0: // Pháp sư hóa trang bị
                                     CombineService.gI().openTabCombine(player, CombineService.PS_HOA_TRANG_BI);
                                     break;
-                                case 2: // Tẩy Pháp sư hóa trang bị
+                                case 1: // Tẩy Pháp sư hóa trang bị
                                     CombineService.gI().openTabCombine(player, CombineService.TAY_PS_HOA_TRANG_BI);
                                     break;
 //                                case 3: // Siêu Hóa
 //                                    CombineService.gI().openTabCombine(player, CombineService.SIEU_HOA);
 //                                    break;
-//                                case 2:
-//                                    CombineService.gI().openTabCombine(player, CombineService.AN_TRANG_BI);
-//                                    break;// Name: HOANDZ
+                                case 2:
+                                    CombineService.gI().openTabCombine(player, CombineService.AN_TRANG_BI);
+                                    break;// Name: HOANDZ
 //                                case 5:
 //                                    CombineService.gI().openTabCombine(player, CombineService.TINH_THACH_HOA);
 //                                    break;// Name: HOANDZ
@@ -202,19 +202,19 @@ public class BaHatMit extends Npc {
                                     break;// Name: HOANDZ
                             }
                         }
-                        case ConstMenu.BUILD_DO_BHM -> {
-                            switch (select) {
-//                                case 0: // Mở khóa Item
-//                                    CombineService.gI().openTabCombine(player, CombineService.MO_KHOA_ITEM);
+//                        case ConstMenu.BUILD_DO_BHM -> {
+//                            switch (select) {
+////                                case 0: // Mở khóa Item
+////                                    CombineService.gI().openTabCombine(player, CombineService.MO_KHOA_ITEM);
+////                                    break;
+//                                case 0: // Gia hạn vật phẩm
+//                                    CombineService.gI().openTabCombine(player, CombineService.GIA_HAN_VAT_PHAM);
 //                                    break;
-                                case 0: // Gia hạn vật phẩm
-                                    CombineService.gI().openTabCombine(player, CombineService.GIA_HAN_VAT_PHAM);
-                                    break;
-//                                case 2: // Tẩy đồ
-//                                    CombineService.gI().openTabCombine(player, CombineService.TAY_PS_HOA_TRANG_BI);
-//                                    break;
-                            }
-                        }
+////                                case 2: // Tẩy đồ
+////                                    CombineService.gI().openTabCombine(player, CombineService.TAY_PS_HOA_TRANG_BI);
+////                                    break;
+//                            }
+//                        }
 
                         case ConstMenu.MENU_PHA_LE -> {
                             switch (select) {
@@ -283,7 +283,7 @@ public class BaHatMit extends Npc {
                                     }
                                 }
 
-                                case CombineService.NANG_CAP_DO_TL, CombineService.NANG_CAP_KICH_HOAT_VIP, CombineService.NANG_CAP_KICH_HOAT, CombineService.NANG_CAP_LEVEL_KICH_HOAT, CombineService.NANG_CAP_SAO_PHA_LE, CombineService.DANH_BONG_SAO_PHA_LE, CombineService.CUONG_HOA_LO_SAO_PHA_LE, CombineService.TAO_DA_HEMATITE, CombineService.EP_SAO_TRANG_BI, CombineService.DAP_DO_AO_HOA, CombineService.PS_HOA_TRANG_BI, CombineService.TAY_PS_HOA_TRANG_BI, CombineService.SIEU_HOA, CombineService.AN_TRANG_BI, CombineService.TINH_THACH_HOA, CombineService.NANG_GIAP_LUYEN_TAP, CombineService.MO_KHOA_ITEM, CombineService.GIA_HAN_VAT_PHAM, CombineService.DOI_DO_THAN, CombineService.TAY_GIAP_LUYEN_TAP, CombineService.NANG_CAP_CHAN_MENH -> {
+                                case CombineService.NANG_CAP_DO_TL, CombineService.NANG_CAP_KICH_HOAT_VIP, CombineService.NANG_CAP_KICH_HOAT, CombineService.NANG_CAP_LEVEL_KICH_HOAT, CombineService.NANG_CAP_SAO_PHA_LE, CombineService.DANH_BONG_SAO_PHA_LE, CombineService.CUONG_HOA_LO_SAO_PHA_LE, CombineService.TAO_DA_HEMATITE, CombineService.EP_SAO_TRANG_BI, CombineService.DAP_DO_AO_HOA, CombineService.PS_HOA_TRANG_BI, CombineService.TAY_PS_HOA_TRANG_BI, CombineService.SIEU_HOA, CombineService.AN_TRANG_BI, CombineService.TINH_THACH_HOA, CombineService.NANG_GIAP_LUYEN_TAP, CombineService.MO_KHOA_ITEM, /* CombineService.GIA_HAN_VAT_PHAM, */ CombineService.DOI_DO_THAN, CombineService.TAY_GIAP_LUYEN_TAP, CombineService.NANG_CAP_CHAN_MENH -> {
                                     switch (select) {
                                         case 0:
                                             CombineService.gI().startCombine(player);

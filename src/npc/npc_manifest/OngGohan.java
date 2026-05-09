@@ -35,15 +35,15 @@ public class OngGohan extends Npc {
 
     int costNapVang = 1;
 
-    // { tiền, TV khóa (457), TV không khóa (1810) }
+    // { tiền, Thỏi vàng(TV) (457) }
     int[][] napVang = {
-            { 10000, 10, 20 },
-            { 20000, 20, 50 },
-            { 50000, 50, 130 },
-            { 100000, 100, 250 },
-            { 200000, 200, 600 },
-            { 500000, 500, 1500 },
-            { 1000000, 1000, 4000 }
+            { 10000, 30 },
+            { 20000, 70 },
+            { 50000, 180 },
+            { 100000, 350 },
+            { 200000, 800 },
+            { 500000, 2000 },
+            { 1000000, 5000 }
     };
 
     @Override
@@ -94,11 +94,9 @@ public class OngGohan extends Npc {
                         String npcSay = "Số dư của con là: " + Util.mumberToLouis(player.getSession().cash)
                                 + " VND\n"
                                 + "Ta đang giữ giúp con:\n"
-                                + "- " + Util.mumberToLouis(player.getSession().goldBar) + " TVK\n"
-                                + "- " + Util.mumberToLouis(player.getSession().goldBarUnLock) + " TV"
+                                + "- " + Util.mumberToLouis(player.getSession().goldBar + player.getSession().goldBarUnLock) + " TV"
                                 + "\b|7|Thuật ngữ viết tắt:\n"
-                                + "TVK: Thỏi Vàng Khóa\n"
-                                + "TV: Thỏi Vàng (Giao dịch được)";
+                                + "TV: Thỏi vàng(TV)";
                         createOtherMenu(player, ConstNpc.NAP_TIEN, npcSay,
                                 "Quy Đổi\nXu Elite",
                                 "Quy Đổi\nThỏi Vàng",
@@ -262,10 +260,7 @@ public class OngGohan extends Npc {
                         List<String> menu = new ArrayList<>();
                         for (int i = 0; i < napVang.length; i++) {
                             String text = Util.mumberToLouis(napVang[i][0]) + "\n"
-                                    + napVang[i][1] + " TVK";
-                            if (napVang[i][2] > 0) {
-                                text += "\n+" + napVang[i][2] + " TV";
-                            }
+                                    + napVang[i][1] + " TV";
                             menu.add(text);
                         }
                         createOtherMenu(player, ConstNpc.NAP_VANG,
@@ -276,13 +271,11 @@ public class OngGohan extends Npc {
                     case 2 -> {
                         List<Item> listItem = new ArrayList<>();
 
-                        if (player.getSession().goldBar > 0) {
+                        int totalGoldBar = player.getSession().goldBar + player.getSession().goldBarUnLock;
+
+                        if (totalGoldBar > 0) {
                             listItem.add(ItemService.gI().createNewItem(
-                                    (short) 457, player.getSession().goldBar));
-                        }
-                        if (player.getSession().goldBarUnLock > 0) {
-                            listItem.add(ItemService.gI().createNewItem(
-                                    (short) 1810, player.getSession().goldBarUnLock));
+                                    (short) 457, totalGoldBar));
                         }
 
                         if (InventoryService.gI().getCountEmptyBag(player) < listItem.size()) {
@@ -307,12 +300,10 @@ public class OngGohan extends Npc {
                     int vndExchange = napVang[select][0];
                     if (PlayerDAO.subcash(player, vndExchange)) {
                         PlayerDAO.subGoldBar(player, -napVang[select][1]);
-                        PlayerDAO.subGoldBarUnLock(player, -napVang[select][2]);
                         addDanhHieuNapProgress(player, vndExchange);
                         Service.gI().sendThongBao(player,
                                 "Bạn nhận được:\n"
-                                        + napVang[select][1] + " TVK"
-                                        + (napVang[select][2] > 0 ? "\n+" + napVang[select][2] + " TV" : ""));
+                                        + napVang[select][1] + " TV");
                     } else {
                         Service.gI().sendThongBao(player, "Có lỗi khi quy đổi, vui lòng thử lại");
                     }

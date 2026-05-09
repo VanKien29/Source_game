@@ -554,7 +554,7 @@ public class Item {
     }
 
     public boolean isTrangBiKhoaGd() {
-        if (this.template.type == 11 || this.template.id != 457 || this.template.type == 30 || this.template.type == 12 || this.template.type == 21 || this.template.type == 27 || this.template.type == 72) {
+        if (this.template.type == 11 || this.template.type == 30 || this.template.type == 12 || this.template.type == 21 || this.template.type == 27 || this.template.type == 72) {
             return true;
         }
 

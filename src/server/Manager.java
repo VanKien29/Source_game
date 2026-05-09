@@ -136,9 +136,18 @@ public final class Manager {
     public static List<TOP> topWHIS;
     public static long timeRealTop = 0;
 
-    public static final short[][] trangBiKichHoat = {{0, 6, 21, 27}, {1, 7, 22, 28}, {2, 8, 23, 29}};
-    public static final short[][] trangBiKichHoatVip = {{555, 556, 562, 563}, {557, 558, 564, 565},
-    {559, 560, 566, 567}};
+    public static final short[][] trangBiKichHoat = {
+        {0, 6, 21, 27},
+        {1, 7, 22, 28},
+        {2, 8, 23, 29}
+    };
+
+    public static final short[][] trangBiKichHoatVip = {
+        {555, 556, 562, 563},
+        {557, 558, 564, 565},
+        {559, 560, 566, 567}
+    };
+
     public static final int[][][] LIST_DO_KHAC_4MON = {
         { // TD
             {137, 138, 139, 230, 231, 232, 233, 555},
@@ -159,11 +168,22 @@ public final class Manager {
             {181, 182, 183, 274, 275, 276, 277, 567}
         }
     };
+
     public static final short[][] DO_THAN_4MON = {
         {(short) 555, (short) 556, (short) 562, (short) 563}, // TD
         {(short) 557, (short) 558, (short) 564, (short) 565}, // NM
         {(short) 559, (short) 560, (short) 566, (short) 567} // XD
     };
+    
+    public static int randomDoKichHoat4Mon(int gender, int type) {
+        int[] list = LIST_DO_KHAC_4MON[gender][type];
+        int tiLeDoThan = 3;
+        int rand = Util.nextInt(100); 
+        if (rand < tiLeDoThan) {
+            return list[list.length - 1];
+        }
+        return list[Util.nextInt(list.length - 1)];
+    }
 //    public static final short[][][] trangBiKichHoatVip = {
 //        {{555, 555, 555, 555, 555, 650}, {556, 556, 556, 556, 556, 651}, {562, 562, 562, 562, 562, 657}, {563, 563, 563, 563, 563, 658}}, // Trái Đất
 //        {{557, 557, 557, 557, 557, 652}, {558, 558, 558, 558, 558, 653}, {564, 564, 564, 564, 564, 659}, {565, 565, 565, 565, 565, 660}}, // Namec
@@ -1301,11 +1321,7 @@ public final class Manager {
         template.npcX = npcData.npcX;
         template.npcY = npcData.npcY;
 
-        try (Connection con = DBConnecter.getConnectionServer();
-                PreparedStatement mapPs = con.prepareStatement("update map_template set mobs = ?, max_player = ?, zones = ?, waypoints = ?, npcs = ? where id = ?");
-                PreparedStatement mobTemplatePs = con.prepareStatement("update mob_template set percent_dame = ? where id = ?");
-                PreparedStatement deleteDropRulePs = con.prepareStatement("delete from map_drop_rule where map_id = ?");
-                PreparedStatement insertDropRulePs = con.prepareStatement("insert into map_drop_rule (map_id, item_id, quantity_min, quantity_max, chance_numerator, chance_denominator, mob_temp_id, options_text, active, note) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement mapPs = con.prepareStatement("update map_template set mobs = ?, max_player = ?, zones = ?, waypoints = ?, npcs = ? where id = ?"); PreparedStatement mobTemplatePs = con.prepareStatement("update mob_template set percent_dame = ? where id = ?"); PreparedStatement deleteDropRulePs = con.prepareStatement("delete from map_drop_rule where map_id = ?"); PreparedStatement insertDropRulePs = con.prepareStatement("insert into map_drop_rule (map_id, item_id, quantity_min, quantity_max, chance_numerator, chance_denominator, mob_temp_id, options_text, active, note) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             con.setAutoCommit(false);
             ensureMapDropRuleTable(con);
 
@@ -1949,8 +1965,7 @@ public final class Manager {
 
     private static void loadMapDropRules(Connection con) throws SQLException {
         MAP_DROP_RULES.clear();
-        try (PreparedStatement ps = con.prepareStatement("select map_id, item_id, quantity_min, quantity_max, chance_numerator, chance_denominator, mob_temp_id, options_text, active, note from map_drop_rule order by map_id asc, id asc");
-                ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = con.prepareStatement("select map_id, item_id, quantity_min, quantity_max, chance_numerator, chance_denominator, mob_temp_id, options_text, active, note from map_drop_rule order by map_id asc, id asc"); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 RuntimeMapDropRule rule = new RuntimeMapDropRule();
                 rule.mapId = rs.getInt("map_id");
