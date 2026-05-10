@@ -43,13 +43,12 @@ public class SoSuMenh extends Npc {
     public void openBaseMenu(Player player) {
         if (canOpenNpc(player)) {
             List<String> menu = new ArrayList<>(Arrays.asList(
-                    "Xem phần thưởng", // 0
-                    "Nhận Thưởng", // 1
-                    "Mở Sổ Vip", // 2
-                    "Mua lever\n [5k/level]", // 3
-                    "Xem xếp hạng", // 4
-                    "Xem Thông\n Tin Sổ", // 5
-                    "Hòm Thư" // 6
+                    "Phần\nthưởng", // 0
+                    "Mở Sổ Vip", // 1
+                    "Mua lever\n [5k/level]", // 2
+                    "Xem xếp hạng", // 3
+                    "Xem Thông\n Tin Sổ", // 4
+                    "Hòm Thư" // 5
             ));
 
             String[] menus = menu.toArray(new String[0]);
@@ -74,12 +73,6 @@ public class SoSuMenh extends Npc {
                     break;
                 }
                 case 1 -> {
-                    this.createOtherMenu(player, 9999,
-                            "Nhận thưởng sổ ở đây",
-                            "Sổ thường", "Sổ Vip", "Từ chối");
-                    break;
-                }
-                case 2 -> {
                     if (player.sosumenhplayer.isVip()) {
                         Service.gI().sendThongBao(player, "Bạn đã mở vip sổ rồi không thể mở tiếp!");
                         return;
@@ -93,7 +86,7 @@ public class SoSuMenh extends Npc {
                             "Có", "Không");
                     break;
                 }
-                case 3 -> {
+                case 2 -> {
                     // Thêm confirm trước khi mua level
                     if (player.sosumenhplayer.getLevel() >= 20) {
                         Service.gI().sendThongBao(player, "Đã đạt cấp độ tối đa không thể nâng cấp");
@@ -108,11 +101,11 @@ public class SoSuMenh extends Npc {
                             "Đồng ý", "Hủy bỏ");
                     break;
                 }
-                case 4 -> {
+                case 3 -> {
                     TopService.showListTop(player, 9);
                     break;
                 }
-                case 5 -> {
+                case 4 -> {
                     try {
                         List<SoSuMenhTaskMain> doneTasks = new ArrayList<>();
                         List<SoSuMenhTaskMain> notDoneTasks = new ArrayList<>();
@@ -170,7 +163,7 @@ public class SoSuMenh extends Npc {
                     break;
                 }
 
-                case 6 -> {
+                case 5 -> {
                     this.createOtherMenu(player, ConstNpc.MAIL_BOX,
                             "|5|HÒM THƯ\n"
                             + "|0|Số vật phẩm trong thư: "
@@ -186,9 +179,9 @@ public class SoSuMenh extends Npc {
             // Menu xem phần thưởng
             switch (select) {
                 case 0 ->
-                    showSoThuongReward(player);
+                    SoSuMenhService.getInstance().loadAchievements(player, false);
                 case 1 ->
-                    showSoVipReward(player);
+                    SoSuMenhService.getInstance().loadAchievements(player, true);
                 case 2 -> {
                 }
             }
