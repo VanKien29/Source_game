@@ -190,6 +190,54 @@ public class SoSuMenhService {
         }
     }
 
+    public void showRewardInfo(Player player, int index, int rewardIndex, boolean isVip) {
+        Message msg = null;
+        String rewardColumn = isVip ? "items2" : "items";
+        try (Connection connection = DBConnecter.getConnectionServer();
+                PreparedStatement ps = connection.prepareStatement("SELECT " + rewardColumn + " FROM so_su_menh_reward WHERE level = ?")) {
+            ps.setInt(1, index + 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    Service.gI().sendThongBao(player, "Không tìm thấy phần thưởng");
+                    return;
+                }
+                JSONArray dataArray = (JSONArray) JSONValue.parse(rs.getString(rewardColumn));
+                if (dataArray == null || rewardIndex < 0 || rewardIndex >= dataArray.size()) {
+                    Service.gI().sendThongBao(player, "Không tìm thấy phần thưởng");
+                    return;
+                }
+                JSONObject dataObject = (JSONObject) JSONValue.parse(String.valueOf(dataArray.get(rewardIndex)));
+                int tempId = Integer.parseInt(String.valueOf(dataObject.get("temp_id")));
+                int quantity = Integer.parseInt(String.valueOf(dataObject.get("quantity")));
+                if (ItemService.gI().getTemplate(tempId) == null) {
+                    Service.gI().sendThongBao(player, "Không tìm thấy vật phẩm");
+                    return;
+                }
+                JSONArray optionsArray = (JSONArray) dataObject.get("options");
+                msg = new Message(-76);
+                msg.writer().writeByte(2);
+                msg.writer().writeShort(tempId);
+                msg.writer().writeInt(quantity);
+                int optionCount = optionsArray == null ? 0 : Math.min(optionsArray.size(), 255);
+                msg.writer().writeByte(optionCount);
+                for (int i = 0; i < optionCount; i++) {
+                    JSONObject optionObject = (JSONObject) optionsArray.get(i);
+                    int optionId = Integer.parseInt(String.valueOf(optionObject.get("id")));
+                    int param = Integer.parseInt(String.valueOf(optionObject.get("param")));
+                    msg.writer().writeShort(optionId);
+                    msg.writer().writeInt(param);
+                }
+                player.sendMessage(msg);
+            }
+        } catch (Exception e) {
+            Logger.logException(this.getClass(), e);
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
+        }
+    }
+
     public void loadAchievements(Player player, boolean isVip) {
         if (player.getSession() == null) {
             return;

@@ -185,8 +185,6 @@ public class SetClothes {
                         break;
                     }
                 }
-            } else {
-                break;
             }
         }
     }
@@ -225,8 +223,6 @@ public class SetClothes {
                         break;
                     }
                 }
-            } else {
-                break;
             }
         }
     }
