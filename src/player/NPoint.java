@@ -2183,7 +2183,7 @@ public class NPoint {
                 tiemNang *= 2;
             }
             if (MapService.gI().isMapNguHanhSon(this.player.zone.map.mapId)) {
-                tiemNang *= 1.5f;
+                tiemNang *= 1.5f; // tnsm nhs
             }
             if (MapService.gI().isMapBanDoKhoBau(this.player.zone.map.mapId)) {
                 tiemNang *= 2;
