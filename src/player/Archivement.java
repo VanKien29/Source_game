@@ -303,6 +303,52 @@ public class Archivement {
 
     }
 
+    public void showRewardInfo(Player pl, int index, int rewardIndex) {
+        Message msg = null;
+        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement ps = con.prepareStatement("SELECT detail FROM moc_nap WHERE id = ?")) {
+            ps.setInt(1, index + 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    Service.gI().sendThongBao(pl, "Không tìm thấy phần thưởng");
+                    return;
+                }
+                JSONArray dataArray = (JSONArray) JSONValue.parse(rs.getString("detail"));
+                if (dataArray == null || rewardIndex < 0 || rewardIndex >= dataArray.size()) {
+                    Service.gI().sendThongBao(pl, "Không tìm thấy phần thưởng");
+                    return;
+                }
+                JSONObject dataObject = (JSONObject) JSONValue.parse(String.valueOf(dataArray.get(rewardIndex)));
+                int tempId = Integer.parseInt(String.valueOf(dataObject.get("temp_id")));
+                int quantity = Integer.parseInt(String.valueOf(dataObject.get("quantity")));
+                if (ItemService.gI().getTemplate(tempId) == null) {
+                    Service.gI().sendThongBao(pl, "Không tìm thấy vật phẩm");
+                    return;
+                }
+                JSONArray optionsArray = (JSONArray) dataObject.get("options");
+                msg = new Message(-76);
+                msg.writer().writeByte(2);
+                msg.writer().writeShort(tempId);
+                msg.writer().writeInt(quantity);
+                int optionCount = optionsArray == null ? 0 : Math.min(optionsArray.size(), 255);
+                msg.writer().writeByte(optionCount);
+                for (int i = 0; i < optionCount; i++) {
+                    JSONObject optionObject = (JSONObject) optionsArray.get(i);
+                    int optionId = Integer.parseInt(String.valueOf(optionObject.get("id")));
+                    int param = Integer.parseInt(String.valueOf(optionObject.get("param")));
+                    msg.writer().writeShort(optionId);
+                    msg.writer().writeInt(param);
+                }
+                pl.sendMessage(msg);
+            }
+        } catch (Exception e) {
+            Logger.logException(this.getClass(), e);
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
+        }
+    }
+
     public void getAchievement(Player player) {
         try {
             if (player.getSession() == null) {
