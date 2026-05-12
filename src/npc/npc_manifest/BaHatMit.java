@@ -143,7 +143,7 @@ public class BaHatMit extends Npc {
                                             "Pháp sư hoá",
                                             "Tẩy pháp sư hoá",
                                             //    "Siêu hóa\n Cải trang",
-                                            "Tinh ấn\ntrang bị",
+                                            // "Tinh ấn\ntrang bị",
                                             //     "Tinh thạch\ntrang bị",
                                             "Nâng cấp\nGiáp LT",
                                             "Tẩy chỉ số\nGiáp LT");
@@ -188,16 +188,16 @@ public class BaHatMit extends Npc {
 //                                case 3: // Siêu Hóa
 //                                    CombineService.gI().openTabCombine(player, CombineService.SIEU_HOA);
 //                                    break;
-                                case 2:
-                                    CombineService.gI().openTabCombine(player, CombineService.AN_TRANG_BI);
-                                    break;// Name: HOANDZ
+//                                case 2:
+//                                    CombineService.gI().openTabCombine(player, CombineService.AN_TRANG_BI);
+//                                    break;// Name: HOANDZ
 //                                case 5:
 //                                    CombineService.gI().openTabCombine(player, CombineService.TINH_THACH_HOA);
 //                                    break;// Name: HOANDZ
-                                case 3:
+                                case 2:
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_GIAP_LUYEN_TAP);
                                     break;// Name: HOANDZ
-                                case 4:
+                                case 3:
                                     CombineService.gI().openTabCombine(player, CombineService.TAY_GIAP_LUYEN_TAP);
                                     break;// Name: HOANDZ
                             }

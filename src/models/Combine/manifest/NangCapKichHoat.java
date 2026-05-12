@@ -25,6 +25,7 @@ public class NangCapKichHoat {
     private static final int ITEM_DA_SKH_VIP = 1743;
     private static final int REQUIRED_HUY_DIET = 3;
     private static final int REQUIRED_THAN_LINH = 5;
+    private static final int REQUIRED_THIEN_SU = 1;
     private static final int REQUIRED_DA_THUONG = 10;
     private static final int REQUIRED_DA_VIP = 2;
     private static final int REQUIRED_THOI_VANG = 500;
@@ -60,6 +61,7 @@ public class NangCapKichHoat {
         String npcSay = "Nâng cấp SKH VIP NEW sẽ đổi đồ Hủy Diệt đầu tiên thành SKH NEW cùng món.\n"
                 + "Cần " + REQUIRED_HUY_DIET + " đồ Hủy Diệt bất kỳ, "
                 + REQUIRED_THAN_LINH + " đồ Thần Linh bất kỳ, "
+                + REQUIRED_THIEN_SU + " đồ Thiên Sứ bất kỳ, "
                 + stoneText + ", " + REQUIRED_THOI_VANG + " thỏi vàng và "
                 + REQUIRED_XU_HORIZON + " xu Horizon.";
         CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
@@ -121,6 +123,8 @@ public class NangCapKichHoat {
                     data.huyDietItems.add(item);
                 } else if (isDoThanLinh(item)) {
                     data.thanLinhItems.add(item);
+                } else if (isDoThienSu(item)) {
+                    data.thienSuItems.add(item);
                 } else if (data.daVipSelected == null && isDaSkhVip(item)) {
                     data.daVipSelected = item;
                 }
@@ -135,6 +139,7 @@ public class NangCapKichHoat {
     private static boolean isReady(CombineData data) {
         return data.huyDietItems.size() >= REQUIRED_HUY_DIET
                 && data.thanLinhItems.size() >= REQUIRED_THAN_LINH
+                && data.thienSuItems.size() >= REQUIRED_THIEN_SU
                 && hasEnoughStone(data)
                 && hasEnough(data.thoiVang, REQUIRED_THOI_VANG)
                 && hasEnough(data.xuHorizon, REQUIRED_XU_HORIZON);
@@ -155,6 +160,7 @@ public class NangCapKichHoat {
         StringBuilder sb = new StringBuilder("Cần ")
                 .append(REQUIRED_HUY_DIET).append(" đồ Hủy Diệt bất kỳ, ")
                 .append(REQUIRED_THAN_LINH).append(" đồ Thần Linh bất kỳ, ")
+                .append(REQUIRED_THIEN_SU).append(" đồ Thiên Sứ bất kỳ, ")
                 .append(REQUIRED_DA_THUONG).append(" đá SKH thường hoặc ")
                 .append(REQUIRED_DA_VIP).append(" đá SKH VIP, ")
                 .append(REQUIRED_THOI_VANG).append(" thỏi vàng và ")
@@ -164,6 +170,9 @@ public class NangCapKichHoat {
         }
         if (data.thanLinhItems.size() < REQUIRED_THAN_LINH) {
             sb.append("\nThiếu ").append(REQUIRED_THAN_LINH - data.thanLinhItems.size()).append(" đồ Thần Linh.");
+        }
+        if (data.thienSuItems.size() < REQUIRED_THIEN_SU) {
+            sb.append("\nThiếu ").append(REQUIRED_THIEN_SU - data.thienSuItems.size()).append(" đồ Thiên Sứ.");
         }
         if (!hasEnoughStone(data)) {
             sb.append("\nThiếu đá SKH.");
@@ -182,6 +191,7 @@ public class NangCapKichHoat {
     private static void consumeItems(Player player, CombineData data) {
         consumeItems(player, data.huyDietItems, REQUIRED_HUY_DIET);
         consumeItems(player, data.thanLinhItems, REQUIRED_THAN_LINH);
+        consumeItems(player, data.thienSuItems, REQUIRED_THIEN_SU);
         if (data.useVipStone()) {
             InventoryService.gI().subQuantityItemsBag(player, data.daVipSelected, REQUIRED_DA_VIP);
         } else {
@@ -205,6 +215,7 @@ public class NangCapKichHoat {
         private Item xuHorizon;
         private final List<Item> huyDietItems = new ArrayList<>();
         private final List<Item> thanLinhItems = new ArrayList<>();
+        private final List<Item> thienSuItems = new ArrayList<>();
 
         private boolean useVipStone() {
             return daVipSelected != null;
