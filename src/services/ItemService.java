@@ -2305,7 +2305,6 @@ public class ItemService {
             // 5 ngày  : 18%
             // 7 ngày  : 12%
             // 15 ngày : 8%
-            // Vĩnh viễn: 2% - khó nhất, không add option 93
             int tiLeHsd = Util.nextInt(1, 100);
 
             if (tiLeHsd <= 35) {

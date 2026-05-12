@@ -23,7 +23,7 @@ public class NangCapLevelKichHoat {
 
     private static final int[] EFFECT_PERCENT = { 25, 50, 75, 100, 125, 150 };
     private static final int[] FULL_SET_PERCENT = { 0, 1, 3, 5, 8, 12 };
-    private static final float[] NORMAL_RATIO = { 0, 70, 40, 10, 0.5f, 0.3f };
+    private static final float[] NORMAL_RATIO = { 0, 70, 50, 20, 1, 0.5f };
     private static final int[] THOI_VANG_REQUIRED = { 50, 100, 150, 200, 300, 500 };
     private static final int[] XU_HORIZON_REQUIRED = { 50, 99, 159, 259, 329, 459 };
 

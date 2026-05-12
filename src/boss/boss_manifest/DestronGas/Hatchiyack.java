@@ -113,7 +113,7 @@ public class Hatchiyack extends Boss {
             // ParamMinSDCM = 3;
 //            // }
 //            int hsd = Util.nextInt(ParamMin, ParamMax);
-            it.options.add(new Item.ItemOption(50, Util.nextInt(20, 25)));
+            it.options.add(new Item.ItemOption(50, Util.nextInt(20, 30)));
             it.options.add(new Item.ItemOption(77, Util.nextInt(25, 35)));
             it.options.add(new Item.ItemOption(103, Util.nextInt(25, 35)));
             it.options.add(new Item.ItemOption(5, Util.nextInt(10, 15)));
