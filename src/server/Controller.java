@@ -803,17 +803,30 @@ public class Controller implements IMessageHandler {
                 // break;
                 case -76:
                     if (player != null && _msg.reader().available() >= 1) {
+                        byte archivementAction = _msg.reader().readByte();
+                        if (archivementAction == -1 && _msg.reader().available() >= 2) {
+                            int index = _msg.reader().readByte();
+                            int rewardIndex = _msg.reader().readByte();
+                            if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 1) {
+                                Archivement.gI().showRewardInfo(player, index, rewardIndex);
+                            } else if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 3) {
+                                SoSuMenhService.getInstance().showRewardInfo(player, index, rewardIndex, false);
+                            } else if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 4) {
+                                SoSuMenhService.getInstance().showRewardInfo(player, index, rewardIndex, true);
+                            }
+                            break;
+                        }
 //                        byte index = _msg.reader().readByte();
                         if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 2) {
-                            ArchivementSucManh.gI().receiveGem(_msg.reader().readByte(), player);
+                            ArchivementSucManh.gI().receiveGem(archivementAction, player);
                         } else if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 1) {
-                            Archivement.gI().receiveGem(_msg.reader().readByte(), player);
+                            Archivement.gI().receiveGem(archivementAction, player);
                         } else if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 0) {
-                            AchievementService.gI().confirmAchievement(player, _msg.reader().readByte());
+                            AchievementService.gI().confirmAchievement(player, archivementAction);
                         } else if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 3) {
-                            SoSuMenhService.getInstance().receive(_msg.reader().readByte(), player);
+                            SoSuMenhService.getInstance().receive(archivementAction, player);
                         } else if (player.zone != null && player.zone.map != null && player.typeRecvieArchiment == 4) {
-                            SoSuMenhService.getInstance().receiveVip(_msg.reader().readByte(), player);
+                            SoSuMenhService.getInstance().receiveVip(archivementAction, player);
                         }
 
 //                        player.achievement.receiveGem(index);

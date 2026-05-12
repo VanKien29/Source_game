@@ -44,6 +44,7 @@ public class AchievementService {
                 msg.writer().writeShort(at.money); // money
                 msg.writer().writeBoolean(player.achievement.isFinish(i, at.maxCount));// isFinish
                 msg.writer().writeBoolean(player.achievement.isRecieve(i)); // isRecieve
+                msg.writer().writeByte(0); // reward preview count
             }
             player.sendMessage(msg);
             player.typeRecvieArchiment = 0;

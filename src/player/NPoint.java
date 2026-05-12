@@ -915,7 +915,7 @@ public class NPoint {
         }
 
         if (this.player.setClothes.cadicM >= 2) {
-            hpMax += (hpMax * 20L / 100L);
+            hpMax += (hpMax * 50L / 100L);
         }
         int realItemCount = 0;
         for (Item it : this.player.inventory.itemsBoxCollection) {
@@ -1507,7 +1507,7 @@ public class NPoint {
         }
         // Xử lý set nail
         if (this.player.setClothes.nail >= 2) {
-            this.tlDameCrit.add(20);
+            this.tlSDCM += 50;
         }
 
         if (player.clan != null) {
@@ -1707,7 +1707,7 @@ public class NPoint {
             this.crit = 110;
         }
         if (player.setClothes.thanVuTruKaio >= 2) {
-            this.crit += 20;
+            this.crit += 10;
         }
         if (this.player.itemTime != null && this.player.itemTime.nuocMiaThom) {
             this.crit += 10;
@@ -1943,7 +1943,7 @@ public class NPoint {
                 if (this.player.setClothes.kaioken == 5) {
                     percentXDame = this.player.setClothes.getSKHLevelEffectPercent();
                 } else if (player.setClothes.thanVuTruKaio == 5) {
-                    percentXDame = 30;
+                    percentXDame = 80;
                 }
                 break;
             case Skill.TU_SAT:

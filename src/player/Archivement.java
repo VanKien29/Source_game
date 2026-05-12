@@ -10,6 +10,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import jdbc.DBConnecter;
 import jdbc.daos.NDVSqlFetcher;
 
@@ -26,6 +30,19 @@ public class Archivement {
     public short money;
     public boolean isFinish;
     public boolean isRecieve;
+    public int[] rewardIconIds = new int[0];
+    public int[] rewardQuantities = new int[0];
+
+    private static final class RewardPreview {
+
+        private final int iconId;
+        private final int quantity;
+
+        private RewardPreview(int iconId, int quantity) {
+            this.iconId = iconId;
+            this.quantity = quantity;
+        }
+    }
 
     public String getInfo1() {
         return info1;
@@ -117,6 +134,7 @@ public class Archivement {
                     msg.writer().writeShort(archivement.getMoney()); //money
                     msg.writer().writeBoolean(archivement.isFinish);
                     msg.writer().writeBoolean(archivement.isRecieve);
+                    writeRewardPreview(msg, archivement);
 
                 } else {
                     msg.writer().writeUTF(archivement.getInfo1());
@@ -126,6 +144,7 @@ public class Archivement {
                     msg.writer().writeBoolean(archivement.isFinish);
                     msg.writer().writeBoolean(archivement.isRecieve);
                     msg.writer().writeShort(10895);//res icon
+                    writeRewardPreview(msg, archivement);
                 }
 
             }
@@ -140,6 +159,19 @@ public class Archivement {
                 msg.cleanup();
                 msg = null;
             }
+        }
+    }
+
+    private void writeRewardPreview(Message msg, Archivement archivement) throws IOException {
+        int count = archivement.rewardIconIds == null ? 0 : Math.min(archivement.rewardIconIds.length, 255);
+        msg.writer().writeByte(count);
+        for (int i = 0; i < count; i++) {
+            msg.writer().writeShort(archivement.rewardIconIds[i]);
+            int quantity = 1;
+            if (archivement.rewardQuantities != null && i < archivement.rewardQuantities.length) {
+                quantity = archivement.rewardQuantities[i];
+            }
+            msg.writer().writeInt(quantity);
         }
     }
 
@@ -271,6 +303,52 @@ public class Archivement {
 
     }
 
+    public void showRewardInfo(Player pl, int index, int rewardIndex) {
+        Message msg = null;
+        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement ps = con.prepareStatement("SELECT detail FROM moc_nap WHERE id = ?")) {
+            ps.setInt(1, index + 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    Service.gI().sendThongBao(pl, "Không tìm thấy phần thưởng");
+                    return;
+                }
+                JSONArray dataArray = (JSONArray) JSONValue.parse(rs.getString("detail"));
+                if (dataArray == null || rewardIndex < 0 || rewardIndex >= dataArray.size()) {
+                    Service.gI().sendThongBao(pl, "Không tìm thấy phần thưởng");
+                    return;
+                }
+                JSONObject dataObject = (JSONObject) JSONValue.parse(String.valueOf(dataArray.get(rewardIndex)));
+                int tempId = Integer.parseInt(String.valueOf(dataObject.get("temp_id")));
+                int quantity = Integer.parseInt(String.valueOf(dataObject.get("quantity")));
+                if (ItemService.gI().getTemplate(tempId) == null) {
+                    Service.gI().sendThongBao(pl, "Không tìm thấy vật phẩm");
+                    return;
+                }
+                JSONArray optionsArray = (JSONArray) dataObject.get("options");
+                msg = new Message(-76);
+                msg.writer().writeByte(2);
+                msg.writer().writeShort(tempId);
+                msg.writer().writeInt(quantity);
+                int optionCount = optionsArray == null ? 0 : Math.min(optionsArray.size(), 255);
+                msg.writer().writeByte(optionCount);
+                for (int i = 0; i < optionCount; i++) {
+                    JSONObject optionObject = (JSONObject) optionsArray.get(i);
+                    int optionId = Integer.parseInt(String.valueOf(optionObject.get("id")));
+                    int param = Integer.parseInt(String.valueOf(optionObject.get("param")));
+                    msg.writer().writeShort(optionId);
+                    msg.writer().writeInt(param);
+                }
+                pl.sendMessage(msg);
+            }
+        } catch (Exception e) {
+            Logger.logException(this.getClass(), e);
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
+        }
+    }
+
     public void getAchievement(Player player) {
         try {
             if (player.getSession() == null) {
@@ -304,6 +382,7 @@ public class Archivement {
                             }
 
                         }
+                        Map<Integer, List<RewardPreview>> rewardPreviews = loadRewardPreviews();
                         player.archivementList.clear();
                         if (dataArray != null) {
 
@@ -316,6 +395,7 @@ public class Archivement {
                                     achievement.setFinish(checktongnap(player, i));
                                     achievement.setMoney((short) getRuby(i));
                                     achievement.setRecieve(Integer.parseInt(String.valueOf(dataArray.get(i))) != 0);
+                                    applyRewardPreview(achievement, rewardPreviews.get(i + 1));
                                     player.archivementList.add(achievement);
 
                                 } catch (Exception ee) {
@@ -339,6 +419,47 @@ public class Archivement {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private Map<Integer, List<RewardPreview>> loadRewardPreviews() {
+        Map<Integer, List<RewardPreview>> previews = new HashMap<>();
+        try (Connection con = DBConnecter.getConnectionServer();
+                PreparedStatement ps = con.prepareStatement("SELECT id, detail FROM moc_nap ORDER BY id");
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                JSONArray dataArray = (JSONArray) JSONValue.parse(rs.getString("detail"));
+                List<RewardPreview> rewards = new ArrayList<>();
+                if (dataArray != null) {
+                    for (Object obj : dataArray) {
+                        JSONObject dataObject = (JSONObject) JSONValue.parse(String.valueOf(obj));
+                        int tempId = Integer.parseInt(String.valueOf(dataObject.get("temp_id")));
+                        int quantity = Integer.parseInt(String.valueOf(dataObject.get("quantity")));
+                        if (ItemService.gI().getTemplate(tempId) != null) {
+                            rewards.add(new RewardPreview(ItemService.gI().getTemplate(tempId).iconID, quantity));
+                        }
+                    }
+                }
+                previews.put(rs.getInt("id"), rewards);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return previews;
+    }
+
+    private void applyRewardPreview(Archivement achievement, List<RewardPreview> rewards) {
+        if (rewards == null || rewards.isEmpty()) {
+            achievement.rewardIconIds = new int[0];
+            achievement.rewardQuantities = new int[0];
+            return;
+        }
+        achievement.rewardIconIds = new int[rewards.size()];
+        achievement.rewardQuantities = new int[rewards.size()];
+        for (int i = 0; i < rewards.size(); i++) {
+            RewardPreview reward = rewards.get(i);
+            achievement.rewardIconIds[i] = reward.iconId;
+            achievement.rewardQuantities[i] = reward.quantity;
         }
     }
 

@@ -105,6 +105,7 @@ public class ArchivementSucManh {
                     msg.writer().writeShort(archivement.getMoney()); //money
                     msg.writer().writeBoolean(archivement.isFinish);
                     msg.writer().writeBoolean(archivement.isRecieve);
+                    msg.writer().writeByte(0); // reward preview count
 
                 } else {
                     msg.writer().writeUTF(archivement.getInfo1());
@@ -114,6 +115,7 @@ public class ArchivementSucManh {
                     msg.writer().writeBoolean(archivement.isFinish);
                     msg.writer().writeBoolean(archivement.isRecieve);
                     msg.writer().writeShort(10895);//res icon
+                    msg.writer().writeByte(0); // reward preview count
                 }
 
             }
