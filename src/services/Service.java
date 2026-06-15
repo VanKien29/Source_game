@@ -51,8 +51,8 @@ import power.CaptionManager;
 public class Service {
 
     private static final int[] TOP_WHIS_EFFECTS = {58, 57, 56};
-    private static final int[] SET_KICH_HOAT_EFFECTS = {86, 87, 88, 504};
-    private static final int SET_KICH_HOAT_EXTRA_EFFECT = 504;
+    private static final int[] SET_KICH_HOAT_EFFECTS = {86, 87, 88, 505};
+    private static final int SET_KICH_HOAT_EXTRA_EFFECT = 505;
     private static final int SET_KICH_HOAT_EXTRA_EFFECT_LAYER = 0;
 
     private static Service instance;

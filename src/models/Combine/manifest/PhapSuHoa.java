@@ -22,19 +22,22 @@ import utils.Util;
  */
 public class PhapSuHoa {
 
+    private static final int ITEM_DA_PHAP_SU = 1707;
+    private static final int REQUIRED_DA_PHAP_SU = 1;
+
     public static void showInfoCombine(Player player) {
         if (InventoryService.gI().getCountEmptyBag(player) > 0) {
             if (player.combine.itemsCombine.size() == 2) {
                 Item daHacHoa = null;
                 Item itemHacHoa = null;
                 for (Item item_ : player.combine.itemsCombine) {
-                    if (item_.template.id == 1707) {
+                    if (item_.template.id == ITEM_DA_PHAP_SU) {
                         daHacHoa = item_;
                     } else if (item_.isTrangBiPSH()) {
                         itemHacHoa = item_;
                     }
                 }
-                if (daHacHoa == null) {
+                if (daHacHoa == null || daHacHoa.quantity < REQUIRED_DA_PHAP_SU) {
                     CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, "Bạn còn thiếu đá pháp sư", "Đóng");
                     return;
                 }
@@ -61,6 +64,7 @@ public class PhapSuHoa {
                 player.combine.ratioCombine = 30;
                 npcSay += "|2|Sau khi nâng cấp sẽ cộng 1 chỉ số pháp sư ngẫu nhiên \n|7|"
                         + "\n|7|Tỉ lệ thành công: " + player.combine.ratioCombine + "%\n"
+                        + "Cần " + REQUIRED_DA_PHAP_SU + " đá pháp sư\n"
                         + "Cần " + Util.numberToMoney(2000000000) + " vàng";
 
                 CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE,
@@ -83,19 +87,14 @@ public class PhapSuHoa {
             Service.gI().sendThongBao(player, "Thiếu trang bị pháp sư");
             return;
         }
-        if (player.combine.itemsCombine.stream().filter(item -> item.isNotNullItem() && item.template.id == 1707).count() != 1) {
+        if (player.combine.itemsCombine.stream().filter(item -> item.isNotNullItem() && item.template.id == ITEM_DA_PHAP_SU).count() != 1) {
             Service.gI().sendThongBao(player, "Thiếu đá pháp sư");
             return;
         }
         if (InventoryService.gI().getCountEmptyBag(player) > 0) {
-            if (player.inventory.gold < 2000000000) {
-                Service.gI().sendThongBao(player, "Con cần 2 tỉ vàng để đổi...");
-                return;
-            }
-            player.inventory.gold -= 2000000000;
-            Item daHacHoa = player.combine.itemsCombine.stream().filter(item -> item.template.id == 1707).findFirst().get();
+            Item daHacHoa = player.combine.itemsCombine.stream().filter(item -> item.template.id == ITEM_DA_PHAP_SU).findFirst().get();
             Item trangBiHacHoa = player.combine.itemsCombine.stream().filter(Item::isTrangBiPSH).findFirst().get();
-            if (daHacHoa == null) {
+            if (daHacHoa == null || daHacHoa.quantity < REQUIRED_DA_PHAP_SU) {
                 Service.gI().sendThongBao(player, "Thiếu đá pháp sư");
                 return;
             }
@@ -103,6 +102,11 @@ public class PhapSuHoa {
                 Service.gI().sendThongBao(player, "Thiếu trang bị pháp sư");
                 return;
             }
+            if (player.inventory.gold < 2000000000) {
+                Service.gI().sendThongBao(player, "Con cần 2 tỉ vàng để đổi...");
+                return;
+            }
+            player.inventory.gold -= 2000000000;
 
 //            if (trangBiHacHoa != null) {
             for (ItemOption itopt : trangBiHacHoa.itemOptions) {
@@ -153,7 +157,7 @@ public class PhapSuHoa {
             } else {
                 CombineService.gI().sendEffectFailCombine(player);
             }
-            InventoryService.gI().subQuantityItemsBag(player, daHacHoa, 1);
+            InventoryService.gI().subQuantityItemsBag(player, daHacHoa, REQUIRED_DA_PHAP_SU);
             InventoryService.gI().sendItemBag(player);
             Service.gI().sendMoney(player);
             //  player.combine.itemsCombine.clear();

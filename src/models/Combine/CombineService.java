@@ -750,7 +750,7 @@ public class CombineService {
                         + "(mua tại Uron ở trạm tàu vũ trụ)\n"
                         + "Sau đó chọn 'Làm phép'";
             case NANG_CAP_KICH_HOAT ->
-                "Vào hành trang\nChọn 3 trang bị Hủy Diệt bất kỳ\nChọn 5 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 2 đá VIP, không bỏ thì cần 10 đá SKH thường\nCần 500 thỏi vàng và 500 xu Horizon\nSau đó chọn 'Nâng cấp'";
+                "Vào hành trang\nChọn 3 trang bị Hủy Diệt bất kỳ\nChọn 5 trang bị Thần Linh bất kỳ\nChọn 1 trang bị Thiên Sứ bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 2 đá VIP, không bỏ thì cần 10 đá SKH thường\nCần 500 thỏi vàng và 500 xu Horizon\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_KICH_HOAT_VIP ->
                 "Vào hành trang\nChọn 2 trang bị Hủy Diệt bất kỳ\nChọn 3 trang bị Thần Linh bất kỳ\nBỏ đá SKH VIP nếu muốn dùng 1 đá VIP, không bỏ thì cần 5 đá SKH thường\nCần 300 thỏi vàng và 300 xu Horizon\nSau đó chọn 'Nâng cấp'";
             case NANG_CAP_LEVEL_KICH_HOAT ->
