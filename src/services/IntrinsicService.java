@@ -8,6 +8,7 @@ package services;
 
 import consts.ConstNpc;
 import intrinsic.Intrinsic;
+import item.Item;
 import player.Player;
 import server.Manager;
 import network.Message;
@@ -18,6 +19,12 @@ public class IntrinsicService {
 
     private static IntrinsicService I;
     private static final int[] COST_OPEN = { 10, 20, 40, 80, 160, 320, 640, 1280 };
+    private static final int ITEM_THOI_VANG = 457;
+    private static final int ITEM_XU_ELITE = 1705;
+    private static final int COST_OPEN_VIP = 100;
+    private static final int RARE_HIGH_PARAM_INTRINSIC_ID = 23;
+    private static final int RARE_HIGH_PARAM_START_PERCENT = 60;
+    private static final int RARE_HIGH_PARAM_CHANCE = 10;
 
     public static IntrinsicService gI() {
         if (IntrinsicService.I == null) {
@@ -141,21 +148,21 @@ public class IntrinsicService {
     public void showConfirmOpen(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.CONFIRM_OPEN_INTRINSIC, -1,
                 "Bạn muốn đổi Nội Tại khác\nvới giá là "
-                        + COST_OPEN[player.playerIntrinsic.countOpen] + " Tr vàng ?",
+                        + getCostOpen(player) + " thỏi vàng ?",
                 "Mở\nNội Tại", "Từ chối");
     }
 
     public void showConfirmOpenVip(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.CONFIRM_OPEN_INTRINSIC_VIP, -1,
-                "Bạn có muốn mở Nội Tại\nvới giá là 100 ngọc và\ntái lập giá vàng quay lại ban đầu không?",
+                "Bạn có muốn mở Nội Tại\nvới giá là " + COST_OPEN_VIP
+                        + " xu elite và\ntái lập giá mở thường quay lại ban đầu không?",
                 "Mở\nNội VIP", "Từ chối");
     }
 
     private void changeIntrinsic(Player player) {
         List<Intrinsic> listIntrinsic = getIntrinsics(player.gender);
         player.playerIntrinsic.intrinsic = new Intrinsic(listIntrinsic.get(Util.nextInt(1, listIntrinsic.size() - 1)));
-        player.playerIntrinsic.intrinsic.param1 = (short) Util.nextInt(player.playerIntrinsic.intrinsic.paramFrom1,
-                player.playerIntrinsic.intrinsic.paramTo1);
+        player.playerIntrinsic.intrinsic.param1 = randomParam1(player.playerIntrinsic.intrinsic);
         player.playerIntrinsic.intrinsic.param2 = (short) Util.nextInt(player.playerIntrinsic.intrinsic.paramFrom2,
                 player.playerIntrinsic.intrinsic.paramTo2);
         Service.gI().sendThongBao(player, "Bạn nhận được Nội tại:\n" + player.playerIntrinsic.intrinsic.getName()
@@ -163,19 +170,34 @@ public class IntrinsicService {
         sendInfoIntrinsic(player);
     }
 
+    private short randomParam1(Intrinsic intrinsic) {
+        if (intrinsic.id != RARE_HIGH_PARAM_INTRINSIC_ID || intrinsic.paramTo1 <= intrinsic.paramFrom1) {
+            return (short) Util.nextInt(intrinsic.paramFrom1, intrinsic.paramTo1);
+        }
+        int highStart = intrinsic.paramFrom1
+                + (intrinsic.paramTo1 - intrinsic.paramFrom1 + 1) * RARE_HIGH_PARAM_START_PERCENT / 100;
+        highStart = Math.max(intrinsic.paramFrom1 + 1, Math.min(highStart, intrinsic.paramTo1));
+        if (Util.isTrue(RARE_HIGH_PARAM_CHANCE, 100)) {
+            return (short) Util.nextInt(highStart, intrinsic.paramTo1);
+        }
+        return (short) Util.nextInt(intrinsic.paramFrom1, highStart - 1);
+    }
+
     public void open(Player player) {
         if (player.nPoint.power >= 10000000000L) {
-            int goldRequire = COST_OPEN[player.playerIntrinsic.countOpen] * 1000000;
-            if (player.inventory.gold >= goldRequire) {
-                player.inventory.gold -= goldRequire;
-                PlayerService.gI().sendInfoHpMpMoney(player);
+            int itemRequire = getCostOpen(player);
+            Item thoiVang = InventoryService.gI().findItemBag(player, ITEM_THOI_VANG);
+            if (thoiVang != null && thoiVang.quantity >= itemRequire) {
+                InventoryService.gI().subQuantityItemsBag(player, thoiVang, itemRequire);
+                InventoryService.gI().sendItemBag(player);
                 changeIntrinsic(player);
                 if (player.playerIntrinsic.countOpen < COST_OPEN.length - 1) {
                     player.playerIntrinsic.countOpen++;
                 }
             } else {
-                Service.gI().sendThongBao(player, "Bạn không đủ vàng, còn thiếu "
-                        + Util.numberToMoney(goldRequire - player.inventory.gold) + " vàng nữa");
+                int have = thoiVang == null ? 0 : thoiVang.quantity;
+                Service.gI().sendThongBao(player, "Bạn không đủ thỏi vàng, còn thiếu "
+                        + (itemRequire - have) + " thỏi vàng nữa");
             }
         } else {
             Service.gI().sendThongBao(player, "Yêu cầu sức mạnh tối thiểu 10 tỷ");
@@ -184,19 +206,25 @@ public class IntrinsicService {
 
     public void openVip(Player player) {
         if (player.nPoint.power >= 10000000000L) {
-            int gemRequire = 100;
-            if (player.inventory.gem >= 100) {
-                player.inventory.gem -= gemRequire;
-                PlayerService.gI().sendInfoHpMpMoney(player);
+            Item xuElite = InventoryService.gI().findItemBag(player, ITEM_XU_ELITE);
+            if (xuElite != null && xuElite.quantity >= COST_OPEN_VIP) {
+                InventoryService.gI().subQuantityItemsBag(player, xuElite, COST_OPEN_VIP);
+                InventoryService.gI().sendItemBag(player);
                 changeIntrinsic(player);
                 player.playerIntrinsic.countOpen = 0;
             } else {
-                Service.gI().sendThongBao(player, "Bạn không có đủ ngọc, còn thiếu "
-                        + (gemRequire - player.inventory.gem) + " ngọc nữa");
+                int have = xuElite == null ? 0 : xuElite.quantity;
+                Service.gI().sendThongBao(player, "Bạn không có đủ xu elite, còn thiếu "
+                        + (COST_OPEN_VIP - have) + " xu elite nữa");
             }
         } else {
             Service.gI().sendThongBao(player, "Yêu cầu sức mạnh tối thiểu 10 tỷ");
         }
+    }
+
+    private int getCostOpen(Player player) {
+        int countOpen = Math.max(0, Math.min(player.playerIntrinsic.countOpen, COST_OPEN.length - 1));
+        return COST_OPEN[countOpen];
     }
 
 }
