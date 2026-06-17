@@ -283,10 +283,18 @@ public class Command {
             if (text.startsWith("i")) {
                 String[] parts = text.split(" ");
                 if (parts.length >= 2) {
-                    short id = Short.parseShort(parts[1]);
+                    int itemId = Integer.parseInt(parts[1]);
+                    if (itemId < 0 || itemId > Short.MAX_VALUE || ItemService.gI().getTemplate(itemId) == null) {
+                        Service.gI().sendThongBao(player, "Không tìm thấy item id " + itemId);
+                        return true;
+                    }
+                    short id = (short) itemId;
                     int quantity = 1; // mặc định = 1
                     if (parts.length >= 3) {
                         quantity = Integer.parseInt(parts[2]); // nếu có nhập thì lấy giá trị nhập
+                    }
+                    if (quantity <= 0) {
+                        quantity = 1;
                     }
 
                     Item item = ItemService.gI().createNewItem(id, quantity);
@@ -307,8 +315,16 @@ public class Command {
             if (text.startsWith("u")) {
                 String[] parts = text.split(" ");
                 if (parts.length >= 3) {
-                    short id = Short.parseShort(parts[1]);
+                    int itemId = Integer.parseInt(parts[1]);
+                    if (itemId < 0 || itemId > Short.MAX_VALUE || ItemService.gI().getTemplate(itemId) == null) {
+                        Service.gI().sendThongBao(player, "Không tìm thấy item id " + itemId);
+                        return true;
+                    }
+                    short id = (short) itemId;
                     int quantity = Integer.parseInt(parts[2]);
+                    if (quantity <= 0) {
+                        quantity = 1;
+                    }
                     Item item = ItemService.gI().createNewItem(id, quantity);
                     List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop((short) id);
                     if (!ops.isEmpty()) {
