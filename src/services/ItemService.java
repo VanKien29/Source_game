@@ -7,6 +7,7 @@ package services;
  */
 import models.Template;
 import models.Template.ItemOptionTemplate;
+import jdbc.DBConnecter;
 import item.Item;
 import map.ItemMap;
 import player.Player;
@@ -16,8 +17,14 @@ import utils.TimeUtil;
 import utils.Util;
 import item.Item.ItemOption;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import map.Zone;
 import models.Combine.CombineService;
 import models.Combine.manifest.NangCapLevelKichHoat;
@@ -127,6 +134,9 @@ public class ItemService {
 
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
 
@@ -142,6 +152,9 @@ public class ItemService {
     public Item createNewItemLock(int tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
         item.content = item.getContent();
@@ -153,6 +166,9 @@ public class ItemService {
     public Item otpts(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
         if (item.template.type == 0) {
@@ -183,6 +199,9 @@ public class ItemService {
     public Item createItemSetKichHoat(int tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.itemOptions = createItemNull().itemOptions;
         item.createTime = System.currentTimeMillis();
@@ -194,6 +213,9 @@ public class ItemService {
     public Item createItemDoHuyDiet(int tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.itemOptions = createItemNull().itemOptions;
         item.createTime = System.currentTimeMillis();
@@ -213,7 +235,24 @@ public class ItemService {
     }
 
     public Template.ItemTemplate getTemplate(int id) {
-        return Manager.ITEM_TEMPLATES.get(id);
+        if (id < 0) {
+            return null;
+        }
+        if (!Manager.ITEM_TEMPLATE_IDS.contains(id)) {
+            return null;
+        }
+        if (id < Manager.ITEM_TEMPLATES.size()) {
+            Template.ItemTemplate template = Manager.ITEM_TEMPLATES.get(id);
+            if (template != null && template.id == id) {
+                return template;
+            }
+        }
+        for (Template.ItemTemplate template : Manager.ITEM_TEMPLATES) {
+            if (template != null && template.id == id) {
+                return template;
+            }
+        }
+        return null;
     }
 
     public boolean isItemActivation(Item item) {
@@ -1542,6 +1581,9 @@ public class ItemService {
     public Item otptl(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
         if (item.template.type == 0) {
@@ -1572,6 +1614,9 @@ public class ItemService {
     public Item otphd(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
         if (item.template.type == 0) {
@@ -1602,6 +1647,9 @@ public class ItemService {
     public Item otpkh(short tempId, int quantity) {
         Item item = new Item();
         item.template = getTemplate(tempId);
+        if (item.template == null) {
+            throw new IllegalArgumentException("Item template không tồn tại: " + tempId);
+        }
         item.quantity = quantity;
         item.createTime = System.currentTimeMillis();
         if (item.template.type == 0) {
@@ -2280,6 +2328,314 @@ public class ItemService {
         } else {
             Service.gI().sendThongBao(player, "Bạn phải có ít nhất 1 ô trống hành trang");
         }
+    }
+
+    public boolean openConfiguredGiftBox(Player pl, Item itemUse) {
+        if (pl == null || itemUse == null || !itemUse.isNotNullItem()) {
+            return false;
+        }
+
+        GiftBoxConfig config = loadGiftBoxConfig(itemUse.template.id);
+        if (config == null) {
+            return false;
+        }
+
+        if (InventoryService.gI().getCountEmptyBag(pl) < config.minEmptySlots) {
+            Service.gI().sendThongBao(pl, "Bạn phải có ít nhất " + config.minEmptySlots + " ô trống hành trang");
+            return true;
+        }
+
+        GiftBoxReward reward = selectGiftBoxReward(config.id);
+        if (reward == null) {
+            Service.gI().sendThongBao(pl, "Hộp quà này chưa có phần thưởng");
+            return true;
+        }
+
+        int quantity = reward.quantityMin;
+        if (reward.quantityMax > reward.quantityMin) {
+            quantity = Util.nextInt(reward.quantityMin, reward.quantityMax);
+        }
+
+        Item itemReward = ItemService.gI().createNewItem((short) reward.itemId, quantity);
+        for (GiftBoxOption option : reward.options) {
+            int param = option.paramMin;
+            if (option.paramMax > option.paramMin) {
+                param = Util.nextInt(option.paramMin, option.paramMax);
+            }
+            itemReward.itemOptions.add(new Item.ItemOption(option.id, param));
+        }
+        applyGiftBoxOptionGroups(itemReward, reward.optionGroups);
+
+        InventoryService.gI().addItemBag(pl, itemReward);
+        InventoryService.gI().sendItemBag(pl);
+        InventoryService.gI().subQuantityItemsBag(pl, itemUse, 1);
+
+        String message = config.successMessage == null || config.successMessage.isEmpty()
+                ? "Bạn mở rương nhận được {item}"
+                : config.successMessage;
+        Service.gI().sendThongBao(pl, message.replace("{item}", itemReward.template.name));
+        return true;
+    }
+
+    private GiftBoxConfig loadGiftBoxConfig(int itemId) {
+        String sql = "SELECT id, min_empty_slots, success_message FROM gift_box_configs WHERE item_id = ? AND active = 1 LIMIT 1";
+        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, itemId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                GiftBoxConfig config = new GiftBoxConfig();
+                config.id = rs.getInt("id");
+                config.minEmptySlots = Math.max(1, rs.getInt("min_empty_slots"));
+                config.successMessage = rs.getString("success_message");
+                return config;
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private GiftBoxReward selectGiftBoxReward(int configId) {
+        String sql = "SELECT reward_item_id, quantity_min, quantity_max, chance_weight, options_json, option_groups_json "
+                + "FROM gift_box_rewards WHERE gift_box_config_id = ? ORDER BY sort_order, id";
+        List<GiftBoxReward> rewards = new ArrayList<>();
+        int totalWeight = 0;
+
+        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, configId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    GiftBoxReward reward = new GiftBoxReward();
+                    reward.itemId = rs.getInt("reward_item_id");
+                    reward.quantityMin = Math.max(1, rs.getInt("quantity_min"));
+                    reward.quantityMax = Math.max(reward.quantityMin, rs.getInt("quantity_max"));
+                    reward.weight = Math.max(1, rs.getInt("chance_weight"));
+                    reward.options = parseGiftBoxOptions(rs.getString("options_json"));
+                    reward.optionGroups = parseGiftBoxOptionGroups(rs.getString("option_groups_json"));
+                    rewards.add(reward);
+                    totalWeight += reward.weight;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (rewards.isEmpty() || totalWeight <= 0) {
+            return null;
+        }
+
+        int roll = Util.nextInt(1, totalWeight);
+        int running = 0;
+        for (GiftBoxReward reward : rewards) {
+            running += reward.weight;
+            if (roll <= running) {
+                return reward;
+            }
+        }
+        return rewards.get(rewards.size() - 1);
+    }
+
+    private void applyGiftBoxOptionGroups(Item itemReward, List<GiftBoxOptionGroup> groups) {
+        if (itemReward == null || groups == null || groups.isEmpty()) {
+            return;
+        }
+
+        for (GiftBoxOptionGroup group : groups) {
+            GiftBoxOptionEntry entry = selectGiftBoxOptionEntry(group);
+            if (entry == null || entry.options == null || entry.options.isEmpty()) {
+                continue;
+            }
+
+            for (GiftBoxOption option : entry.options) {
+                int param = option.paramMin;
+                if (option.paramMax > option.paramMin) {
+                    param = Util.nextInt(option.paramMin, option.paramMax);
+                }
+                itemReward.itemOptions.add(new Item.ItemOption(option.id, param));
+            }
+        }
+    }
+
+    private GiftBoxOptionEntry selectGiftBoxOptionEntry(GiftBoxOptionGroup group) {
+        if (group == null || group.entries == null || group.entries.isEmpty()) {
+            return null;
+        }
+
+        int totalWeight = 0;
+        for (GiftBoxOptionEntry entry : group.entries) {
+            totalWeight += Math.max(0, entry.weight);
+        }
+        if (totalWeight <= 0) {
+            return null;
+        }
+
+        int roll = Util.nextInt(1, totalWeight);
+        int running = 0;
+        for (GiftBoxOptionEntry entry : group.entries) {
+            int weight = Math.max(0, entry.weight);
+            if (weight <= 0) {
+                continue;
+            }
+            running += weight;
+            if (roll <= running) {
+                return entry;
+            }
+        }
+        return group.entries.get(group.entries.size() - 1);
+    }
+
+    private List<GiftBoxOption> parseGiftBoxOptions(String rawOptions) {
+        List<GiftBoxOption> options = new ArrayList<>();
+        Object parsed = JSONValue.parse(rawOptions == null || rawOptions.trim().isEmpty() ? "[]" : rawOptions);
+        if (!(parsed instanceof JSONArray)) {
+            return options;
+        }
+
+        JSONArray array = (JSONArray) parsed;
+        for (Object value : array) {
+            if (!(value instanceof JSONObject)) {
+                continue;
+            }
+
+            JSONObject object = (JSONObject) value;
+            GiftBoxOption option = new GiftBoxOption();
+            option.id = jsonInt(object, "id", -1);
+            if (option.id < 0) {
+                continue;
+            }
+            option.paramMin = jsonInt(object, "param_min", jsonInt(object, "param", 0));
+            option.paramMax = jsonInt(object, "param_max", option.paramMin);
+            if (option.paramMax < option.paramMin) {
+                int temp = option.paramMin;
+                option.paramMin = option.paramMax;
+                option.paramMax = temp;
+            }
+            options.add(option);
+        }
+        return options;
+    }
+
+    private List<GiftBoxOptionGroup> parseGiftBoxOptionGroups(String rawGroups) {
+        List<GiftBoxOptionGroup> groups = new ArrayList<>();
+        Object parsed = JSONValue.parse(rawGroups == null || rawGroups.trim().isEmpty() ? "[]" : rawGroups);
+        if (!(parsed instanceof JSONArray)) {
+            return groups;
+        }
+
+        JSONArray array = (JSONArray) parsed;
+        for (Object value : array) {
+            if (!(value instanceof JSONObject)) {
+                continue;
+            }
+
+            JSONObject object = (JSONObject) value;
+            Object entriesValue = object.get("entries");
+            if (!(entriesValue instanceof JSONArray)) {
+                continue;
+            }
+
+            GiftBoxOptionGroup group = new GiftBoxOptionGroup();
+            JSONArray entries = (JSONArray) entriesValue;
+            for (Object entryValue : entries) {
+                if (!(entryValue instanceof JSONObject)) {
+                    continue;
+                }
+
+                JSONObject entryObject = (JSONObject) entryValue;
+                GiftBoxOptionEntry entry = new GiftBoxOptionEntry();
+                entry.weight = Math.max(0, jsonInt(entryObject, "chance_weight", jsonInt(entryObject, "weight", 1)));
+                Object optionsValue = entryObject.get("options");
+                entry.options = parseGiftBoxOptionsValue(optionsValue);
+                group.entries.add(entry);
+            }
+
+            if (!group.entries.isEmpty()) {
+                groups.add(group);
+            }
+        }
+        return groups;
+    }
+
+    private List<GiftBoxOption> parseGiftBoxOptionsValue(Object parsed) {
+        List<GiftBoxOption> options = new ArrayList<>();
+        if (!(parsed instanceof JSONArray)) {
+            return options;
+        }
+
+        JSONArray array = (JSONArray) parsed;
+        for (Object value : array) {
+            if (!(value instanceof JSONObject)) {
+                continue;
+            }
+
+            JSONObject object = (JSONObject) value;
+            GiftBoxOption option = new GiftBoxOption();
+            option.id = jsonInt(object, "id", -1);
+            if (option.id < 0) {
+                continue;
+            }
+            option.paramMin = jsonInt(object, "param_min", jsonInt(object, "param", 0));
+            option.paramMax = jsonInt(object, "param_max", option.paramMin);
+            if (option.paramMax < option.paramMin) {
+                int temp = option.paramMin;
+                option.paramMin = option.paramMax;
+                option.paramMax = temp;
+            }
+            options.add(option);
+        }
+        return options;
+    }
+
+    private int jsonInt(JSONObject object, String key, int defaultValue) {
+        Object value = object.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        if (value != null) {
+            try {
+                return Integer.parseInt(String.valueOf(value));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return defaultValue;
+    }
+
+    private static class GiftBoxConfig {
+
+        int id;
+        int minEmptySlots;
+        String successMessage;
+    }
+
+    private static class GiftBoxReward {
+
+        int itemId;
+        int quantityMin;
+        int quantityMax;
+        int weight;
+        List<GiftBoxOption> options = new ArrayList<>();
+        List<GiftBoxOptionGroup> optionGroups = new ArrayList<>();
+    }
+
+    private static class GiftBoxOption {
+
+        int id;
+        int paramMin;
+        int paramMax;
+    }
+
+    private static class GiftBoxOptionGroup {
+
+        List<GiftBoxOptionEntry> entries = new ArrayList<>();
+    }
+
+    private static class GiftBoxOptionEntry {
+
+        int weight;
+        List<GiftBoxOption> options = new ArrayList<>();
     }
 
     public void OpenItem1967(Player pl, Item item) {

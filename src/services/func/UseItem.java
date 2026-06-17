@@ -298,6 +298,9 @@ public class UseItem {
                         break;
                     }
                     default:
+                        if (ItemService.gI().openConfiguredGiftBox(pl, item)) {
+                            break;
+                        }
                         switch (item.template.id) {
                             case 992: // Nhan thoi khong
                                 pl.type = 2;

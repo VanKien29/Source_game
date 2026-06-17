@@ -1702,6 +1702,9 @@ public class NPoint {
     private void setCrit() {
         this.crit = this.critg;
         this.crit += this.critAdd;
+        if (this.crit > 110) {
+            this.crit = 110;
+        }
         // biến khỉ
         if (this.player.effectSkill.isMonkey) {
             this.crit = 110;
@@ -2226,8 +2229,7 @@ public class NPoint {
             tiemNang = tiemNang / 60;
         } else if (power < 180_000_000_000L) {
             tiemNang = tiemNang / 70;
-        }
-        else {
+        } else {
             tiemNang = tiemNang / 200;
         }
 
@@ -2250,12 +2252,12 @@ public class NPoint {
         long def = this.def;
         // Vì tlDef là short => dùng trực tiếp
         long defPercentage = this.tlDef;
-        
+
         // Giới hạn giống gốc: tối đa 85%
         if (defPercentage > 85) {
             defPercentage = 85;
         }
-        
+
         dame -= def;
         if (dame < 0) {
             dame = 1;

@@ -55,11 +55,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import map.EffectMap;
 import map.Zone;
 
@@ -95,6 +97,7 @@ public final class Manager {
     public static final List<ArrHead2Frames> ARR_HEAD_2_FRAMES = new ArrayList<>();
     public static final Map<String, Byte> IMAGES_BY_NAME = new HashMap<>();
     public static final List<ItemTemplate> ITEM_TEMPLATES = new ArrayList<>();
+    public static final Set<Integer> ITEM_TEMPLATE_IDS = new HashSet<>();
     public static final List<MobTemplate> MOB_TEMPLATES = new ArrayList<>();
     public static final List<NpcTemplate> NPC_TEMPLATES = new ArrayList<>();
     public static final List<TaskMain> TASKS = new ArrayList<>();
@@ -650,11 +653,14 @@ public final class Manager {
             Logger.success("Successfully loaded achievement (" + ACHIEVEMENT_TEMPLATE.size() + ")\n");
 
             // load item template
-            ps = con.prepareStatement("select * from item_template");
+            ps = con.prepareStatement("select * from item_template order by id");
             rs = ps.executeQuery();
             while (rs.next()) {
                 ItemTemplate itemTemp = new ItemTemplate();
                 itemTemp.id = rs.getShort("id");
+                if (itemTemp.id < 0) {
+                    continue;
+                }
                 itemTemp.type = rs.getByte("type");
                 itemTemp.gender = rs.getByte("gender");
                 itemTemp.name = rs.getString("name");
@@ -669,7 +675,15 @@ public final class Manager {
                 itemTemp.head = rs.getInt("head");
                 itemTemp.body = rs.getInt("body");
                 itemTemp.leg = rs.getInt("leg");
-                ITEM_TEMPLATES.add(itemTemp);
+                ITEM_TEMPLATE_IDS.add((int) itemTemp.id);
+                while (ITEM_TEMPLATES.size() < itemTemp.id) {
+                    ITEM_TEMPLATES.add(createMissingItemTemplate((short) ITEM_TEMPLATES.size()));
+                }
+                if (ITEM_TEMPLATES.size() == itemTemp.id) {
+                    ITEM_TEMPLATES.add(itemTemp);
+                } else {
+                    ITEM_TEMPLATES.set(itemTemp.id, itemTemp);
+                }
             }
             Logger.success("Successfully loaded map item template (" + ITEM_TEMPLATES.size() + ")\n");
 
@@ -2050,6 +2064,20 @@ public final class Manager {
             }
         }
         return null;
+    }
+
+    private static ItemTemplate createMissingItemTemplate(short id) {
+        ItemTemplate itemTemplate = new ItemTemplate();
+        itemTemplate.id = id;
+        itemTemplate.type = 4;
+        itemTemplate.gender = 3;
+        itemTemplate.name = "Trống";
+        itemTemplate.description = "";
+        itemTemplate.iconID = 0;
+        itemTemplate.part = -1;
+        itemTemplate.isUpToUp = false;
+        itemTemplate.strRequire = 0;
+        return itemTemplate;
     }
 
     public static byte getNFrameImageByName(String name) {
