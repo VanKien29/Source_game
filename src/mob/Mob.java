@@ -1105,7 +1105,46 @@ public class Mob {
         // }
         // }
         Manager.appendRuntimeMapDropRewards(this.zone, player, this.tempId, x, yEnd, list);
+        applyGoldDropBonus(player, list);
         return list;
+    }
+
+    private void applyGoldDropBonus(Player player, List<ItemMap> items) {
+        Player owner = getGoldBonusOwner(player);
+        if (owner == null || owner.nPoint == null || owner.nPoint.tlGold <= 0 || items == null || items.isEmpty()) {
+            return;
+        }
+        for (ItemMap item : items) {
+            if (item != null && item.itemTemplate != null && isGoldDropItem(item)) {
+                item.quantity = applyGoldDropBonus(owner.nPoint.tlGold, item.quantity);
+            }
+        }
+    }
+
+    private boolean isGoldDropItem(ItemMap item) {
+        return item.itemTemplate.id == 457 || item.itemTemplate.type == 9;
+    }
+
+    private int applyGoldDropBonus(int percent, int quantity) {
+        if (percent <= 0 || quantity <= 0) {
+            return quantity;
+        }
+        int bonus = quantity * percent / 100;
+        int remainder = quantity * percent % 100;
+        if (remainder > 0 && Util.isTrue(remainder, 100)) {
+            bonus++;
+        }
+        return Math.max(1, quantity + bonus);
+    }
+
+    private Player getGoldBonusOwner(Player player) {
+        if (player == null) {
+            return null;
+        }
+        if (player.isPet && player instanceof Pet) {
+            return ((Pet) player).master;
+        }
+        return player;
     }
 
     private ItemMap dropItemTask(Player player) {

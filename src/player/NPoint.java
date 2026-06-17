@@ -476,6 +476,7 @@ public class NPoint {
                 }
             }
         }
+        applyIntrinsicGoldDrop();
         setDameTrainArmor();
         setBasePoint();
         setOutfitFusion();
@@ -486,6 +487,14 @@ public class NPoint {
         setThuCuoi();
 
         setSpeed();
+    }
+
+    private void applyIntrinsicGoldDrop() {
+        if (this.player.playerIntrinsic != null
+                && this.player.playerIntrinsic.intrinsic != null
+                && this.player.playerIntrinsic.intrinsic.id == 23) {
+            this.tlGold += this.player.playerIntrinsic.intrinsic.param1;
+        }
     }
 
     private void addOption(ItemOption io) {
