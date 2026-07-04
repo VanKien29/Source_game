@@ -4,7 +4,6 @@ package npc.npc_manifest;
  *
  * @author CongHoan
  */
-
 import consts.ConstNpc;
 import npc.Npc;
 import player.Player;
@@ -31,7 +30,7 @@ public class Bill extends Npc {
             } else {
                 createOtherMenu(player, ConstNpc.BASE_MENU,
                         "Chưa tới giờ thi đấu, xem hướng dẫn để biết thêm chi tiết",
-                        "Nói\nchuyện", "Hướng\ndẫn\nthêm", "Từ chối");
+                        "Nói\nchuyện", "Đổi phiếu\nthức ăn", "Hướng\ndẫn\nthêm", "Từ chối");
             }
         }
     }
@@ -55,24 +54,30 @@ public class Bill extends Npc {
                                                 "OK");
                                     }
                                 }
-                                case 1 ->
+                                case 1 -> {
+                                    if (select == 1) {
+                                        ShopService.gI().opendShop(player, "BILL_PHIEU_AN", true);
+                                        break;
+                                    }
+                                }
+                                case 2 ->
                                     NpcService.gI().createTutorial(player, tempId, this.avartar,
                                             ConstNpc.HUONG_DAN_BILL);
+                                case 3 -> {
+                                    if (select == 0 && InventoryService.gI().canOpenBillShop(player)) {
+                                        ShopService.gI().opendShop(player, "BILL", true);
+                                        break;
+                                    }
+                                }
+
                             }
                         }
-                        case 2 -> {
-                            if (select == 0 && InventoryService.gI().canOpenBillShop(player)) {
-                                ShopService.gI().opendShop(player, "BILL", true);
+                        case 154 -> {
+                            if (select == 0) {
+                                ChangeMapService.gI().changeMap(player, 50, -1, 318, 336);
                                 break;
                             }
                         }
-
-                    }
-                }
-                case 154 -> {
-                    if (select == 0) {
-                        ChangeMapService.gI().changeMap(player, 50, -1, 318, 336);
-                        break;
                     }
                 }
             }

@@ -2196,9 +2196,18 @@ public class NPoint {
             }
             if (MapService.gI().isMapNguHanhSon(this.player.zone.map.mapId)) {
                 tiemNang *= 1.5f; // tnsm nhs
+
+                if (this.power >= 60000000000L) {
+                    tiemNang -= ((long) tiemNang * 80 / 100);
+                }
             }
+
             if (MapService.gI().isMapBanDoKhoBau(this.player.zone.map.mapId)) {
                 tiemNang *= 2;
+
+                if (tiemNang > 5500000) {
+                    tiemNang = 5500000;
+                }
             }
             tiemNang *= Manager.RATE_EXP_SERVER;
             tiemNang = calSubTNSM(tiemNang);
