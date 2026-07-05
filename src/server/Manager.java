@@ -2066,6 +2066,54 @@ public final class Manager {
         return null;
     }
 
+    public static synchronized ItemTemplate runtimeReloadItemTemplate(int itemId) {
+        if (itemId < 0 || itemId >= Short.MAX_VALUE) {
+            return null;
+        }
+
+        try (Connection connection = DBConnecter.getConnectionServer();
+                PreparedStatement statement = connection.prepareStatement(
+                        "select * from item_template where id = ? limit 1")) {
+            statement.setInt(1, itemId);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                ItemTemplate item = new ItemTemplate();
+                item.id = rs.getShort("id");
+                item.type = rs.getByte("type");
+                item.gender = rs.getByte("gender");
+                item.name = rs.getString("name");
+                item.description = rs.getString("description");
+                item.level = rs.getByte("level");
+                item.iconID = rs.getShort("icon_id");
+                item.part = rs.getShort("part");
+                item.isUpToUp = rs.getBoolean("is_up_to_up");
+                item.strRequire = rs.getInt("power_require");
+                item.gold = rs.getInt("gold");
+                item.gem = rs.getInt("gem");
+                item.head = rs.getInt("head");
+                item.body = rs.getInt("body");
+                item.leg = rs.getInt("leg");
+
+                while (ITEM_TEMPLATES.size() < item.id) {
+                    ITEM_TEMPLATES.add(createMissingItemTemplate((short) ITEM_TEMPLATES.size()));
+                }
+                if (ITEM_TEMPLATES.size() == item.id) {
+                    ITEM_TEMPLATES.add(item);
+                } else {
+                    ITEM_TEMPLATES.set(item.id, item);
+                }
+                ITEM_TEMPLATE_IDS.add((int) item.id);
+                return item;
+            }
+        } catch (SQLException e) {
+            Logger.logException(Manager.class, e);
+            return null;
+        }
+    }
+
     private static ItemTemplate createMissingItemTemplate(short id) {
         ItemTemplate itemTemplate = new ItemTemplate();
         itemTemplate.id = id;

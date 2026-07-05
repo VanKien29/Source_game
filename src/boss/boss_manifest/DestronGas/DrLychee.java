@@ -108,7 +108,7 @@ public class DrLychee extends Boss {
 //            ParamMin = 3;
 ////        }
 //        int hsd = Util.nextInt(3, 5);
-        it.options.add(new Item.ItemOption(50, Util.nextInt(20, 30)));
+        it.options.add(new Item.ItemOption(50, Util.nextInt(18, 25)));
         it.options.add(new Item.ItemOption(77, Util.nextInt(20, 30)));
         it.options.add(new Item.ItemOption(103, Util.nextInt(20, 30)));
         it.options.add(new Item.ItemOption(94, Util.nextInt(20, 30)));
