@@ -3,6 +3,7 @@ package server.admin;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import boss.BossManager;
+import data.DataGame;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import models.Template.ItemTemplate;
 import server.Manager;
 
 public class AdminHttpServer {
@@ -42,6 +44,7 @@ public class AdminHttpServer {
             auth = new AdminAuth(config);
             server = HttpServer.create(new InetSocketAddress(config.host, config.port), 0);
             server.createContext("/internal/runtime/health", this::handleHealth);
+            server.createContext("/internal/runtime/items/refresh", this::handleRefreshItem);
             server.createContext("/internal/runtime/shop/reload", this::handleReloadShop);
             server.createContext("/internal/runtime/bosses", this::handleBossesList);
             server.createContext("/internal/runtime/bosses/create", this::handleBossCreate);
@@ -63,6 +66,24 @@ public class AdminHttpServer {
 
     private void handleHealth(HttpExchange exchange) throws IOException {
         handle(exchange, "GET", () -> AdminResponse.ok("RUNTIME_OK", "Game runtime API đang hoạt động"));
+    }
+
+    private void handleRefreshItem(HttpExchange exchange) throws IOException {
+        handle(exchange, "POST", () -> RuntimeCommandExecutor.gI().run("item.refresh", config.commandTimeoutMillis, () -> {
+            JSONObject body = parseBody(readBodySafely(exchange));
+            int itemId = intValue(body.get("item_id"), -1);
+            ItemTemplate item = Manager.runtimeReloadItemTemplate(itemId);
+            if (item == null) {
+                return AdminResponse.fail(404, "ITEM_REFRESH_FAILED", "Không tìm thấy item để reload");
+            }
+            int itemVersion = DataGame.bumpItemVersion();
+            int onlinePlayers = DataGame.refreshIcon(item.iconID);
+            String dataJson = "{\"item_id\":" + item.id
+                    + ",\"icon_id\":" + item.iconID
+                    + ",\"item_version\":" + itemVersion
+                    + ",\"online_players\":" + onlinePlayers + "}";
+            return AdminResponse.ok("ITEM_REFRESHED", "Đã reload item và làm mới icon trong game", dataJson);
+        }));
     }
 
     private void handleReloadShop(HttpExchange exchange) throws IOException {

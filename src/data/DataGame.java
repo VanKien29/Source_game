@@ -31,7 +31,9 @@ import java.io.IOException;
 import java.util.List;
 
 import server.Manager;
+import server.Client;
 import server.io.MySession;
+import player.Player;
 import utils.Logger;
 
 import models.Template.BgItem;
@@ -44,7 +46,7 @@ public class DataGame {
     public static byte vsData = 9;
     public static byte vsMap = 2;
     public static byte vsSkill = 1;
-    public static byte vsItem = 7;
+    public static byte vsItem = 20;
     public static int vsRes = 4;
     public static short maxSmallVersion = 32767;
 
@@ -409,6 +411,35 @@ public class DataGame {
             msg.cleanup();
         } catch (Exception e) {
         }
+    }
+
+    public static int refreshIcon(int iconId) {
+        if (iconId < 0 || iconId >= Short.MAX_VALUE) {
+            return 0;
+        }
+
+        if (iconId >= maxSmallVersion) {
+            maxSmallVersion = (short) (iconId + 1);
+        }
+        int sent = 0;
+        Player[] players = Client.gI().getPlayers().toArray(new Player[0]);
+        for (Player player : players) {
+            MySession session = player == null ? null : player.session;
+            if (session == null) {
+                continue;
+            }
+            sendSmallVersion(session);
+            sendIcon(session, iconId);
+            ItemData.updateItem(session);
+            sent++;
+        }
+        return sent;
+    }
+
+    public static synchronized int bumpItemVersion() {
+        int nextVersion = (Byte.toUnsignedInt(vsItem) % 255) + 1;
+        vsItem = (byte) nextVersion;
+        return nextVersion;
     }
 
     public static void requestMobTemplate(MySession session, int id) {
