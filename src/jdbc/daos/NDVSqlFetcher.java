@@ -243,7 +243,6 @@ public class NDVSqlFetcher {
                 }
             }
             player.haveTennisSpaceShip = rs.getBoolean("have_tennis_space_ship");
-
             int clanId = rs.getInt("clan_id");
             if (clanId != -1) {
                 try {
@@ -1041,26 +1040,23 @@ public class NDVSqlFetcher {
             dataArray.clear();
             
             dataArray = (JSONArray) JSONValue.parse(rs.getString("data_danh_hieu"));
-            String Reset = "dd-MM-yyyy";
             long Time = dataArray.size() > 11 ? Long.parseLong(String.valueOf(dataArray.get(11))) : System.currentTimeMillis();
-            Date datatime = new Date(Time);
-            if (TimeUtil.formatTime(datatime, Reset).equals(TimeUtil.formatTime(new Date(), Reset))) {
-                if (player.playerTask.taskdh == null) {
-                    player.playerTask.taskdh = new TaskDanhHieu();
-                }
-                player.playerTask.taskdh.Nap = dataArray.size() > 0 ? Integer.parseInt(String.valueOf(dataArray.get(0))) : 0;
-                player.playerTask.taskdh.VeChai = dataArray.size() > 1 ? Integer.parseInt(String.valueOf(dataArray.get(1))) : 0;
-                player.playerTask.taskdh.MocSachTui = dataArray.size() > 2 ? Integer.parseInt(String.valueOf(dataArray.get(2))) : 0;
-                player.playerTask.taskdh.FanCung = dataArray.size() > 3 ? Integer.parseInt(String.valueOf(dataArray.get(3))) : 0;
-                player.playerTask.taskdh.GoDauTre = dataArray.size() > 4 ? Integer.parseInt(String.valueOf(dataArray.get(4))) : 0;
-                player.playerTask.taskdh.GoDauTre1 = dataArray.size() > 5 ? Integer.parseInt(String.valueOf(dataArray.get(5))) : 0;
-                player.playerTask.taskdh.GoDauTre2 = dataArray.size() > 6 ? Integer.parseInt(String.valueOf(dataArray.get(6))) : 0;
-                player.playerTask.taskdh.XMas = dataArray.size() > 7 ? Integer.parseInt(String.valueOf(dataArray.get(7))) : 0;
-                player.playerTask.taskdh.EmDepEmXinh = dataArray.size() > 8 ? Integer.parseInt(String.valueOf(dataArray.get(8))) : 0;
-                player.playerTask.taskdh.AnBamTraXanh = dataArray.size() > 9 ? Integer.parseInt(String.valueOf(dataArray.get(9))) : 0;
-                player.playerTask.taskdh.TayNhanhHonNao = dataArray.size() > 10 ? Integer.parseInt(String.valueOf(dataArray.get(10))) : 0;
-                player.playerTask.taskdh.ResetTime = Time;
+            if (player.playerTask.taskdh == null) {
+                player.playerTask.taskdh = new TaskDanhHieu();
             }
+            player.playerTask.taskdh.Nap = dataArray.size() > 0 ? Integer.parseInt(String.valueOf(dataArray.get(0))) : 0;
+            player.playerTask.taskdh.VeChai = dataArray.size() > 1 ? Integer.parseInt(String.valueOf(dataArray.get(1))) : 0;
+            player.playerTask.taskdh.MocSachTui = dataArray.size() > 2 ? Integer.parseInt(String.valueOf(dataArray.get(2))) : 0;
+            player.playerTask.taskdh.FanCung = dataArray.size() > 3 ? Integer.parseInt(String.valueOf(dataArray.get(3))) : 0;
+            player.playerTask.taskdh.GoDauTre = dataArray.size() > 4 ? Integer.parseInt(String.valueOf(dataArray.get(4))) : 0;
+            player.playerTask.taskdh.GoDauTre1 = dataArray.size() > 5 ? Integer.parseInt(String.valueOf(dataArray.get(5))) : 0;
+            player.playerTask.taskdh.GoDauTre2 = dataArray.size() > 6 ? Integer.parseInt(String.valueOf(dataArray.get(6))) : 0;
+            player.playerTask.taskdh.XMas = dataArray.size() > 7 ? Integer.parseInt(String.valueOf(dataArray.get(7))) : 0;
+            player.playerTask.taskdh.EmDepEmXinh = dataArray.size() > 8 ? Integer.parseInt(String.valueOf(dataArray.get(8))) : 0;
+            player.playerTask.taskdh.AnBamTraXanh = dataArray.size() > 9 ? Integer.parseInt(String.valueOf(dataArray.get(9))) : 0;
+            player.playerTask.taskdh.TayNhanhHonNao = dataArray.size() > 10 ? Integer.parseInt(String.valueOf(dataArray.get(10))) : 0;
+            player.playerTask.taskdh.activeSantaTitleId = dataArray.size() > 12 ? Integer.parseInt(String.valueOf(dataArray.get(12))) : -1;
+            player.playerTask.taskdh.ResetTime = Time;
             dataArray.clear();
             
 
@@ -1161,6 +1157,11 @@ public class NDVSqlFetcher {
                 player.fusion.lastTimeFusion = System.currentTimeMillis()
                         - (Fusion.TIME_FUSION - Integer.parseInt(String.valueOf(dataArray.get(4))));
                 pet.status = Byte.parseByte(String.valueOf(dataArray.get(5)));
+                if (player.fusion.typeFusion == ConstPlayer.NON_FUSION && pet.status == Pet.FUSION) {
+                    pet.status = Pet.ATTACK;
+                } else if (player.fusion.typeFusion != ConstPlayer.NON_FUSION) {
+                    pet.status = Pet.FUSION;
+                }
 
                 // data chỉ số
                 dataArray = (JSONArray) JSONValue.parse(String.valueOf(petData.get(1)));

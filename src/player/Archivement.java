@@ -128,24 +128,12 @@ public class Archivement {
             for (int i = 0; i < pl.archivementList.size(); i++) {
 
                 Archivement archivement = pl.archivementList.get(i);
-                if (pl.getSession().version <= 231 || pl.getSession().version > 235) {
-                    msg.writer().writeUTF(archivement.getInfo1());
-                    msg.writer().writeUTF(archivement.getInfo2());
-                    msg.writer().writeShort(archivement.getMoney()); //money
-                    msg.writer().writeBoolean(archivement.isFinish);
-                    msg.writer().writeBoolean(archivement.isRecieve);
-                    writeRewardPreview(msg, archivement);
-
-                } else {
-                    msg.writer().writeUTF(archivement.getInfo1());
-                    msg.writer().writeUTF(archivement.getInfo2());
-                    msg.writer().writeShort(archivement.getMoney()); //money
-                    msg.writer().writeUTF("");
-                    msg.writer().writeBoolean(archivement.isFinish);
-                    msg.writer().writeBoolean(archivement.isRecieve);
-                    msg.writer().writeShort(10895);//res icon
-                    writeRewardPreview(msg, archivement);
-                }
+                msg.writer().writeUTF(archivement.getInfo1());
+                msg.writer().writeUTF(archivement.getInfo2());
+                msg.writer().writeShort(archivement.getMoney()); //money
+                msg.writer().writeBoolean(archivement.isFinish);
+                msg.writer().writeBoolean(archivement.isRecieve);
+                writeRewardPreview(msg, archivement);
 
             }
             pl.sendMessage(msg);

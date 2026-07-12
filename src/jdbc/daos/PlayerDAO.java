@@ -1245,6 +1245,10 @@ public class PlayerDAO {
                 dataShopDanhHieu.add(player.effect.getPointEmDepEmXinh());
                 dataShopDanhHieu.add(player.effect.getPointAnBamTraXanh());
                 dataShopDanhHieu.add(player.effect.getPointTayNhanhHonNao());
+                dataShopDanhHieu.add(player.playerTask != null && player.playerTask.taskdh != null
+                        ? player.playerTask.taskdh.ResetTime : System.currentTimeMillis());
+                dataShopDanhHieu.add(player.playerTask != null && player.playerTask.taskdh != null
+                        ? player.playerTask.taskdh.activeSantaTitleId : -1);
                 String shopDanhHieu = dataShopDanhHieu.toJSONString();
                 dataShopDanhHieu.clear();
 

@@ -41,6 +41,7 @@ public class FlagBagService {
                 for (Short iconId : fb.iconEffect) {
                     msg.writer().writeShort(iconId);
                 }
+                msg.writer().writeShort(toClientFlagBagId(fb.id));
                 player.sendMessage(msg);
                 msg.cleanup();
             } catch (Exception e) {
@@ -60,6 +61,7 @@ public class FlagBagService {
                 for (Short iconId : fb.iconEffect) {
                     msg.writer().writeShort(iconId);
                 }
+                msg.writer().writeShort(toClientFlagBagId(fb.id));
                 player.sendMessage(msg);
                 msg.cleanup();
             } catch (Exception e) {
@@ -75,7 +77,7 @@ public class FlagBagService {
             msg.writer().writeByte(1); // type
             msg.writer().writeByte(list.size());
             for (FlagBag fb : list) {
-                msg.writer().writeByte(fb.id);
+                msg.writer().writeByte(toClientFlagBagId(fb.id));
                 msg.writer().writeUTF(fb.name);
                 msg.writer().writeInt(fb.gold);
                 msg.writer().writeInt(fb.gem);

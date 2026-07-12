@@ -37,6 +37,7 @@ import network.Session;
 import jdbc.NDVResultSet;
 import server.Client;
 import services.func.ChangeMapService;
+import shop.ShopService;
 import utils.Logger;
 import utils.TimeUtil;
 import utils.Util;
@@ -1136,6 +1137,7 @@ public class Service {
                 msg.writer().writeByte(player.effectSkill.isMonkey ? 1 : 0);// set khỉ
                 RadarSetAura(player);
                 sendMessAllPlayerInMap(player, msg);
+                sendFlagBag(player);
                 msg.cleanup();
             } catch (Exception e) {
                 // Logger.logException(Service.class, e);
@@ -1170,7 +1172,7 @@ public class Service {
             int clientFlagBag = FlagBagService.gI().toClientFlagBagId(flagbag);
             msg = new Message(-64);
             msg.writer().writeInt((int) pl.id);
-            msg.writer().writeByte(clientFlagBag);
+            msg.writer().writeShort(clientFlagBag);
             sendMessAllPlayerInMap(pl, msg);
             msg.cleanup();
             clearFlagBagCollisionEffect(pl, flagbag);
@@ -1190,7 +1192,7 @@ public class Service {
             flagbag = FlagBagService.gI().toClientFlagBagId(flagbag);
             Message msg = new Message(-64);
             msg.writer().writeInt((int) pl.id);
-            msg.writer().writeByte(flagbag);
+            msg.writer().writeShort(flagbag);
             pl.sendMessage(msg); // <-- thêm dòng này
             sendMessAllPlayerInMap(pl, msg);
             msg.cleanup();
@@ -2147,6 +2149,10 @@ public class Service {
                     Service.gI().sendEffAllPlayer(pl, danhhieu.template.part, 1, -1, 1);
                 }
             }
+            int santaDanhHieuPart = ShopService.gI().getActiveSantaDanhHieuPart(pl);
+            if (santaDanhHieuPart > 0) {
+                Service.gI().sendEffAllPlayer(pl, santaDanhHieuPart, 1, -1, 1);
+            }
             if (pl.inventory.itemsBody.size() > 12) {
                 Item chanMenh = pl.inventory.itemsBody.get(12);
                 if (isChanMenhEffectItem(chanMenh)) {
@@ -2167,6 +2173,10 @@ public class Service {
                         if (isDanhHieuEffectItem(danhhieu)) {
                             Service.gI().sendEffPlayer(plM, pl, danhhieu.template.part, 1, -1, 1);
                         }
+                    }
+                    int santaDanhHieuPart = ShopService.gI().getActiveSantaDanhHieuPart(plM);
+                    if (santaDanhHieuPart > 0) {
+                        Service.gI().sendEffPlayer(plM, pl, santaDanhHieuPart, 1, -1, 1);
                     }
                     if (plM.inventory.itemsBody.size() > 12) {
                         Item chanmenh = plM.inventory.itemsBody.get(12);
@@ -2199,6 +2209,9 @@ public class Service {
             if (isDanhHieuEffectItem(danhhieu) && danhhieu.template.part == idEff) {
                 return true;
             }
+        }
+        if (ShopService.gI().getActiveSantaDanhHieuPart(pl) == idEff) {
+            return true;
         }
         if (pl.inventory.itemsBody.size() > 12) {
             Item chanMenh = pl.inventory.itemsBody.get(12);
@@ -3072,7 +3085,7 @@ public class Service {
                 }
             }
             flagbag = FlagBagService.gI().toClientFlagBagId(flagbag);
-            msg.writer().writeByte(flagbag); // bag
+            msg.writer().writeShort(flagbag); // bag
             msg.writer().writeByte(-1);
             msg.writer().writeShort(pl.location.x);
             msg.writer().writeShort(pl.location.y);

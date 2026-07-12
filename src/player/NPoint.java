@@ -20,6 +20,7 @@ import services.MapService;
 import services.PlayerService;
 import services.Service;
 import services.TaskService;
+import shop.ShopService;
 import utils.Logger;
 import utils.SkillUtil;
 import utils.Util;
@@ -475,6 +476,9 @@ public class NPoint {
                     addOption(io);
                 }
             }
+        }
+        for (ItemOption io : ShopService.gI().getActiveSantaDanhHieuOptions(this.player)) {
+            addOption(io);
         }
         applyIntrinsicGoldDrop();
         setDameTrainArmor();

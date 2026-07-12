@@ -23,6 +23,7 @@ public class TaskDanhHieu {
     public int EmDepEmXinh;
     public int AnBamTraXanh;
     public int TayNhanhHonNao;
+    public int activeSantaTitleId;
 
     public long ResetTime;
 
@@ -38,6 +39,7 @@ public class TaskDanhHieu {
         this.EmDepEmXinh = 0;      //    k có cách kiếm
         this.AnBamTraXanh = 0;          // k có cách kiếm
         this.TayNhanhHonNao = 0;             // k có cách kiếm
+        this.activeSantaTitleId = -1;
     }
 
     public boolean CheckItem(Player player, ItemShop itemShop, int itemId) {
@@ -50,11 +52,11 @@ public class TaskDanhHieu {
         int current = 0;
         switch (itemId) {
             case 1289 -> {
-                required = 5000;
+                required = 1000000;
                 current = player.playerTask.taskdh.Nap;
             }
             case 1291 -> {
-                required = 5000;
+                required = 500;
                 current = player.playerTask.taskdh.VeChai;
             }
             case 1296 -> {
@@ -63,7 +65,7 @@ public class TaskDanhHieu {
             }
             case 1299 -> {
                 required = 7;
-                current = player.playerTask.taskdh.FanCung;
+                current = player.getSession().diemdanh;
             }
             case 1392 -> {
                 required = 999999;
