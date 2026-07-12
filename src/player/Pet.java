@@ -60,6 +60,7 @@ public class Pet extends Player {
 
     private int indexChat = 0;
     private long lastTimeChat;
+    private long lastTimeSyncMap;
 
     public byte getStatus() {
         return this.status;
@@ -151,6 +152,12 @@ public class Pet extends Player {
                 Pet.this.status = Pet.ATTACK;
                 Thread.sleep(2000);
             } catch (Exception e) {
+            }
+            if (isFusionState()) {
+                Pet.this.status = Pet.FUSION;
+                Pet.this.goingHome = false;
+                clearAttackTarget();
+                return;
             }
             if (master != null) {
                 try {
@@ -398,6 +405,14 @@ public class Pet extends Player {
     public void update() {
         try {
             if (this.master != null && this.master.zone != null) {
+                if (isFusionState()) {
+                    this.status = FUSION;
+                    clearAttackTarget();
+                    return;
+                }
+                if (this.status == FUSION) {
+                    this.status = ATTACK;
+                }
                 super.update();
                 increasePoint(); // cộng chỉ số
                 updatePower(); // check mở skill...
@@ -419,9 +434,10 @@ public class Pet extends Player {
                     justRevived = false;
                 }
 
-                if (this.zone == null || this.zone != master.zone) {
+                if (this.zone == null || this.zone != master.zone || !this.zone.getHumanoids().contains(this)) {
                     joinMapMaster();
                 }
+                syncVisibleToMap();
                 if (master.isDie() || this.isDie() || effectSkill.isHaveEffectSkill()) {
                     return;
                 }
@@ -1363,6 +1379,10 @@ public class Pet extends Player {
     }
 
     public boolean canAttack() {
+        if (isFusionState()) {
+            clearAttackTarget();
+            return false;
+        }
         if (this.master.isPl() && this.master.doesNotAttack && this.master.charms.tdDeTu < System.currentTimeMillis()) {
             if (Util.canDoWithTime(lastTimeAskAttack, 10000)) {
                 Service.gI().chatJustForMe(master, this,
@@ -1371,6 +1391,24 @@ public class Pet extends Player {
             return false;
         }
         return true;
+    }
+
+    private boolean isFusionState() {
+        return this.master != null && this.master.fusion != null
+                && this.master.fusion.typeFusion != ConstPlayer.NON_FUSION;
+    }
+
+    private void clearAttackTarget() {
+        this.mobAttack = null;
+        this.playerAttack = null;
+        this.idle = false;
+    }
+
+    private void syncVisibleToMap() {
+        if (this.zone != null && this.zone == master.zone && Util.canDoWithTime(lastTimeSyncMap, 5000)) {
+            this.zone.load_Me_To_Another(this);
+            lastTimeSyncMap = System.currentTimeMillis();
+        }
     }
 
     public void petSay(Player player) {

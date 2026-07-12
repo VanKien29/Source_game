@@ -40,6 +40,7 @@ import task.SideTaskTemplate;
 import task.SubTaskMain;
 import task.TaskMain;
 import services.ItemService;
+import services.FlagBagService;
 import services.MapService;
 import utils.Logger;
 
@@ -219,7 +220,15 @@ public final class Manager {
         int[][] tileTyleTop = readTileIndexTileType(ConstMap.TILE_TOP);
         for (MapTemplate mapTemp : MAP_TEMPLATES) {
             int[][] tileMap = readTileMap(mapTemp.id);
-            int[] tileTop = tileTyleTop[mapTemp.tileId - 1];
+            int tileTopIndex = mapTemp.tileId - 1;
+            if (tileTyleTop == null || tileTopIndex < 0 || tileTopIndex >= tileTyleTop.length) {
+                throw new IllegalStateException("Invalid tile_id " + mapTemp.tileId
+                        + " for map_template id=" + mapTemp.id + ", name=" + mapTemp.name
+                        + ". data/map/tile_set_info has " + (tileTyleTop == null ? 0 : tileTyleTop.length)
+                        + " tile sets, so tile_id must be from 1 to "
+                        + (tileTyleTop == null ? 0 : tileTyleTop.length) + ".");
+            }
+            int[] tileTop = tileTyleTop[tileTopIndex];
             map.Map map = new map.Map(mapTemp.id,
                     mapTemp.name, mapTemp.planetId, mapTemp.tileId, mapTemp.bgId,
                     mapTemp.bgType, mapTemp.type, tileMap, tileTop,
@@ -275,7 +284,7 @@ public final class Manager {
                 clan.name = rs.getString("name");
                 clan.name2 = rs.getString("name_2");
                 clan.slogan = rs.getString("slogan");
-                clan.imgId = rs.getByte("img_id");
+                clan.imgId = FlagBagService.gI().toClientFlagBagId(rs.getInt("img_id"));
                 clan.powerPoint = rs.getLong("power_point");
                 clan.maxMember = rs.getByte("max_member");
                 clan.capsuleClan = rs.getInt("clan_point");
@@ -2096,7 +2105,6 @@ public final class Manager {
                 item.head = rs.getInt("head");
                 item.body = rs.getInt("body");
                 item.leg = rs.getInt("leg");
-
                 while (ITEM_TEMPLATES.size() < item.id) {
                     ITEM_TEMPLATES.add(createMissingItemTemplate((short) ITEM_TEMPLATES.size()));
                 }

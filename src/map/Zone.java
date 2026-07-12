@@ -12,6 +12,7 @@ import item.Item;
 import mob.Mob;
 import npc.Npc;
 import npc.NpcManager;
+import player.Pet;
 import player.Player;
 import network.Message;
 import boss.boss_manifest.Training.TrainingBoss;
@@ -595,7 +596,14 @@ public class Zone {
             if (player.zone != null) {
                 if (MapService.gI().isMapOffline(this.map.mapId)) {
                     // Load boss
-                    if (player instanceof TrainingBoss || player instanceof NonInteractiveNPC) {
+                    if (player.isPet) {
+                        for (int i = players.size() - 1; i >= 0; i--) {
+                            Player pl = players.get(i);
+                            if (pl != null && ((Pet) player).master.equals(pl)) {
+                                infoPlayer(pl, player);
+                            }
+                        }
+                    } else if (player instanceof TrainingBoss || player instanceof NonInteractiveNPC) {
                         for (int i = players.size() - 1; i >= 0; i--) {
                             Player pl = players.get(i);
                             if (!player.equals(pl) && (player instanceof NonInteractiveNPC
@@ -625,7 +633,8 @@ public class Zone {
                 // Load boss
                 for (int i = this.humanoids.size() - 1; i >= 0; i--) {
                     Player pl = this.humanoids.get(i);
-                    if (pl != null && (pl instanceof NonInteractiveNPC
+                    if (pl != null && (pl.isPet && ((Pet) pl).master.equals(player)
+                            || pl instanceof NonInteractiveNPC
                             || pl instanceof TrainingBoss && ((TrainingBoss) pl).playerAtt.equals(player))) {
                         infoPlayer(player, pl);
                     }
@@ -700,7 +709,7 @@ public class Zone {
                 }
             }
             flagbag = FlagBagService.gI().toClientFlagBagId(flagbag);
-            msg.writer().writeByte(flagbag); // bag
+            msg.writer().writeShort(flagbag); // bag
             msg.writer().writeByte(-1);
             msg.writer().writeShort(plInfo.location.x);
             msg.writer().writeShort(plInfo.location.y);
@@ -720,6 +729,7 @@ public class Zone {
             msg.writer().writeShort(plInfo.getAura()); // idauraeff
             msg.writer().writeByte(plInfo.getEffFront()); // seteff
             msg.writer().writeShort(plInfo.getHat()); // id hat
+            msg.writer().writeByte(plInfo.isNewMember ? 1 : 0); // tich xanh
             plReceive.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {

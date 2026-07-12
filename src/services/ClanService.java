@@ -7,6 +7,9 @@ package services;
  */
 import jdbc.DBConnecter;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.List;
 
 import static clan.Clan.DEPUTY;
@@ -137,22 +140,57 @@ public class ClanService {
                     FlagBagService.gI().sendListFlagClan(player);
                     break;
                 case ACCEPT_CREATE_CLAN:
-                    byte imgId = msg.reader().readByte();
-                    String name = msg.reader().readUTF();
-                    createClan(player, imgId, name);
+                    ClanInfoInput createInput = readClanInfoInput(msg);
+                    createClan(player, createInput.imgId, createInput.text);
                     break;
                 case REQUEST_FLAGS_CHOOSE_CHANGE_CLAN:
                     FlagBagService.gI().sendListFlagClan(player);
                     break;
                 case ACCEPT_CHANGE_INFO_CLAN:
-                    imgId = msg.reader().readByte();
-                    String slogan = msg.reader().readUTF();
-                    changeInfoClan(player, imgId, slogan);
+                    ClanInfoInput changeInput = readClanInfoInput(msg);
+                    changeInfoClan(player, changeInput.imgId, changeInput.text);
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
 
+        }
+    }
+
+    private ClanInfoInput readClanInfoInput(Message msg) throws IOException {
+        byte[] data = new byte[msg.reader().available()];
+        msg.reader().readFully(data);
+        ClanInfoInput input = tryReadClanInfoInput(data, true);
+        if (input == null) {
+            input = tryReadClanInfoInput(data, false);
+        }
+        if (input == null) {
+            throw new IOException("Invalid clan info packet");
+        }
+        return input;
+    }
+
+    private ClanInfoInput tryReadClanInfoInput(byte[] data, boolean shortId) {
+        try {
+            DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
+            int imgId = shortId ? dis.readUnsignedShort() : dis.readUnsignedByte();
+            String text = dis.readUTF();
+            if (dis.available() == 0) {
+                return new ClanInfoInput(imgId, text);
+            }
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    private static class ClanInfoInput {
+
+        private final int imgId;
+        private final String text;
+
+        private ClanInfoInput(int imgId, String text) {
+            this.imgId = imgId;
+            this.text = text;
         }
     }
 
@@ -532,7 +570,7 @@ public class ClanService {
     /**
      * Đổi thông tin clan (cờ, khẩu hiệu)
      */
-    private void changeInfoClan(Player player, byte imgId, String slogan) {
+    private void changeInfoClan(Player player, int imgId, String slogan) {
         if (!slogan.equals("")) {
             changeSlogan(player, slogan);
         } else {
@@ -543,13 +581,13 @@ public class ClanService {
     /**
      * Tạo clan mới
      */
-    private void createClan(Player player, byte imgId, String name) {
+    private void createClan(Player player, int imgId, String name) {
         if (player.clan == null) {
             if (name.length() > 30) {
                 Service.gI().sendThongBao(player, "Tên bang hội không được quá 30 ký tự");
                 return;
             }
-            FlagBag flagBag = FlagBagService.gI().getFlagBag(imgId);
+            FlagBag flagBag = FlagBagService.gI().getFlagBag(FlagBagService.gI().toServerFlagBagId(imgId));
             if (flagBag != null) {
                 if (flagBag.gold > 0) {
                     if (player.inventory.gold >= flagBag.gold) {
@@ -572,7 +610,7 @@ public class ClanService {
                 PlayerService.gI().sendInfoHpMpMoney(player);
 
                 Clan clan = new Clan();
-                clan.imgId = imgId;
+                clan.imgId = FlagBagService.gI().toClientFlagBagId(flagBag.id);
                 clan.name = name;
                 Manager.addClan(clan);
 
@@ -599,7 +637,7 @@ public class ClanService {
                 msg.writer().writeInt(clan.id);
                 msg.writer().writeUTF(clan.name);
                 msg.writer().writeUTF(clan.slogan);
-                msg.writer().writeByte(clan.imgId);
+                msg.writer().writeByte(FlagBagService.gI().toClientFlagBagId(clan.imgId));
                 msg.writer().writeUTF(String.valueOf(clan.powerPoint));
                 msg.writer().writeUTF(clan.getLeader().name);
                 msg.writer().writeByte(clan.getCurrMembers());
@@ -658,7 +696,7 @@ public class ClanService {
                 msg.writer().writeInt(player.clan.id);
                 msg.writer().writeUTF(player.clan.name);
                 msg.writer().writeUTF(player.clan.slogan);
-                msg.writer().writeByte(player.clan.imgId);
+                msg.writer().writeByte(FlagBagService.gI().toClientFlagBagId(player.clan.imgId));
                 msg.writer().writeUTF(String.valueOf(player.clan.powerPoint));
                 msg.writer().writeUTF(player.clan.getLeader().name);
                 msg.writer().writeByte(player.clan.getCurrMembers());
@@ -763,9 +801,11 @@ public class ClanService {
 
     public void changeFlag(Player player, int imgId) {
         Clan clan = player.clan;
-        if (clan != null && clan.isLeader(player) && imgId != clan.imgId) {
+        int clientImgId = FlagBagService.gI().toClientFlagBagId(imgId);
+        if (clan != null && clan.isLeader(player)
+                && clientImgId != FlagBagService.gI().toClientFlagBagId(clan.imgId)) {
             // sub money
-            FlagBag flagBag = FlagBagService.gI().getFlagBag(imgId);
+            FlagBag flagBag = FlagBagService.gI().getFlagBag(FlagBagService.gI().toServerFlagBagId(clientImgId));
 
             if (flagBag != null) {
                 if (flagBag.gold > 0) {
@@ -787,7 +827,7 @@ public class ClanService {
                     }
                 }
                 PlayerService.gI().sendInfoHpMpMoney(player);
-                player.clan.imgId = imgId;
+                player.clan.imgId = FlagBagService.gI().toClientFlagBagId(flagBag.id);
                 clan.sendFlagBagForAllMember();
                 clan.update();
             }

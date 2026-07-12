@@ -17,6 +17,7 @@ import services.SubMenuService;
 import services.Service;
 import services.IntrinsicService;
 import services.FlagBagService;
+import services.GiftSystemService;
 import services.ItemTimeService;
 import services.SkillService;
 import services.NpcService;
@@ -256,6 +257,11 @@ public class Controller implements IMessageHandler {
                     if (player != null) {
                         player.changeMapVIP = true;
                         FriendAndEnemyService.gI().goToPlayerWithYardrat(player, _msg);
+                    }
+                    break;
+                case 99:
+                    if (player != null) {
+                        GiftSystemService.gI().handle(player, _msg);
                     }
                     break;
                 case -72:

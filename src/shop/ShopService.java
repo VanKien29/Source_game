@@ -42,6 +42,8 @@ public class ShopService {
 
     private static final byte NORMAL_SHOP = 0;
     private static final byte SPEC_SHOP = 3;
+    private static final int DANH_HIEU_PROGRESS_OPTION = 220;
+    private static final int[] DANH_HIEU_ITEM_IDS = {1289, 1291, 1296, 1299, 1392, 1393, 1394, 1457, 1514, 1297, 1673};
 
     private static ShopService I;
 
@@ -110,11 +112,10 @@ public class ShopService {
         // Xử lý danh hiệu shop
         if (shop.id == 24) {
             Shop newShop = allGender ? new Shop(shop) : new Shop(shop, player);
+            newShop.tabShops.removeIf(tabShop -> tabShop.id == 29);
             for (TabShop tabShop : newShop.tabShops) {
                 if (tabShop.id == 28) {
                     newShop = DanhHieu(player, newShop);
-                } else if (tabShop.id == 29) {
-                    newShop = SoHuu(player, newShop);
                 }
             }
             return newShop;
@@ -211,7 +212,7 @@ public class ShopService {
                     case 1299 -> {
                         // Fan Cùng: điểm danh từ SQL (7 ngày)
                         required = 7;
-                        current = player.getSession().diemdanh;
+                        current = (player.getSession() != null) ? player.getSession().diemdanh : 0;
                     }
                     case 1392 -> {
                         required = 999999;
@@ -246,25 +247,16 @@ public class ShopService {
                     }
                 }
                 percentDone = (required > 0) ? (int) ((double) current / required * 100) : 100;
-                boolean hasProgressOption = false;
-                item.options.removeIf(opt -> opt.optionTemplate.id == 220);
+                percentDone = Math.min(100, Math.max(0, percentDone));
+                item.options.removeIf(opt -> opt.optionTemplate.id == DANH_HIEU_PROGRESS_OPTION);
                 // Thêm option 220 mới với % hiện tại
-                if (percentDone >= 100) {
-                    item.options.add(new Item.ItemOption(220, 100));
-                } else {
-                    item.options.add(new Item.ItemOption(220, percentDone));
+                int encodedProgress = percentDone;
+                if (isSantaDanhHieuActive(player, item.temp.id)) {
+                    encodedProgress += 2000;
+                } else if (percentDone >= 100) {
+                    encodedProgress += 1000;
                 }
-                if (hasProgressOption && min > 0) {
-                    if (min >= 1440 * 3) {
-                        item.options.add(new Item.ItemOption(63, (int) min / 1440));
-                    } else if (min >= 1440) {
-                        item.options.add(new Item.ItemOption(63, (int) min / 1440));
-                    } else if (min >= 60) {
-                        item.options.add(new Item.ItemOption(64, (int) min / 60));
-                    } else {
-                        item.options.add(new Item.ItemOption(65, (int) min));
-                    }
-                }
+                item.options.add(new Item.ItemOption(DANH_HIEU_PROGRESS_OPTION, encodedProgress));
             }
         }
         return s;
@@ -364,6 +356,96 @@ public class ShopService {
         return true;
     }
 
+    private boolean isDanhHieuItem(int itemTempId) {
+        for (int id : DANH_HIEU_ITEM_IDS) {
+            if (id == itemTempId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isSantaDanhHieuActive(Player player, int itemTempId) {
+        return player != null && player.playerTask != null && player.playerTask.taskdh != null
+                && player.playerTask.taskdh.activeSantaTitleId == itemTempId;
+    }
+
+    private ItemShop getSantaDanhHieuItem(int itemTempId) {
+        try {
+            Shop shop = getShop("SANTA_DANH_HIEU");
+            return shop == null ? null : shop.getItemShop(itemTempId);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    public List<Item.ItemOption> getActiveSantaDanhHieuOptions(Player player) {
+        if (player == null || player.playerTask == null || player.playerTask.taskdh == null) {
+            return new ArrayList<>();
+        }
+        int activeId = player.playerTask.taskdh.activeSantaTitleId;
+        if (activeId <= 0 || !checkDanhHieuProgress(player, activeId)) {
+            return new ArrayList<>();
+        }
+        ItemShop itemShop = getSantaDanhHieuItem(activeId);
+        if (itemShop == null || itemShop.options == null) {
+            return new ArrayList<>();
+        }
+        List<Item.ItemOption> options = new ArrayList<>();
+        for (Item.ItemOption option : itemShop.options) {
+            if (option != null && option.optionTemplate != null
+                    && option.optionTemplate.id != DANH_HIEU_PROGRESS_OPTION) {
+                options.add(option);
+            }
+        }
+        return options;
+    }
+
+    public int getActiveSantaDanhHieuPart(Player player) {
+        if (player == null || player.playerTask == null || player.playerTask.taskdh == null) {
+            return -1;
+        }
+        int activeId = player.playerTask.taskdh.activeSantaTitleId;
+        if (activeId <= 0 || !checkDanhHieuProgress(player, activeId)) {
+            return -1;
+        }
+        ItemShop itemShop = getSantaDanhHieuItem(activeId);
+        return itemShop != null && itemShop.temp != null ? itemShop.temp.part : -1;
+    }
+
+    private boolean handleDanhHieuShopAction(Player player, ItemShop itemShop, int itemTempId) {
+        if (!isDanhHieuItem(itemTempId)) {
+            return false;
+        }
+        if (itemShop == null) {
+            return false;
+        }
+        if (!checkDanhHieuProgress(player, itemTempId)) {
+            Service.gI().sendThongBao(player, "Bạn chưa hoàn thành điều kiện danh hiệu này");
+            return true;
+        }
+        int oldPart = getActiveSantaDanhHieuPart(player);
+        if (isSantaDanhHieuActive(player, itemTempId)) {
+            player.playerTask.taskdh.activeSantaTitleId = -1;
+            if (oldPart > 0) {
+                Service.gI().removeEffPlayer(player, oldPart);
+            }
+            Service.gI().point(player);
+            Service.gI().sendThongBao(player, "Đã tắt danh hiệu");
+            opendShop(player, player.iDMark.getTagNameShop(), false);
+            return true;
+        }
+        if (oldPart > 0) {
+            Service.gI().removeEffPlayer(player, oldPart);
+        }
+        player.playerTask.taskdh.activeSantaTitleId = itemTempId;
+        Service.gI().point(player);
+        Service.gI().sendEffPlayer(player);
+        Service.gI().sendThongBao(player, "Đã bật danh hiệu");
+        opendShop(player, player.iDMark.getTagNameShop(), false);
+        return true;
+    }
+
     private boolean checkDanhHieuProgress(Player player, int itemTempId) {
         if (player.playerTask == null) {
             player.playerTask = new TaskPlayer();
@@ -392,7 +474,7 @@ public class ShopService {
             case 1299 -> {
                 // Fan Cùng: điểm danh từ SQL (7 ngày)
                 required = 7;
-                current = player.getSession().diemdanh;
+                current = (player.getSession() != null) ? player.getSession().diemdanh : 0;
             }
             case 1392 -> {
                 required = 999999;
@@ -988,9 +1070,9 @@ public class ShopService {
         ItemShop is = getItemShopByClientTab(shop, itemTempId, clientTabIndex);
         int[][] listDauThan = { { 13, 293 }, { 60, 294 }, { 61, 295 }, { 62, 296 }, { 63, 297 }, { 64, 298 },
                 { 65, 299 }, { 352, 596 }, { 523, 597 } };
-        boolean isDanhHieuItem = itemTempId == 1289 || itemTempId == 1291 || itemTempId == 1296 || itemTempId == 1299
-                || itemTempId == 1392 || itemTempId == 1393 || itemTempId == 1394 || itemTempId == 1457
-                || itemTempId == 1514 || itemTempId == 1297 || itemTempId == 1673;
+        if (handleDanhHieuShopAction(player, is, itemTempId)) {
+            return;
+        }
         if (is == null) {
             Service.gI().sendThongBao(player, "Không thể thực hiện");
             return;
@@ -1006,7 +1088,7 @@ public class ShopService {
         }
 
         // Danh hiệu: chỉ cần kiểm tra hoàn thành/chưa hoàn thành, không phân biệt tab 28/29.
-        if (isDanhHieuItem) {
+        if (isDanhHieuItem(itemTempId)) {
             if (!checkDanhHieuProgress(player, itemTempId)) {
                 Service.gI().sendThongBao(player, "Bạn chưa hoàn thành điều kiện danh hiệu này");
                 return;
