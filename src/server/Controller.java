@@ -927,7 +927,7 @@ public class Controller implements IMessageHandler {
                             if (TaskService.gI().getIdTask(player) == ConstTask.TASK_0_0) {
                                 if (TaskService.gI().getIdTask(player) == ConstTask.TASK_0_0) {
                                     Service.gI().sendThongBao(player, "Nhiệm vụ của bạn là\nHãy di chuyển nhân vật");
-                                    String npcSay = "Chào mừng " + player.name + " đến với thế giới Chiến Binh Rồng\n";
+                                    String npcSay = "Chào mừng " + player.name + " đến với thế giới Ngọc Rồng đẳng cấp nhất bây giờ\n";
                                     npcSay += "Mình là "
                                             + (player.gender == 0 ? "Puaru" : player.gender == 1 ? "Piano" : "Icarus")
                                             + " sẽ đồng hành cũng bạn trên thế giới này\n";

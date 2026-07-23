@@ -918,22 +918,8 @@ public final class Manager {
             }
             Logger.success("Successfully loaded radar template (" + RadarService.gI().RADAR_TEMPLATE.size() + ")\n");
 
-            File directory = new File("data/icon/x4");
-            if (directory.isDirectory()) {
-                Optional<File> maxFile = Arrays.stream(directory.listFiles())
-                        .filter(File::isFile)
-                        .filter(file -> file.getName().endsWith(".png"))
-                        .max(Comparator.comparingInt(file -> {
-                            String name = file.getName();
-                            return Integer.valueOf(name.substring(0, name.length() - 4));
-                        }));
-                if (maxFile.isPresent()) {
-                    String fileName = maxFile.get().getName();
-                    short maxVersion = Short.parseShort(fileName.substring(0, fileName.length() - 4));
-                    DataGame.maxSmallVersion = (short) (maxVersion + 1);
-                    Logger.success("Successfully loaded max small version (" + DataGame.maxSmallVersion + ")\n");
-                }
-            }
+            DataGame.reloadSmallVersions();
+            Logger.success("Successfully loaded small icon versions (" + DataGame.maxSmallVersion + ")\n");
 
             // === LOAD TOPS ===
             try (Connection conTop = DBConnecter.getConnectionServer()) {

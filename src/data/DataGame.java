@@ -45,10 +45,13 @@ public class DataGame {
 
     public static byte vsData = 9;
     public static byte vsMap = 4;
-    public static byte vsSkill = 1;
-    public static byte vsItem = 20;
+    public static byte vsSkill = 37;
+    public static byte vsItem = (byte) 210;
     public static int vsRes = 4;
     public static short maxSmallVersion = 32767;
+    private static final int CUSTOM_ICON_START = 30000;
+    private static final int MAX_SMALL_VERSION = Short.MAX_VALUE;
+    private static byte[] smallVersions = new byte[MAX_SMALL_VERSION];
 
     public static String LINK_IP_PORT = "Nro Horizon:svg.nrohorizon.online:14445:0,0,0";
     public static Map MAP_MOUNT_NUM = new HashMap();
@@ -405,7 +408,7 @@ public class DataGame {
             msg = new Message(-77);
             msg.writer().writeShort(maxSmallVersion);
             for (int i = 0; i < maxSmallVersion; i++) {
-                msg.writer().writeByte(0);
+                msg.writer().writeByte(i < smallVersions.length ? smallVersions[i] : 0);
             }
             session.sendMessage(msg);
             msg.cleanup();
@@ -421,6 +424,7 @@ public class DataGame {
         if (iconId >= maxSmallVersion) {
             maxSmallVersion = (short) (iconId + 1);
         }
+        updateSmallVersion(iconId);
         int sent = 0;
         Player[] players = Client.gI().getPlayers().toArray(new Player[0]);
         for (Player player : players) {
@@ -434,6 +438,53 @@ public class DataGame {
             sent++;
         }
         return sent;
+    }
+
+    public static synchronized void reloadSmallVersions() {
+        byte[] versions = new byte[MAX_SMALL_VERSION];
+        int maxVersion = 0;
+        File directory = new File("data/icon/x4");
+        File[] files = directory.isDirectory() ? directory.listFiles() : null;
+        if (files != null) {
+            for (File file : files) {
+                if (!file.isFile() || !file.getName().endsWith(".png")) {
+                    continue;
+                }
+                int iconId = parseIconId(file.getName());
+                if (iconId < 0 || iconId >= MAX_SMALL_VERSION) {
+                    continue;
+                }
+                maxVersion = Math.max(maxVersion, iconId + 1);
+                if (iconId >= CUSTOM_ICON_START) {
+                    versions[iconId] = versionFromModifiedTime(file.lastModified());
+                }
+            }
+        }
+        smallVersions = versions;
+        if (maxVersion > 0) {
+            maxSmallVersion = (short) maxVersion;
+        }
+    }
+
+    private static synchronized void updateSmallVersion(int iconId) {
+        if (iconId < CUSTOM_ICON_START || iconId >= MAX_SMALL_VERSION) {
+            return;
+        }
+        File file = new File("data/icon/x4/" + iconId + ".png");
+        smallVersions[iconId] = file.isFile() ? versionFromModifiedTime(file.lastModified()) : 0;
+    }
+
+    private static byte versionFromModifiedTime(long modifiedTime) {
+        int version = (int) ((Math.max(0L, modifiedTime) / 1000L) % 255L) + 1;
+        return (byte) version;
+    }
+
+    private static int parseIconId(String fileName) {
+        try {
+            return Integer.parseInt(fileName.substring(0, fileName.length() - 4));
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     public static synchronized int bumpItemVersion() {
