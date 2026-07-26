@@ -41,14 +41,20 @@ public class ServerManagerUI extends JFrame {
     private JLabel messageLabel;
     private JLabel countdownLabel;
     private JLabel info;
+    private DefaultListModel<String> banListModel;
+    private DefaultListModel<String> suspectListModel;
+    private DefaultListModel<String> eventListModel;
+    private JList<String> banListView;
+    private JList<String> suspectListView;
+    private JList<String> eventListView;
 
     public ServerManagerUI() {
         Preferences.userNodeForPackage(ServerManagerUI.class);
         setTitle("CODE BY VKIEN " + cn.SV);
         ImageIcon icon = new ImageIcon(getClass().getResource("icon.png"));
         setIconImage(icon.getImage());
-        setSize(820, 520);
-        setResizable(false);
+        setSize(920, 720);
+        setResizable(true);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -81,7 +87,12 @@ public class ServerManagerUI extends JFrame {
         threadCountLabel = styledStatLabel("Số Thread : 0");
         plCountLabel    = styledStatLabel("Online : 0 | Bot : 0");
         ssCountLabel    = styledStatLabel("Session : 0");
-        info            = styledStatLabel("Thông tin khác ...");
+        info            = styledStatLabel("AntiDDoS L3/L4:... L7:ON Ban:0 FW:0 Block:0");
+        info.setToolTipText("<html>"
+                + "<b>L7</b>: Java phát hiện spam kết nối / spam packet<br>"
+                + "<b>L3/L4</b>: tự ban IP bằng Windows Firewall (chặn trước khi vào game)<br>"
+                + "Cần chạy server bằng <b>Administrator</b> để L3/L4 hoạt động"
+                + "</html>");
 
         statsBox.add(threadCountLabel);
         statsBox.add(plCountLabel);
@@ -99,9 +110,18 @@ public class ServerManagerUI extends JFrame {
                 createRainbowButton("Bảo trì", e -> showMaintenanceDialog()),
                 createRainbowButton("Lưu Data", this::saveData),
                 createRainbowButton("Clear Firewall", e -> {
-//                    network.server.HOANDZServer.firewall.clear();
-//                    network.server.HOANDZServer.firewallDownDataGame.clear();
-                    JOptionPane.showMessageDialog(this, "Đã clear firewall");
+                    AntiDDoS.gI().clearFirewall();
+                    info.setText(AntiDDoS.gI().getPanelStatusText());
+                    refreshAntiDdosLists();
+                    JOptionPane.showMessageDialog(this,
+                            "Đã clear AntiDDoS:\n"
+                                    + "- Xóa banlist Java (L7)\n"
+                                    + "- Xóa rule Windows Firewall NRO_AntiDDoS_* (L3/L4)\n"
+                                    + "- Reset counter\n\n"
+                                    + (AntiDDoS.gI().isFirewallOk()
+                                    ? "L3/L4 Windows Firewall: OK"
+                                    : "L3/L4: OFF — hãy chạy server bằng Administrator"),
+                            "Clear Firewall", JOptionPane.INFORMATION_MESSAGE);
                 }),
                 createRainbowButton("Update Shop", e -> {
                     Manager.gI().updateShop();
@@ -129,10 +149,9 @@ public class ServerManagerUI extends JFrame {
         // Ô: HƯỚNG DẪN NHANH
         JPanel helpBox = createBox("Gợi ý thao tác");
         helpBox.add(makeHint("• Bảo trì: Dừng connect, lưu dữ liệu, thoát an toàn"));
-        helpBox.add(makeHint("• Buff VND: Nhập tên & số tiền để cộng vào tài khoản"));
-        helpBox.add(makeHint("• Buff Hộp Thư: Gửi item (id1,id2,...) + option a-b,c-d + số lượng"));
-        helpBox.add(makeHint("• Thông báo: Gửi popup cho toàn bộ người chơi online"));
-        helpBox.add(makeHint("• Update Shop: Reload tất cả shop trong game"));
+        helpBox.add(makeHint("• Clear Firewall: xóa ban L7 + rule Windows Firewall L3/L4"));
+        helpBox.add(makeHint("• AntiDDoS tích hợp: L7 Java + L3/L4 Windows Firewall (cần Admin)"));
+        helpBox.add(makeHint("• Buff VND / Hộp Thư / Thông báo / Update Shop như cũ"));
 
         // thêm 4 ô vào lưới
         gridBoxes.add(serverBox);
@@ -142,8 +161,89 @@ public class ServerManagerUI extends JFrame {
 
         root.add(gridBoxes, BorderLayout.CENTER);
 
+        // ====== SIDEBAR ANTIDDOS (dưới) ======
+        root.add(createAntiDdosPanel(), BorderLayout.SOUTH);
+
         // ====== CHẠY CẬP NHẬT THỐNG KÊ ======
         startScheduledTasks();
+    }
+
+    private JPanel createAntiDdosPanel() {
+        JPanel wrap = new JPanel(new BorderLayout(6, 6));
+        wrap.setBorder(createBoxBorder("AntiDDoS Monitor — IP bị khóa / Spam / Log"));
+        wrap.setBackground(Color.WHITE);
+        wrap.setPreferredSize(new Dimension(880, 170));
+
+        banListModel = new DefaultListModel<>();
+        suspectListModel = new DefaultListModel<>();
+        eventListModel = new DefaultListModel<>();
+        banListView = new JList<>(banListModel);
+        suspectListView = new JList<>(suspectListModel);
+        eventListView = new JList<>(eventListModel);
+        styleList(banListView);
+        styleList(suspectListView);
+        styleList(eventListView);
+
+        JPanel cols = new JPanel(new GridLayout(1, 3, 8, 0));
+        cols.setOpaque(false);
+        cols.add(wrapList("IP đang BAN", banListView));
+        cols.add(wrapList("IP nghi spam", suspectListView));
+        cols.add(wrapList("Log sự kiện", eventListView));
+        wrap.add(cols, BorderLayout.CENTER);
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+        actions.setOpaque(false);
+        JButton unbanBtn = createRainbowButton("Unban IP chọn", e -> {
+            String sel = banListView.getSelectedValue();
+            if (sel == null || sel.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Chọn 1 IP trong cột BAN trước");
+                return;
+            }
+            String ip = sel.split("\\|")[0].trim();
+            AntiDDoS.gI().unban(ip);
+            refreshAntiDdosLists();
+            JOptionPane.showMessageDialog(this, "Đã unban: " + ip);
+        });
+        JButton refreshBtn = createRainbowButton("Refresh", e -> refreshAntiDdosLists());
+        actions.add(unbanBtn);
+        actions.add(refreshBtn);
+        wrap.add(actions, BorderLayout.SOUTH);
+        return wrap;
+    }
+
+    private JPanel wrapList(String title, JList<String> list) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setOpaque(false);
+        JLabel lb = new JLabel(title);
+        lb.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        p.add(lb, BorderLayout.NORTH);
+        JScrollPane sp = new JScrollPane(list);
+        sp.setBorder(BorderFactory.createLineBorder(new Color(220, 224, 230)));
+        p.add(sp, BorderLayout.CENTER);
+        return p;
+    }
+
+    private void styleList(JList<String> list) {
+        list.setFont(new Font("Consolas", Font.PLAIN, 11));
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    private void refreshAntiDdosLists() {
+        if (banListModel == null) return;
+        // Không refresh khi cửa sổ đang minimize → đỡ tốn CPU/RAM UI
+        if ((getExtendedState() & Frame.ICONIFIED) != 0) return;
+
+        fillListCapped(banListModel, AntiDDoS.gI().getBannedIpLines(), 40, "(trống)");
+        fillListCapped(suspectListModel, AntiDDoS.gI().getSuspectIpLines(), 40, "(không có)");
+        fillListCapped(eventListModel, AntiDDoS.gI().getRecentEvents(30), 30, "(chưa có sự kiện)");
+    }
+
+    private void fillListCapped(DefaultListModel<String> model, List<String> data, int max, String emptyText) {
+        model.clear();
+        int n = Math.min(max, data.size());
+        for (int i = 0; i < n; i++) model.addElement(data.get(i));
+        if (model.isEmpty()) model.addElement(emptyText);
+        else if (data.size() > max) model.addElement("... +" + (data.size() - max) + " nữa");
     }
 
     // ====== TẠO BORDER Ô ======
@@ -283,6 +383,17 @@ private JButton createRainbowButton(String text, AbstractAction action) {
             int sscount = SessionManager.gI().getSessions().size();
             SwingUtilities.invokeLater(() -> ssCountLabel.setText("Session : " + sscount));
         }, 5, 1, TimeUnit.SECONDS);
+
+        // Status nhẹ: 5s/lần. List nặng hơn: 10s/lần (bấm Refresh nếu cần ngay)
+        ScheduledExecutorService antiDdosExecutor = Executors.newSingleThreadScheduledExecutor();
+        antiDdosExecutor.scheduleAtFixedRate(() -> {
+            String status = AntiDDoS.gI().getPanelStatusText();
+            SwingUtilities.invokeLater(() -> info.setText(status));
+        }, 2, 5, TimeUnit.SECONDS);
+
+        ScheduledExecutorService antiDdosListExecutor = Executors.newSingleThreadScheduledExecutor();
+        antiDdosListExecutor.scheduleAtFixedRate(() ->
+                SwingUtilities.invokeLater(this::refreshAntiDdosLists), 3, 10, TimeUnit.SECONDS);
     }
 
     // ====== HÀNH ĐỘNG ======
