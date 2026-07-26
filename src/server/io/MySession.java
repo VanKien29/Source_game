@@ -89,6 +89,24 @@ public class MySession extends Session {
         ipAddress = socket.getInetAddress().getHostAddress();
     }
 
+    /**
+     * Anti-DDoS L7: gọi trước khi xử lý mỗi packet nhận được.
+     * @return false nếu IP đang flood → close session ngay
+     */
+    public boolean checkPacketRate() {
+        if (!server.AntiDDoS.gI().allowPacket(ipAddress)) {
+            this.dispose();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void dispose() {
+        server.AntiDDoS.gI().onSessionClosed(ipAddress);
+        super.dispose();
+    }
+
     public boolean hasReceivedVIPLevel(int level) {
         return switch (level) {
             case 1 ->

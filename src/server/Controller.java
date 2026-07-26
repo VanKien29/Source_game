@@ -87,6 +87,8 @@ public class Controller implements IMessageHandler {
     public void onMessage(ISession s, Message _msg) {
         long st = System.currentTimeMillis();
         MySession _session = (MySession) s;
+        // Anti-DDoS L7: packet rate check
+        if (!_session.checkPacketRate()) return;
         Player player = null;
         try {
             player = _session.player;

@@ -123,9 +123,10 @@ import java.util.HashMap;
             try {
                 Socket socket = this.serverListen.accept();
                 String ip = socket.getInetAddress().getHostAddress();
-//                if (firewall.containsKey(ip) && firewall.get(ip).intValue() > 21) {
-//                    socket.close();
-//                } else {
+                // Anti-DDoS L7: connection rate + session limit check
+                if (!server.AntiDDoS.gI().allowConnection(ip)) {
+                    socket.close();
+                } else {
                     ISession session = SessionFactory.gI().cloneSession(this.sessionClone, socket);
                     this.acceptHandler.sessionInit(session);
                     HoandzSessionManager.gI().putSession(session);
@@ -136,6 +137,7 @@ import java.util.HashMap;
 //                        firewall.put(ip, 1);
 //                    }
 //                }
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (Exception ex) {
