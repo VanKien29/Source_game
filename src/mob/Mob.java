@@ -901,18 +901,43 @@ public class Mob {
             }
         }
 
-        if (MapService.gI().isMapUpPorata(mapid)) {
+//        if (MapService.gI().isMapUpPorata(mapid)) {
+//            if (Util.isTrue(1, 55)) {
+//                ItemMap it = new ItemMap(zone, 934, Util.nextInt(1, 3), x, yEnd, player.id);
+//                it.options.add(new Item.ItemOption(30, 0));
+//                list.add(it);
+//            } else if (Util.isTrue(1, 240)) {
+//                ItemMap it = new ItemMap(zone, 935, Util.nextInt(1, 3), x, yEnd, player.id);
+//                it.options.add(new Item.ItemOption(30, 0));
+//                list.add(it);
+//            } else if (Util.isTrue(1, 25)) {
+//                ItemMap it = new ItemMap(zone, 933, 1, x, yEnd, player.id);
+//                it.options.add(new Item.ItemOption(31, Util.nextInt(1, 10)));
+//                it.options.add(new Item.ItemOption(30, 0));
+//                list.add(it);
+//            }
+//        }
+
+        if (mapid == 156 || mapid == 157) {
+            if (Util.isTrue(1, 25)) {
+                ItemMap it = new ItemMap(zone, 933, Util.nextInt(1, 2), x, yEnd, player.id);
+                it.options.add(new Item.ItemOption(31, Util.nextInt(1, 10)));
+                it.options.add(new Item.ItemOption(30, 0));
+                list.add(it);
+            }
+        }
+        
+        if (mapid == 158) {
             if (Util.isTrue(1, 55)) {
                 ItemMap it = new ItemMap(zone, 934, Util.nextInt(1, 3), x, yEnd, player.id);
                 it.options.add(new Item.ItemOption(30, 0));
                 list.add(it);
-            } else if (Util.isTrue(1, 240)) {
+            }
+        }
+        
+        if (mapid == 159) {
+            if (Util.isTrue(1, 240)) {
                 ItemMap it = new ItemMap(zone, 935, Util.nextInt(1, 3), x, yEnd, player.id);
-                it.options.add(new Item.ItemOption(30, 0));
-                list.add(it);
-            } else if (Util.isTrue(1, 25)) {
-                ItemMap it = new ItemMap(zone, 933, 1, x, yEnd, player.id);
-                it.options.add(new Item.ItemOption(31, Util.nextInt(1, 10)));
                 it.options.add(new Item.ItemOption(30, 0));
                 list.add(it);
             }
