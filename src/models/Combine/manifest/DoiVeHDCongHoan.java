@@ -69,19 +69,11 @@ public class DoiVeHDCongHoan {
 
         int ManhHD = -1;
         switch (DTL.template.id) {
-            case 555 -> ManhHD = 1792; // Áo Trái Đất
-            case 557 -> ManhHD = 1793; // Áo Namek
-            case 559 -> ManhHD = 1794; // Áo Xayda
-            case 556 -> ManhHD = 1795; // Quần Trái Đất
-            case 558 -> ManhHD = 1796; // Quần Namek
-            case 560 -> ManhHD = 1797; // Quần Xayda
+            case 555, 557, 559 -> ManhHD = 1792; // Áo
+            case 556, 558, 560 -> ManhHD = 1795; // Quần
             case 561 -> ManhHD = 1804; // Nhẫn
-            case 562 -> ManhHD = 1798; // Găng Trái Đất
-            case 564 -> ManhHD = 1799; // Găng Namek
-            case 566 -> ManhHD = 1800; // Găng Xayda
-            case 563 -> ManhHD = 1801; // Giày Trái Đất
-            case 565 -> ManhHD = 1802; // Giày Namek
-            case 567 -> ManhHD = 1803; // Giày Xayda
+            case 562, 564, 566 -> ManhHD = 1798; // Găng
+            case 563, 565, 567 -> ManhHD = 1801; // Giày
         }
 
         if (ManhHD != -1) {

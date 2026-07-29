@@ -18,7 +18,7 @@ public class HocTuyetKy {
     public static void showInfoCombine(Player player) {
         Item biKipTuyetKy = InventoryService.gI().findItem(player.inventory.itemsBag, 1229);
         int quantityBiKipTuyetKy = biKipTuyetKy != null ? biKipTuyetKy.quantity : 0;
-        int gem = player.inventory.getGemAndRuby();
+        long gem = player.inventory.getGemAndRuby();
         long gold = player.inventory.gold;
         int skillId = player.gender == 0 ? Skill.SUPER_KAME : player.gender == 1 ? Skill.MA_PHONG_BA : Skill.LIEN_HOAN_CHUONG;
         Skill curSkill = SkillUtil.getSkillbyId(player, skillId);
@@ -53,7 +53,7 @@ public class HocTuyetKy {
     public static void hocTuyetKy(Player player) {
         Item biKipTuyetKy = InventoryService.gI().findItem(player.inventory.itemsBag, 1229);
         int quantityBiKipTuyetKy = biKipTuyetKy != null ? biKipTuyetKy.quantity : 0;
-        int gem = player.inventory.getGemAndRuby();
+        long gem = player.inventory.getGemAndRuby();
         long gold = player.inventory.gold;
         int skillId = player.gender == 0 ? Skill.SUPER_KAME : player.gender == 1 ? Skill.MA_PHONG_BA : Skill.LIEN_HOAN_CHUONG;
         Skill curSkill = SkillUtil.getSkillbyId(player, skillId);

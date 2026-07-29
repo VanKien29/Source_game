@@ -137,15 +137,31 @@ public class PlayerService {
                 if (player.getSession().version >= 214) {
                     msg.writer().writeLong(player.inventory.gold);
                 } else {
-                    msg.writer().writeInt((int) player.inventory.gold);
+                    msg.writer().writeInt((int) Math.min(player.inventory.gold, Integer.MAX_VALUE));
                 }
             } catch (Exception e) {
-                msg.writer().writeInt((int) player.inventory.gold);
+                msg.writer().writeInt((int) Math.min(player.inventory.gold, Integer.MAX_VALUE));
             }
-            msg.writer().writeInt(player.inventory.gem);// luong
+            try {
+                if (player.getSession().version >= 214) {
+                    msg.writer().writeLong(player.inventory.gem);// luong
+                } else {
+                    msg.writer().writeInt((int) Math.min(player.inventory.gem, Integer.MAX_VALUE));// luong
+                }
+            } catch (Exception e) {
+                msg.writer().writeInt((int) Math.min(player.inventory.gem, Integer.MAX_VALUE));// luong
+            }
             msg.writeLongByHoandz(Util.maxIntValue(player.nPoint.hp), cn.readInt);// chp
             msg.writeLongByHoandz(Util.maxIntValue(player.nPoint.mp), cn.readInt);// cmp
-            msg.writer().writeInt(player.inventory.ruby);// ruby
+            try {
+                if (player.getSession().version >= 214) {
+                    msg.writer().writeLong(player.inventory.ruby);// ruby
+                } else {
+                    msg.writer().writeInt((int) Math.min(player.inventory.ruby, Integer.MAX_VALUE));// ruby
+                }
+            } catch (Exception e) {
+                msg.writer().writeInt((int) Math.min(player.inventory.ruby, Integer.MAX_VALUE));// ruby
+            }
             player.sendMessage(msg);
         } catch (Exception e) {
             Logger.logException(PlayerService.class, e);

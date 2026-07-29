@@ -28,6 +28,7 @@ import npc.specialnpc.MagicTree;
 import player.Enemy;
 import player.Friend;
 import player.Fusion;
+import player.Inventory;
 import player.Pet;
 import player.Player;
 import player.dailyGift.DailyGiftData;
@@ -62,7 +63,6 @@ import utils.Util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import player.Inventory;
 import services.PlayerService;
 import sosumenh.SoSuMenhManager;
 import sosumenh.SoSuMenhTaskMain;
@@ -422,8 +422,8 @@ public class NDVSqlFetcher {
             // data kim lượng
             dataArray = (JSONArray) JSONValue.parse(rs.getString("data_inventory"));
             player.inventory.gold = Long.parseLong(String.valueOf(dataArray.get(0)));
-            player.inventory.gem = Integer.parseInt(String.valueOf(dataArray.get(1)));
-            player.inventory.ruby = Integer.parseInt(String.valueOf(dataArray.get(2)));
+            player.inventory.gem = Inventory.clampGem(Long.parseLong(String.valueOf(dataArray.get(1))));
+            player.inventory.ruby = Inventory.clampRuby(Long.parseLong(String.valueOf(dataArray.get(2))));
             player.inventory.coupon = Integer.parseInt(String.valueOf(dataArray.get(3)));
             if (dataArray.size() >= 4) {
                 player.inventory.coupon = Integer.parseInt(String.valueOf(dataArray.get(3)));

@@ -936,21 +936,23 @@ public class InventoryService {
                     return false;
                 }
             case 10:
-                long gem = (long) player.inventory.gem + (long) item.quantity;
-                if (gem > Integer.MAX_VALUE) {
-                    gem = Integer.MAX_VALUE;
+                if (player.inventory.gem + item.quantity <= Inventory.LIMIT_GEM) {
+                    player.inventory.gem += item.quantity;
+                    Service.gI().sendMoney(player);
+                    return true;
+                } else {
+                    Service.gI().sendThongBao(player, "Ngọc sau khi nhặt quá giới hạn cho phép");
+                    return false;
                 }
-                player.inventory.gem = (int) gem;
-                Service.gI().sendMoney(player);
-                return true;
             case 34:
-                long ruby = (long) player.inventory.ruby + (long) item.quantity;
-                if (ruby > Integer.MAX_VALUE) {
-                    ruby = Integer.MAX_VALUE;
+                if (player.inventory.ruby + item.quantity <= Inventory.LIMIT_RUBY) {
+                    player.inventory.ruby += item.quantity;
+                    Service.gI().sendMoney(player);
+                    return true;
+                } else {
+                    Service.gI().sendThongBao(player, "Hồng ngọc sau khi nhặt quá giới hạn cho phép");
+                    return false;
                 }
-                player.inventory.ruby = (int) ruby;
-                Service.gI().sendMoney(player);
-                return true;
         }
 
         // mở rộng hành trang - rương đồ

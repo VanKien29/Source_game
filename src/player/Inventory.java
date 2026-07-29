@@ -19,6 +19,8 @@ public class Inventory {
     public static final long PRICE_SLOT_COLLECTION_BOX = 500_000_000_000L;
 
     public static final long LIMIT_GOLD = 200_000_000_000_000L;
+    public static final long LIMIT_GEM = 200_000_000_000_000L;
+    public static final long LIMIT_RUBY = 200_000_000_000_000L;
     public static final int MAX_ITEMS_BAG = 100;
     public static final int MAX_ITEMS_BOX = 100;
     public static final int BODY_SLOT_COUNT = 13;     // 0..12
@@ -36,8 +38,8 @@ public class Inventory {
     public List<Item> itemsDaBan;
 
     public long gold;
-    public int gem;
-    public int ruby;
+    public long gem;
+    public long ruby;
     public int coupon;
     public int event;
 
@@ -55,7 +57,7 @@ public class Inventory {
         }
     }
 
-    public int getGemAndRuby() {
+    public long getGemAndRuby() {
         return this.gem + this.ruby;
     }
 
@@ -76,7 +78,7 @@ public class Inventory {
         return false;
     }
 
-    public void subGemAndRuby(int num) {
+    public void subGemAndRuby(long num) {
         this.ruby -= num;
         if (this.ruby < 0) {
             this.gem += this.ruby;
@@ -84,11 +86,39 @@ public class Inventory {
         }
     }
 
-    public void addGold(int gold) {
+    public void addGold(long gold) {
         this.gold += gold;
         if (this.gold > LIMIT_GOLD) {
             this.gold = LIMIT_GOLD;
         }
+    }
+
+    public void addGem(long gem) {
+        this.gem += gem;
+        if (this.gem > LIMIT_GEM) {
+            this.gem = LIMIT_GEM;
+        }
+    }
+
+    public void addRuby(long ruby) {
+        this.ruby += ruby;
+        if (this.ruby > LIMIT_RUBY) {
+            this.ruby = LIMIT_RUBY;
+        }
+    }
+
+    public static long clampGem(long gem) {
+        if (gem < 0) {
+            return 0;
+        }
+        return Math.min(gem, LIMIT_GEM);
+    }
+
+    public static long clampRuby(long ruby) {
+        if (ruby < 0) {
+            return 0;
+        }
+        return Math.min(ruby, LIMIT_RUBY);
     }
 
     public void dispose() {

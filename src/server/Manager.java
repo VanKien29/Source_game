@@ -400,10 +400,11 @@ public final class Manager {
         }
 
         try (Connection con = DBConnecter.getConnectionServer();) {
-            // load part
-            ps = con.prepareStatement("select * from part");
+            // load part — index client = part.id nên phải order + ghi sparse theo id
+            ps = con.prepareStatement("select * from part order by id");
             rs = ps.executeQuery();
             List<Part> parts = new ArrayList<>();
+            short maxPartId = -1;
             while (rs.next()) {
                 Part part = new Part();
                 part.id = rs.getShort("id");
@@ -417,20 +418,49 @@ public final class Manager {
                     pd.clear();
                 }
                 parts.add(part);
+                if (part.id > maxPartId) {
+                    maxPartId = (short) part.id;
+                }
                 dataArray.clear();
             }
-            DataOutputStream dos = new DataOutputStream(new FileOutputStream("data/update_data/part"));
-            dos.writeShort(parts.size());
+            Part[] partsById = new Part[Math.max(maxPartId + 1, 0)];
             for (Part part : parts) {
+                if (part.id >= 0 && part.id < partsById.length) {
+                    partsById[part.id] = part;
+                }
+            }
+            DataOutputStream dos = new DataOutputStream(new FileOutputStream("data/update_data/part"));
+            dos.writeShort(partsById.length);
+            for (int i = 0; i < partsById.length; i++) {
+                Part part = partsById[i];
+                if (part == null) {
+                    // placeholder type head (0) — 3 frame rỗng, giữ index = id
+                    dos.writeByte(0);
+                    for (int j = 0; j < 3; j++) {
+                        dos.writeShort(0);
+                        dos.writeByte(0);
+                        dos.writeByte(0);
+                    }
+                    continue;
+                }
                 dos.writeByte(part.type);
-                for (PartDetail partDetail : part.partDetails) {
-                    dos.writeShort(partDetail.iconId);
-                    dos.writeByte(partDetail.dx);
-                    dos.writeByte(partDetail.dy);
+                int expected = partFrameCount(part.type);
+                for (int j = 0; j < expected; j++) {
+                    if (j < part.partDetails.size()) {
+                        PartDetail partDetail = part.partDetails.get(j);
+                        dos.writeShort(partDetail.iconId);
+                        dos.writeByte(partDetail.dx);
+                        dos.writeByte(partDetail.dy);
+                    } else {
+                        dos.writeShort(0);
+                        dos.writeByte(0);
+                        dos.writeByte(0);
+                    }
                 }
             }
             dos.flush();
-            Logger.success("Successfully loaded part (" + parts.size() + ")\n");
+            dos.close();
+            Logger.success("Successfully loaded part (" + parts.size() + ", indexed " + partsById.length + ")\n");
 
             // load bg item template
             ps = con.prepareStatement("select * from bg_item_template");
@@ -1124,7 +1154,13 @@ public final class Manager {
         for (int i = 1; i <= 10; i++) {
             value = properties.get("server.sv" + i);
             if (value != null) {
-                linkServer += String.valueOf(value) + ":0,";
+                String sv = String.valueOf(value).trim();
+                // Nếu đã có đủ "Name:ip:port:lang,...,priority" thì giữ nguyên, không append thêm :0
+                if (sv.contains(",")) {
+                    linkServer += sv + ",";
+                } else {
+                    linkServer += sv + ":0,0,0,";
+                }
             }
         }
         DataGame.LINK_IP_PORT = linkServer.substring(0, linkServer.length() - 1);
@@ -2120,6 +2156,21 @@ public final class Manager {
         itemTemplate.isUpToUp = false;
         itemTemplate.strRequire = 0;
         return itemTemplate;
+    }
+
+    private static int partFrameCount(int type) {
+        switch (type) {
+            case 0:
+                return 3;
+            case 1:
+                return 17;
+            case 2:
+                return 14;
+            case 3:
+                return 2;
+            default:
+                return 3;
+        }
     }
 
     public static byte getNFrameImageByName(String name) {
