@@ -40,7 +40,8 @@ public class PhaLeHoaTrangBi {
                     if (player.combine.goldCombine <= player.inventory.gold) {
                         npcSay += "|1|Cần " + Util.numberToMoney(player.combine.goldCombine) + " vàng";
                         CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.MENU_START_COMBINE, npcSay,
-                                "Nâng cấp\ncần " + player.combine.gemCombine + " ngọc", "Nâng cấp 10 lần", "Nâng cấp 50 lần", "Nâng cấp 100 lần");
+                                "Nâng cấp 10000 lần", "Nâng cấp 1000 lần", "Nâng cấp 100 lần", "Nâng cấp 10 lần",
+                                "Nâng cấp\ncần " + player.combine.gemCombine + " ngọc");
                     } else {
                         npcSay += "Còn thiếu " + Util.numberToMoney(player.combine.goldCombine - player.inventory.gold) + " vàng";
                         CombineService.gI().baHatMit.createOtherMenu(player, ConstNpc.IGNORE_MENU, npcSay, "Đóng");
@@ -196,8 +197,8 @@ public class PhaLeHoaTrangBi {
                 }
                 CombineService.gI().sendEffectSuccessCombine(player);
             } else {
-                if (n >= 1 && num <= 100) {
-                    Service.gI().sendThongBao(player, "Xịt liên tục " + num + " lần " + (barGoldSell > 0 ? ", đã bán " + barGoldSell + " thỏi vàng" : "") + " và đã hết vàng!");
+                if (n >= 1) {
+                    Service.gI().sendThongBao(player, "Xịt liên tục " + num + " lần" + (barGoldSell > 0 ? ", đã bán " + barGoldSell + " thỏi vàng" : "") + " và đã hết vàng!");
                 }
                 CombineService.gI().sendEffectFailCombine(player);
             }

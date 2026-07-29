@@ -236,8 +236,8 @@ public class BotProfileService {
                 return;
             }
             bot.inventory.gold = Long.parseLong(String.valueOf(dataArray.get(0)));
-            bot.inventory.gem = Integer.parseInt(String.valueOf(dataArray.get(1)));
-            bot.inventory.ruby = Integer.parseInt(String.valueOf(dataArray.get(2)));
+            bot.inventory.gem = Inventory.clampGem(Long.parseLong(String.valueOf(dataArray.get(1))));
+            bot.inventory.ruby = Inventory.clampRuby(Long.parseLong(String.valueOf(dataArray.get(2))));
             bot.inventory.coupon = dataArray.size() > 3 ? Integer.parseInt(String.valueOf(dataArray.get(3))) : 0;
         } catch (Exception ignored) {
         }

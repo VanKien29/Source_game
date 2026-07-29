@@ -271,13 +271,15 @@ public class BaHatMit extends Npc {
                                 case CombineService.PHA_LE_HOA_TRANG_BI -> {
                                     switch (select) {
                                         case 0 ->
-                                            CombineService.gI().startCombine(player, 1);
+                                            CombineService.gI().startCombineVip(player, 10000);
                                         case 1 ->
-                                            CombineService.gI().startCombineVip(player, 10);
+                                            CombineService.gI().startCombineVip(player, 1000);
                                         case 2 ->
-                                            CombineService.gI().startCombineVip(player, 50);
-                                        case 3 ->
                                             CombineService.gI().startCombineVip(player, 100);
+                                        case 3 ->
+                                            CombineService.gI().startCombineVip(player, 10);
+                                        case 4 ->
+                                            CombineService.gI().startCombine(player, 1);
                                         default -> {
                                         }
                                     }

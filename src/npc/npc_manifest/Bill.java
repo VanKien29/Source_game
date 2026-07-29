@@ -54,30 +54,21 @@ public class Bill extends Npc {
                                                 "OK");
                                     }
                                 }
-                                case 1 -> {
-                                    if (select == 1) {
-                                        ShopService.gI().opendShop(player, "BILL_PHIEU_AN", true);
-                                        break;
-                                    }
-                                }
-                                case 2 ->
-                                    NpcService.gI().createTutorial(player, tempId, this.avartar,
-                                            ConstNpc.HUONG_DAN_BILL);
-                                case 3 -> {
-                                    if (select == 0 && InventoryService.gI().canOpenBillShop(player)) {
-                                        ShopService.gI().opendShop(player, "BILL", true);
-                                        break;
-                                    }
-                                }
-
+                                case 1 -> ShopService.gI().opendShop(player, "BILL_PHIEU_AN", true);
+                                case 2 -> NpcService.gI().createTutorial(player, tempId, this.avartar,
+                                        ConstNpc.HUONG_DAN_BILL);
                             }
                         }
-                        case 154 -> {
-                            if (select == 0) {
-                                ChangeMapService.gI().changeMap(player, 50, -1, 318, 336);
-                                break;
+                        case 2 -> {
+                            if (select == 0 && InventoryService.gI().canOpenBillShop(player)) {
+                                ShopService.gI().opendShop(player, "BILL", true);
                             }
                         }
+                    }
+                }
+                case 154 -> {
+                    if (select == 0) {
+                        ChangeMapService.gI().changeMap(player, 50, -1, 318, 336);
                     }
                 }
             }

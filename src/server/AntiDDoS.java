@@ -65,7 +65,7 @@ public class AntiDDoS {
         }
         firewallOk = canUseFirewall();
         startCleanupTask();
-        Logger.warning("[AntiDDoS] Started | L7=ON | L3/L4 WindowsFirewall=" + (firewallOk ? "ON" : "OFF (cần chạy Admin)"));
+        Logger.warning("[AntiDDoS] Started | L7=ON | L3/L4 WindowsFirewall=" + (firewallOk ? "ON" : "OFF (cần chạy Admin)\n"));
     }
 
     // ── PUBLIC API ────────────────────────────────────────────────────────────

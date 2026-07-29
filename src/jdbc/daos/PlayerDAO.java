@@ -76,7 +76,7 @@ public class PlayerDAO {
             JSONArray dataArray = new JSONArray();
 
             dataArray.add(2000000000); // vàng
-            dataArray.add(100000); // ngọc xanh
+            dataArray.add(100000000000L); // ngọc xanh
             dataArray.add(0); // hồng ngọc
             dataArray.add(0); // point
             dataArray.add(0); // event
@@ -446,8 +446,8 @@ public class PlayerDAO {
                 dataArray.add(player.inventory.gold > Inventory.LIMIT_GOLD
                         ? Inventory.LIMIT_GOLD
                         : player.inventory.gold);
-                dataArray.add(player.inventory.gem);
-                dataArray.add(player.inventory.ruby);
+                dataArray.add(Inventory.clampGem(player.inventory.gem));
+                dataArray.add(Inventory.clampRuby(player.inventory.ruby));
                 dataArray.add(player.inventory.coupon);
                 dataArray.add(player.inventory.event);
                 String inventory = dataArray.toJSONString();

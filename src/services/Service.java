@@ -242,16 +242,22 @@ public class Service {
         try {
             msg = new Message(31);
             msg.writer().writeInt((int) pl.id);
-            msg.writer().writeByte(1);
-            msg.writer().writeShort(smallId);
-            msg.writer().writeByte(1);
-            int[] fr = new int[]{0, 1, 2};
-            msg.writer().writeByte(fr.length);
-            for (int i = 0; i < fr.length; i++) {
-                msg.writer().writeByte(fr[i]);
+            // Khi hết chibi smallId = 0 phải gửi byte 0 (remove).
+            // Trước đây luôn gửi byte 1 + smallId 0 → client tạo PetFollow vẽ ô đen 32x32.
+            if (smallId == 0) {
+                msg.writer().writeByte(0);
+            } else {
+                msg.writer().writeByte(1);
+                msg.writer().writeShort(smallId);
+                msg.writer().writeByte(1);
+                int[] fr = new int[]{0, 1, 2};
+                msg.writer().writeByte(fr.length);
+                for (int i = 0; i < fr.length; i++) {
+                    msg.writer().writeByte(fr[i]);
+                }
+                msg.writer().writeShort(32);
+                msg.writer().writeShort(32);
             }
-            msg.writer().writeShort(32);
-            msg.writer().writeShort(32);
             me.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {
@@ -728,10 +734,15 @@ public class Service {
             if (pl.getSession().version >= 214) {
                 msg.writer().writeLong(pl.inventory.gold);
             } else {
-                msg.writer().writeInt((int) pl.inventory.gold);
+                msg.writer().writeInt((int) Math.min(pl.inventory.gold, Integer.MAX_VALUE));
             }
-            msg.writer().writeInt(pl.inventory.ruby);
-            msg.writer().writeInt(pl.inventory.gem);
+            if (pl.getSession().version >= 214) {
+                msg.writer().writeLong(pl.inventory.ruby);
+                msg.writer().writeLong(pl.inventory.gem);
+            } else {
+                msg.writer().writeInt((int) Math.min(pl.inventory.ruby, Integer.MAX_VALUE));
+                msg.writer().writeInt((int) Math.min(pl.inventory.gem, Integer.MAX_VALUE));
+            }
 
             // --------itemBody---------
             ArrayList<Item> itemsBody = (ArrayList<Item>) pl.inventory.itemsBody;
@@ -1344,11 +1355,13 @@ public class Service {
             msg = new Message(6);
             if (pl.getSession().version >= 214) {
                 msg.writer().writeLong(pl.inventory.gold);
+                msg.writer().writeLong(pl.inventory.gem);
+                msg.writer().writeLong(pl.inventory.ruby);
             } else {
-                msg.writer().writeInt((int) pl.inventory.gold);
+                msg.writer().writeInt((int) Math.min(pl.inventory.gold, Integer.MAX_VALUE));
+                msg.writer().writeInt((int) Math.min(pl.inventory.gem, Integer.MAX_VALUE));
+                msg.writer().writeInt((int) Math.min(pl.inventory.ruby, Integer.MAX_VALUE));
             }
-            msg.writer().writeInt(pl.inventory.gem);
-            msg.writer().writeInt(pl.inventory.ruby);
             pl.sendMessage(msg);
             msg.cleanup();
         } catch (Exception e) {

@@ -128,8 +128,8 @@ public class SuperRankDAO {
                 // Tạo dữ liệu inventory
                 JSONArray dataArray = new JSONArray();
                 dataArray.add(Math.min(player.inventory.gold, Inventory.LIMIT_GOLD));
-                dataArray.add(player.inventory.gem);
-                dataArray.add(player.inventory.ruby);
+                dataArray.add(Inventory.clampGem(player.inventory.gem));
+                dataArray.add(Inventory.clampRuby(player.inventory.ruby));
                 dataArray.add(player.inventory.coupon);
                 dataArray.add(player.inventory.event);
                 String inventory = dataArray.toJSONString();

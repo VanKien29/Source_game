@@ -43,17 +43,17 @@ import utils.Util;
 
 public class DataGame {
 
-    public static byte vsData = 9;
+    public static byte vsData = 10;
     public static byte vsMap = 4;
     public static byte vsSkill = 37;
-    public static byte vsItem = (byte) 210;
+    public static byte vsItem = (byte) 211;
     public static int vsRes = 4;
     public static short maxSmallVersion = 32767;
     private static final int CUSTOM_ICON_START = 30000;
     private static final int MAX_SMALL_VERSION = Short.MAX_VALUE;
     private static byte[] smallVersions = new byte[MAX_SMALL_VERSION];
 
-    public static String LINK_IP_PORT = "Nro Horizon:svg.nrohorizon.online:14445:0,0,0";
+    public static String LINK_IP_PORT = "CongHoan:127.0.0.1:14445:0,0,0";
     public static Map MAP_MOUNT_NUM = new HashMap();
 
     public static void sendVersionGame(MySession session) {
