@@ -424,7 +424,12 @@ public class GiftSystemService {
         for (Reward reward : rewards) {
             msg.writer().writeInt(reward.itemId);
             msg.writer().writeInt(reward.amount);
-            msg.writer().writeByte(0);
+            int optionCount = Math.min(255, reward.options.length);
+            msg.writer().writeByte(optionCount);
+            for (int i = 0; i < optionCount; i++) {
+                msg.writer().writeInt(reward.options[i].id);
+                msg.writer().writeInt(reward.options[i].param);
+            }
         }
     }
 
@@ -487,6 +492,11 @@ public class GiftSystemService {
                 if (item == null || !item.isNotNullItem()) {
                     Service.gI().sendThongBao(player, "Kh\u00f4ng t\u1ea1o \u0111\u01b0\u1ee3c item " + reward.itemId);
                     return null;
+                }
+                for (RewardOption option : reward.options) {
+                    if (ItemService.gI().getItemOptionTemplate(option.id) != null) {
+                        item.itemOptions.add(new Item.ItemOption(option.id, option.param));
+                    }
                 }
                 items.add(item);
             } catch (Exception e) {
@@ -659,7 +669,7 @@ public class GiftSystemService {
                     int itemId = jsonInt(obj, "item_id", jsonInt(obj, "temp_id", 0));
                     int amount = jsonInt(obj, "amount", jsonInt(obj, "quantity", 1));
                     if (itemId > 0 && amount > 0) {
-                        rewards.add(new Reward(itemId, amount));
+                        rewards.add(new Reward(itemId, amount, parseRewardOptions(obj.get("options"))));
                     }
                 }
             }
@@ -677,6 +687,34 @@ public class GiftSystemService {
             }
         }
         return rewards.toArray(new Reward[0]);
+    }
+
+    private RewardOption[] parseRewardOptions(Object raw) {
+        if (!(raw instanceof JSONArray)) {
+            return new RewardOption[0];
+        }
+        JSONArray array = (JSONArray) raw;
+        List<RewardOption> options = new ArrayList<>();
+        for (Object value : array) {
+            if (value instanceof JSONObject) {
+                JSONObject option = (JSONObject) value;
+                int id = jsonInt(option, "id", 0);
+                int param = jsonInt(option, "param", 0);
+                if (id >= 0 && param >= 0) {
+                    options.add(new RewardOption(id, param));
+                }
+            } else if (value instanceof JSONArray) {
+                JSONArray option = (JSONArray) value;
+                if (option.size() >= 2) {
+                    int id = parseInt(String.valueOf(option.get(0)));
+                    int param = parseInt(String.valueOf(option.get(1)));
+                    if (id >= 0 && param >= 0) {
+                        options.add(new RewardOption(id, param));
+                    }
+                }
+            }
+        }
+        return options.toArray(new RewardOption[0]);
     }
 
     private int jsonInt(JSONObject obj, String key, int fallback) {
@@ -1119,10 +1157,26 @@ public class GiftSystemService {
     private static class Reward {
         final int itemId;
         final int amount;
+        final RewardOption[] options;
 
         Reward(int itemId, int amount) {
+            this(itemId, amount, new RewardOption[0]);
+        }
+
+        Reward(int itemId, int amount, RewardOption[] options) {
             this.itemId = itemId;
             this.amount = amount;
+            this.options = options == null ? new RewardOption[0] : options;
+        }
+    }
+
+    private static class RewardOption {
+        final int id;
+        final int param;
+
+        RewardOption(int id, int param) {
+            this.id = id;
+            this.param = param;
         }
     }
 
