@@ -391,15 +391,15 @@ public class InventoryService {
             case 32:
                 index = 6;
                 break;
-            case 21:
-                index = 7;
+            case 23:
+            case 24:
+                index = Inventory.BODY_SLOT_MOUNT;
                 break;
             case 11:
                 index = 8;
                 break;
-            case 23:
-            case 24:
-                index = 9;
+            case 21:
+                index = Inventory.BODY_SLOT_PET;
                 break;
             case 35:
                 index = 10;
@@ -479,7 +479,7 @@ public class InventoryService {
             if (index == 10) {
                 Service.gI().sendPetFollow(player, (short) 0);
             }
-            if (index == 7 && !player.isPet) {
+            if (index == Inventory.BODY_SLOT_PET && !player.isPet) {
                 if (player.newPet != null) {
                     ChangeMapService.gI().exitMap(player.newPet);
                     player.newPet.dispose();

@@ -24,6 +24,8 @@ public class Inventory {
     public static final int MAX_ITEMS_BAG = 100;
     public static final int MAX_ITEMS_BOX = 100;
     public static final int BODY_SLOT_COUNT = 13;     // 0..12
+    public static final int BODY_SLOT_MOUNT = 7;
+    public static final int BODY_SLOT_PET = 9;
     public static final int BASE_BODY_SLOT_COUNT = 6; // 6 ô mặc định
     public Item trainArmor;
     public List<String> giftCode;

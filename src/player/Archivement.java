@@ -85,18 +85,18 @@ public class Archivement {
     }
     public static Archivement gI = null;
     public final static int[] GIADOLACHIADOI = {
-        20_000, // 20k
-        50_000, // 50k
-        100_000, // 100k
-        200_000, // 200k
-        300_000, // 300k
-        500_000, // 500k
-        700_000, // 700k
-        1_000_000, // 1000k
-//        1_300_000, // 1300k
-        1_500_000, // 1500k
-        2_000_000, // 2000k
-//        2_500_000, // 2500k
+        9_000, // 20k
+        29_000, // 50k
+        59_000, // 100k
+        89_000, // 200k
+        139_000, // 300k
+        260_000, // 500k
+        390_000, // 700k
+        760_000, // 1000k
+        1_300_000, // 1300k
+        1_900_000, // 1900k
+        2_600_000, // 2600k
+        3_900_000, // 3900k
 //        3_000_000, // 3000k
 //        3_500_000 // 3500k
     };
@@ -194,12 +194,12 @@ public class Archivement {
         if (index == 9 && pl.getSession().danap >= GIADOLACHIADOI[9]) {
             return true;
         }
-//        if (index == 10 && pl.getSession().danap >= GIADOLACHIADOI[10]) {
-//            return true;
-//        }
-//        if (index == 11 && pl.getSession().danap >= GIADOLACHIADOI[11]) {
-//            return true;
-//        }
+        if (index == 10 && pl.getSession().danap >= GIADOLACHIADOI[10]) {
+            return true;
+        }
+        if (index == 11 && pl.getSession().danap >= GIADOLACHIADOI[11]) {
+            return true;
+        }
 //        if (index == 12 && pl.getSession().danap >= GIADOLACHIADOI[12]) {
 //            return true;
 //        }
@@ -356,25 +356,25 @@ public class Archivement {
                     String achievementData = rs.getString(1);
                     try {
                         dataArray = (JSONArray) jv.parse(achievementData);
-                        if (dataArray != null && dataArray.size() != 10) {
-                            if (dataArray.size() < 10) {
-                                for (int j = dataArray.size(); j < 10; j++) {
-                                    dataArray.add(0);
-                                }
-                            }
+                        int totalMocNap = GIADOLACHIADOI.length;
 
-                            while (dataArray.size() > 10) {
-
-                                dataArray.remove(10);
-
-                            }
-
+                        // Đồng bộ dữ liệu cũ trong database với số mốc nạp hiện tại.
+                        // Không được cố định là 10 vì các mốc 2.600.000 và 3.900.000
+                        // nằm ở index 10 và 11.
+                        if (dataArray == null) {
+                            dataArray = new JSONArray();
+                        }
+                        while (dataArray.size() < totalMocNap) {
+                            dataArray.add(0);
+                        }
+                        while (dataArray.size() > totalMocNap) {
+                            dataArray.remove(totalMocNap);
                         }
                         Map<Integer, List<RewardPreview>> rewardPreviews = loadRewardPreviews();
                         player.archivementList.clear();
                         if (dataArray != null) {
 
-                            for (int i = 0; i < dataArray.size(); i++) {
+                            for (int i = 0; i < totalMocNap; i++) {
                                 try {
                                     Archivement achievement = new Archivement();
 //                                    achievement.setInfo1("Mốc nạp ");
@@ -473,10 +473,10 @@ public class Archivement {
                 return "" + GIADOLACHIADOI[8];
             case 9:
                 return "" + GIADOLACHIADOI[9];
-//            case 10:
-//                return "" + GIADOLACHIADOI[10];
-//            case 11:
-//                return "" + GIADOLACHIADOI[11];
+            case 10:
+                return "" + GIADOLACHIADOI[10];
+            case 11:
+                return "" + GIADOLACHIADOI[11];
 //            case 12:
 //                return "" + GIADOLACHIADOI[12];
 //            case 13:
@@ -508,10 +508,10 @@ public class Archivement {
                 return " " + player.getSession().danap + "";
             case 9:
                 return " " + player.getSession().danap + "";
-//            case 10:
-//                return " " + player.getSession().danap + "";
-//            case 11:
-//                return " " + player.getSession().danap + "";
+            case 10:
+                return " " + player.getSession().danap + "";
+            case 11:
+                return " " + player.getSession().danap + "";
 //            case 12:
 //                return " " + player.getSession().danap + "";
 //            case 13:

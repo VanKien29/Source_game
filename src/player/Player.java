@@ -1030,25 +1030,25 @@ public class Player implements Runnable {
     };
 
     public short getHeadThuCung() {
-        if (this.isPl() && this.inventory != null && this.inventory.itemsBody.size() > 7
-                && this.inventory.itemsBody.get(7).isNotNullItem()) {
-            return (short) (this.inventory.itemsBody.get(7).template.head);
+        if (this.isPl() && this.inventory != null && this.inventory.itemsBody.size() > Inventory.BODY_SLOT_PET
+                && this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).isNotNullItem()) {
+            return (short) (this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).template.head);
         }
         return -1;
     }
 
     public short getBodyThuCung() {
-        if (this.isPl() && this.inventory != null && this.inventory.itemsBody.size() > 7
-                && this.inventory.itemsBody.get(7).isNotNullItem()) {
-            return (short) (this.inventory.itemsBody.get(7).template.body);
+        if (this.isPl() && this.inventory != null && this.inventory.itemsBody.size() > Inventory.BODY_SLOT_PET
+                && this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).isNotNullItem()) {
+            return (short) (this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).template.body);
         }
         return -1;
     }
 
     public short getLegThuCung() {
-        if (this.isPl() && this.inventory != null && this.inventory.itemsBody.size() > 7
-                && this.inventory.itemsBody.get(7).isNotNullItem()) {
-            return (short) (this.inventory.itemsBody.get(7).template.leg);
+        if (this.isPl() && this.inventory != null && this.inventory.itemsBody.size() > Inventory.BODY_SLOT_PET
+                && this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).isNotNullItem()) {
+            return (short) (this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).template.leg);
         }
         return -1;
     }
@@ -1289,9 +1289,9 @@ public class Player implements Runnable {
                 }
             }
         }
-        // if (this.isPet && this.inventory.itemsBody.size() >= 8) {
-        // if (this.inventory.itemsBody.get(7).isNotNullItem()) {
-        // return this.inventory.itemsBody.get(7).template.part;
+        // if (this.isPet && this.inventory.itemsBody.size() > Inventory.BODY_SLOT_PET) {
+        // if (this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).isNotNullItem()) {
+        // return this.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).template.part;
         // }
         // }
         if (this.clan != null) {
@@ -1301,10 +1301,10 @@ public class Player implements Runnable {
     }
 
     public short getMount() {
-        if (this.inventory.itemsBody.isEmpty() || this.inventory.itemsBody.size() < 10) {
+        if (this.inventory.itemsBody.isEmpty() || this.inventory.itemsBody.size() <= Inventory.BODY_SLOT_MOUNT) {
             return -1;
         }
-        Item item = this.inventory.itemsBody.get(9);
+        Item item = this.inventory.itemsBody.get(Inventory.BODY_SLOT_MOUNT);
         if (!item.isNotNullItem()) {
             return -1;
         }
@@ -1697,8 +1697,8 @@ public class Player implements Runnable {
     }
 
     // public void sendNewPet() {
-    // if (isPl() && inventory != null && inventory.itemsBody.get(7) != null) {
-    // Item it = inventory.itemsBody.get(7);
+    // if (isPl() && inventory != null && inventory.itemsBody.get(Inventory.BODY_SLOT_PET) != null) {
+    // Item it = inventory.itemsBody.get(Inventory.BODY_SLOT_PET);
     // if (it != null && it.isNotNullItem() && newPet == null) {
     // switch (it.template.id) {
     // case 942 -> {

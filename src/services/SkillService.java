@@ -700,7 +700,7 @@ public class SkillService {
                         EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
                                 EffectSkillService.BLIND_EFFECT);
                         PlayerService.gI().sendInfoHpMpMoney(plTarget);
-                        ItemTimeService.gI().sendItemTime(plTarget, 3779, timeChoangDCTT / 1000);
+                        ItemTimeService.gI().sendItemTime(plTarget, 30130, timeChoangDCTT / 1000);
                         ClanNamekWarService.gI().markControlApplied(plTarget);
                     }
                 }
@@ -723,7 +723,7 @@ public class SkillService {
                         EffectSkillService.gI().setThoiMien(plTarget, System.currentTimeMillis(), timeSleep);
                         EffectSkillService.gI().sendEffectPlayer(player, plTarget, EffectSkillService.TURN_ON_EFFECT,
                                 EffectSkillService.SLEEP_EFFECT);
-                        ItemTimeService.gI().sendItemTime(plTarget, 3782, timeSleep / 1000);
+                        ItemTimeService.gI().sendItemTime(plTarget, 30131, timeSleep / 1000);
                         ClanNamekWarService.gI().markControlApplied(plTarget);
                     }
                 }
@@ -847,7 +847,7 @@ public class SkillService {
                 EffectSkillService.gI().setStartShield(player);
                 EffectSkillService.gI().sendEffectPlayer(player, player, EffectSkillService.TURN_ON_EFFECT,
                         EffectSkillService.SHIELD_EFFECT);
-                ItemTimeService.gI().sendItemTime(player, 3784, player.effectSkill.timeShield / 1000);
+                ItemTimeService.gI().sendItemTime(player, 30146, player.effectSkill.timeShield / 1000);
                 affterUseSkill(player, player.playerSkill.skillSelect.template.id);
                 break;
             case Skill.HUYT_SAO:
@@ -869,7 +869,7 @@ public class SkillService {
                                     pl.nPoint.setHp(Util.maxIntValue(pl.nPoint.hp + pl.nPoint.hp * tileHP / 100));
                                     Service.gI().point(pl);
                                     Service.gI().Send_Info_NV(pl);
-                                    ItemTimeService.gI().sendItemTime(pl, 3781, 30);
+                                    ItemTimeService.gI().sendItemTime(pl, 30145, 30);
                                     PlayerService.gI().sendInfoHpMp(pl);
                                 } else if (!pl.isBoss && pl.gender == ConstPlayer.NAMEC && player.cFlag == pl.cFlag) {
                                     pl.nPoint.setHp(
@@ -893,7 +893,7 @@ public class SkillService {
                                 pl.nPoint.setHp(Util.maxIntValue(pl.nPoint.hp + pl.nPoint.hp * tileHP / 100));
                                 Service.gI().point(pl);
                                 Service.gI().Send_Info_NV(pl);
-                                ItemTimeService.gI().sendItemTime(pl, 3781, 30);
+                                ItemTimeService.gI().sendItemTime(pl, 30145, 30);
                                 PlayerService.gI().sendInfoHpMp(pl);
                             }
                         }
@@ -905,7 +905,7 @@ public class SkillService {
                         player.nPoint.setHp(Util.maxIntValue(player.nPoint.hp + player.nPoint.hp * tileHP / 100));
                         Service.gI().point(player);
                         Service.gI().Send_Info_NV(player);
-                        ItemTimeService.gI().sendItemTime(player, 3781, 30);
+                        ItemTimeService.gI().sendItemTime(player, 30145, 30);
                         PlayerService.gI().sendInfoHpMp(player);
                     }
                 }

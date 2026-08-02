@@ -90,31 +90,48 @@ public class ShopDAO {
             ps.setInt(2, tabShop.shop.id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                JSONArray dataArray;
-                JSONValue jv = new JSONValue();
-                JSONObject dataObject;
-                dataArray = (JSONArray) jv.parse(rs.getString("items"));
+                Object parsedItems = JSONValue.parse(rs.getString("items"));
+                if (!(parsedItems instanceof JSONArray)) {
+                    Logger.warning("Bỏ qua tab_shop #" + rs.getInt("id")
+                            + " vì cột items không phải JSON array hợp lệ\n");
+                    continue;
+                }
+                JSONArray dataArray = (JSONArray) parsedItems;
                 for (Object o : dataArray) {
-                    Item item = null;
-                    dataObject = (JSONObject) o;
-                    ItemShop itemShop = new ItemShop();
-                    itemShop.tabShop = tabShop;
-                    itemShop.id = tabShop.itemShops.size() + 1;
-                    itemShop.temp = ItemService.gI()
-                            .getTemplate(Short.parseShort(String.valueOf(dataObject.get("temp_id"))));
-                    itemShop.isNew = Boolean.parseBoolean(String.valueOf(dataObject.get("is_new")));
-                    itemShop.cost = Integer.parseInt(String.valueOf(dataObject.get("cost")));
-                    itemShop.iconSpec = Integer.parseInt(String.valueOf(dataObject.get("item_spec")));
-                    itemShop.typeSell = Byte.parseByte(String.valueOf(dataObject.get("type_sell")));
-                    JSONArray options = (JSONArray) dataObject.get("options");
-                    for (int j = 0; j < options.size(); j++) {
-                        JSONObject opt = (JSONObject) options.get(j);
-                        itemShop.options.add(new Item.ItemOption(Integer.parseInt(String.valueOf(opt.get("id"))),
-                                Integer.parseInt(String.valueOf(opt.get("param")))));
+                    if (!(o instanceof JSONObject)) {
+                        Logger.warning("Bỏ qua một item không hợp lệ trong tab_shop #" + rs.getInt("id") + "\n");
+                        continue;
                     }
-                    boolean isSell = Boolean.parseBoolean(String.valueOf(dataObject.get("is_sell")));
-                    if (isSell) {
-                        tabShop.itemShops.add(itemShop);
+                    try {
+                        JSONObject dataObject = (JSONObject) o;
+                        ItemShop itemShop = new ItemShop();
+                        itemShop.tabShop = tabShop;
+                        itemShop.id = tabShop.itemShops.size() + 1;
+                        itemShop.temp = ItemService.gI()
+                                .getTemplate(Short.parseShort(String.valueOf(dataObject.get("temp_id"))));
+                        itemShop.isNew = Boolean.parseBoolean(String.valueOf(dataObject.get("is_new")));
+                        itemShop.cost = Integer.parseInt(String.valueOf(dataObject.get("cost")));
+                        itemShop.iconSpec = Integer.parseInt(String.valueOf(dataObject.get("item_spec")));
+                        itemShop.typeSell = Byte.parseByte(String.valueOf(dataObject.get("type_sell")));
+                        Object parsedOptions = dataObject.get("options");
+                        if (parsedOptions instanceof JSONArray) {
+                            JSONArray options = (JSONArray) parsedOptions;
+                            for (Object option : options) {
+                                if (!(option instanceof JSONObject)) {
+                                    continue;
+                                }
+                                JSONObject opt = (JSONObject) option;
+                                itemShop.options.add(new Item.ItemOption(
+                                        Integer.parseInt(String.valueOf(opt.get("id"))),
+                                        Integer.parseInt(String.valueOf(opt.get("param")))));
+                            }
+                        }
+                        if (Boolean.parseBoolean(String.valueOf(dataObject.get("is_sell")))) {
+                            tabShop.itemShops.add(itemShop);
+                        }
+                    } catch (Exception exception) {
+                        Logger.warning("Bỏ qua item lỗi trong tab_shop #" + rs.getInt("id")
+                                + ": " + exception.getMessage() + "\n");
                     }
                 }
             }

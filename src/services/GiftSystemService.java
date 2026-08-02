@@ -596,7 +596,7 @@ public class GiftSystemService {
             ensurePhucLoiTables(con);
             seedDefaultConfigIfEmpty(con);
             try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT type, ref_id, label, description, price, cash, rewards_json, msg_key, msg_value "
+                    "SELECT type, ref_id, label, description, price, rewards_json, msg_key, msg_value "
                     + "FROM phuc_loi_config WHERE active = 1 ORDER BY sort_order ASC, id ASC");
                     ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -616,9 +616,9 @@ public class GiftSystemService {
                     } else if ("online".equals(type)) {
                         cfg.online.add(new ProgressReward(refId, rewards));
                     } else if ("daily_package".equals(type)) {
-                        cfg.dailyPackages.add(new PackageReward((int) refId, rs.getString("label"), rs.getString("description"), readCash(rs), rewards));
+                        cfg.dailyPackages.add(new PackageReward((int) refId, rs.getString("label"), rs.getString("description"), rs.getInt("price"), rewards));
                     } else if ("vip_package".equals(type)) {
-                        cfg.vipPackages.add(new PackageReward((int) refId, rs.getString("label"), rs.getString("description"), readCash(rs), rewards));
+                        cfg.vipPackages.add(new PackageReward((int) refId, rs.getString("label"), rs.getString("description"), rs.getInt("price"), rewards));
                     } else if ("first_topup".equals(type)) {
                         cfg.firstTopup.add(new ProgressReward(refId, rewards));
                     }
@@ -697,11 +697,6 @@ public class GiftSystemService {
         } catch (Exception ignored) {
             return 0;
         }
-    }
-
-    private int readCash(ResultSet rs) throws SQLException {
-        int cash = rs.getInt("cash");
-        return cash > 0 ? cash : rs.getInt("price");
     }
 
     private PlayerGiftState loadPlayerState(Player player) {
@@ -856,7 +851,6 @@ public class GiftSystemService {
                 + "label VARCHAR(255) DEFAULT '',"
                 + "description TEXT,"
                 + "price INT NOT NULL DEFAULT 0,"
-                + "cash INT NOT NULL DEFAULT 0,"
                 + "rewards_json TEXT NOT NULL,"
                 + "msg_key VARCHAR(64) NOT NULL DEFAULT '',"
                 + "msg_value TEXT,"
@@ -868,7 +862,7 @@ public class GiftSystemService {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")) {
             ps.executeUpdate();
         }
-        ensureColumn(con, "phuc_loi_config", "cash", "INT NOT NULL DEFAULT 0");
+        dropColumn(con, "phuc_loi_config", "cash");
         ensureColumn(con, "phuc_loi_config", "msg_key", "VARCHAR(64) NOT NULL DEFAULT ''");
         ensureColumn(con, "phuc_loi_config", "msg_value", "TEXT");
 		dropIndex(con, "phuc_loi_config", "uk_phuc_loi_config");
@@ -896,13 +890,13 @@ public class GiftSystemService {
             return;
         }
         try (PreparedStatement ps = con.prepareStatement(
-                "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, cash, rewards_json, msg_key, msg_value, sort_order, active) "
-                + "SELECT 'message', 0, '', '', 0, 0, '', msg_key, msg_value, 10000, active FROM phuc_loi_message")) {
+                "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, rewards_json, msg_key, msg_value, sort_order, active) "
+                + "SELECT 'message', 0, '', '', 0, '', msg_key, msg_value, 10000, active FROM phuc_loi_message")) {
             ps.executeUpdate();
         } catch (Exception ignored) {
             try (PreparedStatement ps = con.prepareStatement(
-                    "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, cash, rewards_json, msg_key, msg_value, sort_order, active) "
-                    + "SELECT 'message', 0, '', '', 0, 0, '', msg_key, msg_value, 10000, 1 FROM phuc_loi_message")) {
+                    "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, rewards_json, msg_key, msg_value, sort_order, active) "
+                    + "SELECT 'message', 0, '', '', 0, '', msg_key, msg_value, 10000, 1 FROM phuc_loi_message")) {
                 ps.executeUpdate();
             } catch (Exception ignoredFallback) {
             }
@@ -950,6 +944,13 @@ public class GiftSystemService {
 
 	private void ensureColumn(Connection con, String table, String column, String definition) {
 		try (PreparedStatement ps = con.prepareStatement("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition)) {
+			ps.executeUpdate();
+		} catch (Exception ignored) {
+		}
+	}
+
+	private void dropColumn(Connection con, String table, String column) {
+		try (PreparedStatement ps = con.prepareStatement("ALTER TABLE " + table + " DROP COLUMN " + column)) {
 			ps.executeUpdate();
 		} catch (Exception ignored) {
 		}
@@ -1050,24 +1051,23 @@ public class GiftSystemService {
 
     private void insertConfig(Connection con, String type, long refId, String label, String description, int price, String rewardsJson, int sortOrder) throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(
-                "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, cash, rewards_json, sort_order, active) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)")) {
+                "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, rewards_json, sort_order, active) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, 1)")) {
             ps.setString(1, type);
             ps.setLong(2, refId);
             ps.setString(3, label);
             ps.setString(4, description);
             ps.setInt(5, price);
-            ps.setInt(6, price);
-            ps.setString(7, rewardsJson);
-            ps.setInt(8, sortOrder);
+            ps.setString(6, rewardsJson);
+            ps.setInt(7, sortOrder);
             ps.executeUpdate();
         }
     }
 
     private void insertMessage(Connection con, String key, String value) throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(
-                "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, cash, rewards_json, msg_key, msg_value, sort_order, active) "
-                + "VALUES ('message', 0, '', '', 0, 0, '', ?, ?, 10000, 1)")) {
+                "INSERT IGNORE INTO phuc_loi_config (type, ref_id, label, description, price, rewards_json, msg_key, msg_value, sort_order, active) "
+                + "VALUES ('message', 0, '', '', 0, '', ?, ?, 10000, 1)")) {
             ps.setString(1, key);
             ps.setString(2, value);
             ps.executeUpdate();

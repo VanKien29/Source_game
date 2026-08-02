@@ -565,6 +565,8 @@ public class NDVSqlFetcher {
                 player.inventory.itemsBody.add(item);
             }
 
+            normalizeMountPetBodySlots(player);
+
             if (dataArray != null) {
                 dataArray.clear();
             }
@@ -1567,6 +1569,38 @@ public class NDVSqlFetcher {
             e.printStackTrace();
         }
         return player;
+    }
+
+    private static void normalizeMountPetBodySlots(Player player) {
+        if (player == null || player.inventory == null
+                || player.inventory.itemsBody.size() <= Inventory.BODY_SLOT_PET) {
+            return;
+        }
+
+        Item slotMount = player.inventory.itemsBody.get(Inventory.BODY_SLOT_MOUNT);
+        Item slotPet = player.inventory.itemsBody.get(Inventory.BODY_SLOT_PET);
+        boolean oldPetAtMountSlot = isPetBodyItem(slotMount);
+        boolean mountAtPetSlot = isMountBodyItem(slotPet);
+
+        if (oldPetAtMountSlot && mountAtPetSlot) {
+            player.inventory.itemsBody.set(Inventory.BODY_SLOT_MOUNT, slotPet);
+            player.inventory.itemsBody.set(Inventory.BODY_SLOT_PET, slotMount);
+        } else if (oldPetAtMountSlot && !slotPet.isNotNullItem()) {
+            player.inventory.itemsBody.set(Inventory.BODY_SLOT_PET, slotMount);
+            player.inventory.itemsBody.set(Inventory.BODY_SLOT_MOUNT, ItemService.gI().createItemNull());
+        } else if (!slotMount.isNotNullItem() && mountAtPetSlot) {
+            player.inventory.itemsBody.set(Inventory.BODY_SLOT_MOUNT, slotPet);
+            player.inventory.itemsBody.set(Inventory.BODY_SLOT_PET, ItemService.gI().createItemNull());
+        }
+    }
+
+    private static boolean isPetBodyItem(Item item) {
+        return item != null && item.isNotNullItem() && item.template.type == 21;
+    }
+
+    private static boolean isMountBodyItem(Item item) {
+        return item != null && item.isNotNullItem()
+                && (item.template.type == 23 || item.template.type == 24);
     }
 
     public static List<Player> getAllPlayer() {
