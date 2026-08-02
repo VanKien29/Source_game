@@ -208,8 +208,8 @@ Tat ca cac item tren giu option `231` de server xu ly HSD/vinh vien theo logic h
 Kick VIP khong nam trong SQL. Gia va phan thuong duoc hardcode trong `src/services/func/UseItem.java`, duoc goi tu NPC `src/npc/npc_manifest/ToriBot.java`:
 
 - VIP 1: 20.000 VND.
-- VIP 2: 50.000 VND, cai trang `1504` random 20-25 SD/HP/KI.
-- VIP 3: 150.000 VND, cai trang `742` random 25-29 SD/HP/KI va pet `1318` random 5-9 SD/HP/KI.
+- VIP 2: 50.000 VND, cai trang `1504` random 18-22 SD/HP/KI.
+- VIP 3: 150.000 VND, cai trang `742` random 24-28 SD/HP/KI va pet `1318` random 7-10 SD/HP/KI.
 
 File SQL khong the sua cac item nay. Neu can can lai Kick VIP phai sua source Java va build lai server rieng.
 

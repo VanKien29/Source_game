@@ -1729,27 +1729,27 @@ public class UseItem {
                     switch (player.gender) {
                         case 0:
                             itemqua1 = ItemService.gI().createNewItem((short) 227);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(10, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 5)));
                             break;
                         case 1:
                             itemqua1 = ItemService.gI().createNewItem((short) 228);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(10, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 5)));
                             break;
                         case 2:
                             itemqua1 = ItemService.gI().createNewItem((short) 229);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(10, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 5)));
                             break;
                         default:
                             Service.gI().sendThongBao(player, "Giới tính không hợp lệ, không thể nhận quà!");
@@ -1841,12 +1841,12 @@ public class UseItem {
 //                        PetService.gI().createNormalPet(player);
 //                    }
                     itemqua3 = ItemService.gI().createNewItem((short) 1504, 1);
-                    itemqua3.itemOptions.add(new ItemOption(50, Util.nextInt(20, 25)));
-                    itemqua3.itemOptions.add(new ItemOption(77, Util.nextInt(20, 25)));
-                    itemqua3.itemOptions.add(new ItemOption(103, Util.nextInt(20, 25)));
+                    itemqua3.itemOptions.add(new ItemOption(50, Util.nextInt(18, 22)));
+                    itemqua3.itemOptions.add(new ItemOption(77, Util.nextInt(18, 22)));
+                    itemqua3.itemOptions.add(new ItemOption(103, Util.nextInt(18, 22)));
 //                    itemqua3.itemOptions.add(new ItemOption(5, 5));
-                    itemqua3.itemOptions.add(new ItemOption(14, 10));
-                    itemqua3.itemOptions.add(new ItemOption(94, 7));
+                    itemqua3.itemOptions.add(new ItemOption(14, 8));
+                    itemqua3.itemOptions.add(new ItemOption(94, 5));
                     itemqua3.itemOptions.add(new ItemOption(93, 14));
                     itemqua3.itemOptions.add(new ItemOption(30, 0));
 //                    itemqua2 = ItemService.gI().createNewItem((short) 1722, 1);
@@ -1862,27 +1862,27 @@ public class UseItem {
                     switch (player.gender) {
                         case 0:
                             itemqua1 = ItemService.gI().createNewItem((short) 227);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(14, 20)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(2, 7)));
                             break;
                         case 1:
                             itemqua1 = ItemService.gI().createNewItem((short) 228);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(14, 20)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(2, 7)));
                             break;
                         case 2:
                             itemqua1 = ItemService.gI().createNewItem((short) 229);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(14, 20)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(7, 12)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(2, 7)));
                             break;
                         default:
                             Service.gI().sendThongBao(player, "Giới tính không hợp lệ, không thể nhận quà!");
@@ -1990,9 +1990,9 @@ public class UseItem {
 //                    itemqua2.itemOptions.add(new ItemOption(160, 35));
 //                    itemqua2.itemOptions.add(new ItemOption(30, 0));
                     itemqua3 = ItemService.gI().createNewItem((short) 742, 1);
-                    itemqua3.itemOptions.add(new ItemOption(50, Util.nextInt(25, 29)));
-                    itemqua3.itemOptions.add(new ItemOption(77, Util.nextInt(25, 29)));
-                    itemqua3.itemOptions.add(new ItemOption(103, Util.nextInt(25, 29)));
+                    itemqua3.itemOptions.add(new ItemOption(50, Util.nextInt(24, 28)));
+                    itemqua3.itemOptions.add(new ItemOption(77, Util.nextInt(24, 28)));
+                    itemqua3.itemOptions.add(new ItemOption(103, Util.nextInt(24, 28)));
 //                    itemqua3.itemOptions.add(new ItemOption(5, Util.nextInt(3, 10)));
                     itemqua3.itemOptions.add(new ItemOption(14, 10));
                     itemqua3.itemOptions.add(new ItemOption(94, 7));
@@ -2000,15 +2000,14 @@ public class UseItem {
                     itemqua3.itemOptions.add(new ItemOption(30, 0));
 
                     itemqua4 = ItemService.gI().createNewItem((short) 1318, 1);
-                    itemqua4.itemOptions.add(new ItemOption(50, Util.nextInt(5, 9)));
-                    itemqua4.itemOptions.add(new ItemOption(77, Util.nextInt(5, 9)));
-                    itemqua4.itemOptions.add(new ItemOption(103, Util.nextInt(5, 9)));
+                    itemqua4.itemOptions.add(new ItemOption(50, Util.nextInt(7, 10)));
+                    itemqua4.itemOptions.add(new ItemOption(77, Util.nextInt(7, 10)));
+                    itemqua4.itemOptions.add(new ItemOption(103, Util.nextInt(7, 10)));
 //                    itemqua4.itemOptions.add(new ItemOption(5, 9));
                     itemqua4.itemOptions.add(new ItemOption(14, 5));
                     itemqua4.itemOptions.add(new ItemOption(94, 4));
                     itemqua4.itemOptions.add(new ItemOption(93, 21));
                     itemqua4.itemOptions.add(new ItemOption(30, 0));
-                    itemqua4.itemOptions.add(new ItemOption(93, 15));
 //                    itemqua4 = ItemService.gI().createNewItem((short) 1625, 1);
 //                    itemqua4.itemOptions.add(new ItemOption(50, 9));
 //                    itemqua4.itemOptions.add(new ItemOption(77, 9));
@@ -2019,27 +2018,27 @@ public class UseItem {
                     switch (player.gender) {
                         case 0:
                             itemqua1 = ItemService.gI().createNewItem((short) 227);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(18, 24)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(3, 9)));
                             break;
                         case 1:
                             itemqua1 = ItemService.gI().createNewItem((short) 228);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(18, 24)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(3, 9)));
                             break;
                         case 2:
                             itemqua1 = ItemService.gI().createNewItem((short) 229);
-                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(15, 25)));
-                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(5, 15)));
-                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(1, 10)));
+                            itemqua1.itemOptions.add(new ItemOption(50, Util.nextInt(18, 24)));
+                            itemqua1.itemOptions.add(new ItemOption(77, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(103, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(97, Util.nextInt(9, 15)));
+                            itemqua1.itemOptions.add(new ItemOption(14, Util.nextInt(3, 9)));
                             break;
                         default:
                             Service.gI().sendThongBao(player, "Giới tính không hợp lệ, không thể nhận quà!");
