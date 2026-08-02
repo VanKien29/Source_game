@@ -327,7 +327,7 @@ public class PlayerDAO {
             String nangcap = dataArray.toJSONString();
             dataArray.clear();
 
-            dataArray.add(0);
+            dataArray.add(2); // mặc định mở thêm 2 ô trang bị khi tạo player
             String dataBodySlot = dataArray.toJSONString();
             dataArray.clear();
 

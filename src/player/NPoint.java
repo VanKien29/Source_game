@@ -1662,10 +1662,10 @@ public class NPoint {
     }
 
     private void setPet() {
-        if (this.player.inventory.itemsBody.size() < 8) {
+        if (this.player.inventory.itemsBody.size() <= Inventory.BODY_SLOT_PET) {
             return;
         }
-        Item skin = this.player.inventory.itemsBody.get(7);
+        Item skin = this.player.inventory.itemsBody.get(Inventory.BODY_SLOT_PET);
 
         // Đặt tất cả biến về false trước
         this.isRong7sao = false;
@@ -1680,10 +1680,10 @@ public class NPoint {
     }
 
     private void setThuCuoi() {
-        if (this.player.inventory.itemsBody.size() < 10) {
+        if (this.player.inventory.itemsBody.size() <= Inventory.BODY_SLOT_MOUNT) {
             return;
         }
-        Item skin = this.player.inventory.itemsBody.get(9);
+        Item skin = this.player.inventory.itemsBody.get(Inventory.BODY_SLOT_MOUNT);
 
         // Đặt tất cả biến về false trước
         this.isVanTeNuoc = false;

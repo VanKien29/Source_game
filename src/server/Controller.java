@@ -43,6 +43,7 @@ import jdbc.daos.SuperRankDAO;
 import models.Card.Card;
 import models.Card.RadarService;
 import npc.NpcManager;
+import player.Inventory;
 import player.Player;
 import matches.PVPService;
 //import minigame.Taixiu.TaiXiu;
@@ -1137,7 +1138,8 @@ public class Controller implements IMessageHandler {
             if (player.pet != null) {
                 player.pet.setClothes.setup();
             }
-            if (player.inventory.itemsBody.get(7).isNotNullItem()) {
+            if (player.inventory.itemsBody.size() > Inventory.BODY_SLOT_PET
+                    && player.inventory.itemsBody.get(Inventory.BODY_SLOT_PET).isNotNullItem()) {
                 new Thread(() -> {
                     try {
                         Thread.sleep(1000);
