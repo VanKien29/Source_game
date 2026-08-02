@@ -42,6 +42,7 @@ import task.TaskMain;
 import services.ItemService;
 import services.FlagBagService;
 import services.MapService;
+import services.RandomOptionService;
 import utils.Logger;
 
 import java.io.DataInputStream;
@@ -737,6 +738,7 @@ public final class Manager {
                 ITEM_OPTION_TEMPLATES.add(optionTemp);
             }
             Logger.success("Successfully loaded map item option template (" + ITEM_OPTION_TEMPLATES.size() + ")\n");
+            RandomOptionService.load(con);
 
             //load kol task
             ps = con.prepareStatement("select * from task_kol_template");

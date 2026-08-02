@@ -7,7 +7,9 @@ package services;
  */
 import models.Template;
 import models.Template.ItemOptionTemplate;
-import jdbc.DBConnecter;
+import models.GiftBox.GiftBoxHsd;
+import models.GiftBox.GiftBoxOption;
+import models.GiftBox.GiftBoxReward;
 import item.Item;
 import map.ItemMap;
 import player.Player;
@@ -17,19 +19,19 @@ import utils.TimeUtil;
 import utils.Util;
 import item.Item.ItemOption;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import map.Zone;
 import models.Combine.CombineService;
 import models.Combine.manifest.NangCapLevelKichHoat;
 import shop.Shop;
 import shop.TabShop;
+
+import static models.GiftBox.GiftBoxHsd.rate;
+import static models.GiftBox.GiftBoxHsd.rates;
+import static models.GiftBox.GiftBoxOption.option;
+import static models.GiftBox.GiftBoxOption.options;
+import static models.GiftBox.GiftBoxReward.giftReward;
 
 public class ItemService {
 
@@ -2330,368 +2332,140 @@ public class ItemService {
         }
     }
 
-    public boolean openConfiguredGiftBox(Player pl, Item itemUse) {
-        if (pl == null || itemUse == null || !itemUse.isNotNullItem()) {
-            return false;
-        }
-
-        GiftBoxConfig config = loadGiftBoxConfig(itemUse.template.id);
-        if (config == null) {
-            return false;
-        }
-
-        if (InventoryService.gI().getCountEmptyBag(pl) < config.minEmptySlots) {
-            Service.gI().sendThongBao(pl, "Bạn phải có ít nhất " + config.minEmptySlots + " ô trống hành trang");
-            return true;
-        }
-
-        GiftBoxReward reward = selectGiftBoxReward(config.id);
-        if (reward == null) {
-            Service.gI().sendThongBao(pl, "Hộp quà này chưa có phần thưởng");
-            return true;
-        }
-
-        int quantity = reward.quantityMin;
-        if (reward.quantityMax > reward.quantityMin) {
-            quantity = Util.nextInt(reward.quantityMin, reward.quantityMax);
-        }
-
-        Item itemReward = ItemService.gI().createNewItem((short) reward.itemId, quantity);
-        for (GiftBoxOption option : reward.options) {
-            int param = option.paramMin;
-            if (option.paramMax > option.paramMin) {
-                param = Util.nextInt(option.paramMin, option.paramMax);
-            }
-            itemReward.itemOptions.add(new Item.ItemOption(option.id, param));
-        }
-        applyGiftBoxOptionGroups(itemReward, reward.optionGroups);
-
-        InventoryService.gI().addItemBag(pl, itemReward);
-        InventoryService.gI().sendItemBag(pl);
-        InventoryService.gI().subQuantityItemsBag(pl, itemUse, 1);
-
-        String message = config.successMessage == null || config.successMessage.isEmpty()
-                ? "Bạn mở rương nhận được {item}"
-                : config.successMessage;
-        Service.gI().sendThongBao(pl, message.replace("{item}", itemReward.template.name));
-        return true;
+    public void OpenItem1967(Player pl, Item itemUse) {
+        GiftBoxService.gI().open(pl, itemUse,
+                giftReward(17, 45, options(option(30, 1, 1)), rates()),
+                giftReward(18, 45, options(option(30, 1, 1)), rates()),
+                giftReward(19, 45, options(option(30, 1, 1)), rates()),
+                giftReward(20, 45, options(option(30, 1, 1)), rates()),
+                giftReward(220, 10, options(option(30, 1, 1)), rates()),
+                giftReward(221, 10, options(option(30, 1, 1)), rates()),
+                giftReward(222, 10, options(option(30, 1, 1)), rates()),
+                giftReward(223, 10, options(option(30, 1, 1)), rates()),
+                giftReward(224, 10, options(option(30, 1, 1)), rates()),
+                giftReward(225, 10, options(option(30, 1, 1)), rates()),
+                giftReward(1966, 60, options(), rates(
+                        rate(1, 35),
+                        rate(3, 25),
+                        rate(5, 18),
+                        rate(7, 12),
+                        rate(15, 8),
+                        rate(0, 2)
+                ), options(
+                        option(50, 1, 5),
+                        option(0, 500, 5000)
+                ), options(
+                        option(77, 1, 5),
+                        option(6, 5000, 50000)
+                ), options(
+                        option(103, 1, 5),
+                        option(7, 5000, 50000)
+                )));
     }
 
-    private GiftBoxConfig loadGiftBoxConfig(int itemId) {
-        String sql = "SELECT id, min_empty_slots, success_message FROM gift_box_configs WHERE item_id = ? AND active = 1 LIMIT 1";
-        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, itemId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-
-                GiftBoxConfig config = new GiftBoxConfig();
-                config.id = rs.getInt("id");
-                config.minEmptySlots = Math.max(1, rs.getInt("min_empty_slots"));
-                config.successMessage = rs.getString("success_message");
-                return config;
-            }
-        } catch (Exception ignored) {
-            return null;
-        }
+    public void OpenItem2041(Player pl, Item itemUse) {
+        GiftBoxService.gI().open(pl, itemUse,
+                giftReward(1943, 1,
+                        options(
+                                option(50, 23, 30),
+                                option(77, 20, 25),
+                                option(103, 20, 25),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1944, 1,
+                        options(
+                                option(50, 20, 25),
+                                option(77, 20, 25),
+                                option(103, 23, 30),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1945, 1,
+                        options(
+                                option(50, 20, 25),
+                                option(77, 23, 30),
+                                option(103, 20, 25),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                )
+        );
+    }
+    public void OpenItem2042(Player pl, Item itemUse) {
+        GiftBoxService.gI().open(pl, itemUse,
+                giftReward(1943, 1,
+                        options(
+                                option(50, 23, 30),
+                                option(77, 20, 25),
+                                option(103, 20, 25),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1944, 1,
+                        options(
+                                option(50, 20, 25),
+                                option(77, 20, 25),
+                                option(103, 23, 30),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1945, 1,
+                        options(
+                                option(50, 20, 25),
+                                option(77, 23, 30),
+                                option(103, 20, 25),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                )
+        );
     }
 
-    private GiftBoxReward selectGiftBoxReward(int configId) {
-        String sql = "SELECT reward_item_id, quantity_min, quantity_max, chance_weight, options_json, option_groups_json "
-                + "FROM gift_box_rewards WHERE gift_box_config_id = ? ORDER BY sort_order, id";
-        List<GiftBoxReward> rewards = new ArrayList<>();
-        int totalWeight = 0;
-
-        try (Connection con = DBConnecter.getConnectionServer(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, configId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    GiftBoxReward reward = new GiftBoxReward();
-                    reward.itemId = rs.getInt("reward_item_id");
-                    reward.quantityMin = Math.max(1, rs.getInt("quantity_min"));
-                    reward.quantityMax = Math.max(reward.quantityMin, rs.getInt("quantity_max"));
-                    reward.weight = Math.max(1, rs.getInt("chance_weight"));
-                    reward.options = parseGiftBoxOptions(rs.getString("options_json"));
-                    reward.optionGroups = parseGiftBoxOptionGroups(rs.getString("option_groups_json"));
-                    rewards.add(reward);
-                    totalWeight += reward.weight;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        if (rewards.isEmpty() || totalWeight <= 0) {
-            return null;
-        }
-
-        int roll = Util.nextInt(1, totalWeight);
-        int running = 0;
-        for (GiftBoxReward reward : rewards) {
-            running += reward.weight;
-            if (roll <= running) {
-                return reward;
-            }
-        }
-        return rewards.get(rewards.size() - 1);
-    }
-
-    private void applyGiftBoxOptionGroups(Item itemReward, List<GiftBoxOptionGroup> groups) {
-        if (itemReward == null || groups == null || groups.isEmpty()) {
-            return;
-        }
-
-        for (GiftBoxOptionGroup group : groups) {
-            GiftBoxOptionEntry entry = selectGiftBoxOptionEntry(group);
-            if (entry == null || entry.options == null || entry.options.isEmpty()) {
-                continue;
-            }
-
-            for (GiftBoxOption option : entry.options) {
-                int param = option.paramMin;
-                if (option.paramMax > option.paramMin) {
-                    param = Util.nextInt(option.paramMin, option.paramMax);
-                }
-                itemReward.itemOptions.add(new Item.ItemOption(option.id, param));
-            }
-        }
-    }
-
-    private GiftBoxOptionEntry selectGiftBoxOptionEntry(GiftBoxOptionGroup group) {
-        if (group == null || group.entries == null || group.entries.isEmpty()) {
-            return null;
-        }
-
-        int totalWeight = 0;
-        for (GiftBoxOptionEntry entry : group.entries) {
-            totalWeight += Math.max(0, entry.weight);
-        }
-        if (totalWeight <= 0) {
-            return null;
-        }
-
-        int roll = Util.nextInt(1, totalWeight);
-        int running = 0;
-        for (GiftBoxOptionEntry entry : group.entries) {
-            int weight = Math.max(0, entry.weight);
-            if (weight <= 0) {
-                continue;
-            }
-            running += weight;
-            if (roll <= running) {
-                return entry;
-            }
-        }
-        return group.entries.get(group.entries.size() - 1);
-    }
-
-    private List<GiftBoxOption> parseGiftBoxOptions(String rawOptions) {
-        List<GiftBoxOption> options = new ArrayList<>();
-        Object parsed = JSONValue.parse(rawOptions == null || rawOptions.trim().isEmpty() ? "[]" : rawOptions);
-        if (!(parsed instanceof JSONArray)) {
-            return options;
-        }
-
-        JSONArray array = (JSONArray) parsed;
-        for (Object value : array) {
-            if (!(value instanceof JSONObject)) {
-                continue;
-            }
-
-            JSONObject object = (JSONObject) value;
-            GiftBoxOption option = new GiftBoxOption();
-            option.id = jsonInt(object, "id", -1);
-            if (option.id < 0) {
-                continue;
-            }
-            option.paramMin = jsonInt(object, "param_min", jsonInt(object, "param", 0));
-            option.paramMax = jsonInt(object, "param_max", option.paramMin);
-            if (option.paramMax < option.paramMin) {
-                int temp = option.paramMin;
-                option.paramMin = option.paramMax;
-                option.paramMax = temp;
-            }
-            options.add(option);
-        }
-        return options;
-    }
-
-    private List<GiftBoxOptionGroup> parseGiftBoxOptionGroups(String rawGroups) {
-        List<GiftBoxOptionGroup> groups = new ArrayList<>();
-        Object parsed = JSONValue.parse(rawGroups == null || rawGroups.trim().isEmpty() ? "[]" : rawGroups);
-        if (!(parsed instanceof JSONArray)) {
-            return groups;
-        }
-
-        JSONArray array = (JSONArray) parsed;
-        for (Object value : array) {
-            if (!(value instanceof JSONObject)) {
-                continue;
-            }
-
-            JSONObject object = (JSONObject) value;
-            Object entriesValue = object.get("entries");
-            if (!(entriesValue instanceof JSONArray)) {
-                continue;
-            }
-
-            GiftBoxOptionGroup group = new GiftBoxOptionGroup();
-            JSONArray entries = (JSONArray) entriesValue;
-            for (Object entryValue : entries) {
-                if (!(entryValue instanceof JSONObject)) {
-                    continue;
-                }
-
-                JSONObject entryObject = (JSONObject) entryValue;
-                GiftBoxOptionEntry entry = new GiftBoxOptionEntry();
-                entry.weight = Math.max(0, jsonInt(entryObject, "chance_weight", jsonInt(entryObject, "weight", 1)));
-                Object optionsValue = entryObject.get("options");
-                entry.options = parseGiftBoxOptionsValue(optionsValue);
-                group.entries.add(entry);
-            }
-
-            if (!group.entries.isEmpty()) {
-                groups.add(group);
-            }
-        }
-        return groups;
-    }
-
-    private List<GiftBoxOption> parseGiftBoxOptionsValue(Object parsed) {
-        List<GiftBoxOption> options = new ArrayList<>();
-        if (!(parsed instanceof JSONArray)) {
-            return options;
-        }
-
-        JSONArray array = (JSONArray) parsed;
-        for (Object value : array) {
-            if (!(value instanceof JSONObject)) {
-                continue;
-            }
-
-            JSONObject object = (JSONObject) value;
-            GiftBoxOption option = new GiftBoxOption();
-            option.id = jsonInt(object, "id", -1);
-            if (option.id < 0) {
-                continue;
-            }
-            option.paramMin = jsonInt(object, "param_min", jsonInt(object, "param", 0));
-            option.paramMax = jsonInt(object, "param_max", option.paramMin);
-            if (option.paramMax < option.paramMin) {
-                int temp = option.paramMin;
-                option.paramMin = option.paramMax;
-                option.paramMax = temp;
-            }
-            options.add(option);
-        }
-        return options;
-    }
-
-    private int jsonInt(JSONObject object, String key, int defaultValue) {
-        Object value = object.get(key);
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        if (value != null) {
-            try {
-                return Integer.parseInt(String.valueOf(value));
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return defaultValue;
-    }
-
-    private static class GiftBoxConfig {
-
-        int id;
-        int minEmptySlots;
-        String successMessage;
-    }
-
-    private static class GiftBoxReward {
-
-        int itemId;
-        int quantityMin;
-        int quantityMax;
-        int weight;
-        List<GiftBoxOption> options = new ArrayList<>();
-        List<GiftBoxOptionGroup> optionGroups = new ArrayList<>();
-    }
-
-    private static class GiftBoxOption {
-
-        int id;
-        int paramMin;
-        int paramMax;
-    }
-
-    private static class GiftBoxOptionGroup {
-
-        List<GiftBoxOptionEntry> entries = new ArrayList<>();
-    }
-
-    private static class GiftBoxOptionEntry {
-
-        int weight;
-        List<GiftBoxOption> options = new ArrayList<>();
-    }
-
-    public void OpenItem1967(Player pl, Item item) {
-        int nr = Util.nextInt(17, 20);
-        int[] vp = {220, 221, 222, 223, 224, 225};
-        int[] vpVip = {1966};
-        Item item2 = null;
-        if (Util.isTrue(60, 100)) {
-            item2 = ItemService.gI().createNewItem((short) nr);
-            item2.quantity = 1;
-            item2.itemOptions.add(new Item.ItemOption(30, 1));
-        } else if (Util.isTrue(50, 100)) {
-            item2 = ItemService.gI().createNewItem((short) vp[Util.nextInt(0, vp.length - 1)]);
-            item2.quantity = 1;
-            item2.itemOptions.add(new Item.ItemOption(30, 1));
-        } else {
-            item2 = ItemService.gI().createNewItem((short) vpVip[Util.nextInt(0, vpVip.length - 1)]);
-            item2.quantity = 1;
-
-            // Tỉ lệ HSD cho item 1966
-            // 1 ngày  : 35%
-            // 3 ngày  : 25%
-            // 5 ngày  : 18%
-            // 7 ngày  : 12%
-            // 15 ngày : 8%
-            int tiLeHsd = Util.nextInt(1, 100);
-
-            if (tiLeHsd <= 35) {
-                item2.itemOptions.add(new Item.ItemOption(93, 1));
-            } else if (tiLeHsd <= 60) {
-                item2.itemOptions.add(new Item.ItemOption(93, 3));
-            } else if (tiLeHsd <= 78) {
-                item2.itemOptions.add(new Item.ItemOption(93, 5));
-            } else if (tiLeHsd <= 90) {
-                item2.itemOptions.add(new Item.ItemOption(93, 7));
-            } else if (tiLeHsd <= 98) {
-                item2.itemOptions.add(new Item.ItemOption(93, 15));
-            } else {
-                // Vĩnh viễn: không add option 93
-            }
-
-            int combo = Util.nextInt(1, 3);
-            if (combo == 1) {
-                item2.itemOptions.add(new Item.ItemOption(50, Util.nextInt(1, 5)));
-                item2.itemOptions.add(new Item.ItemOption(0, Util.nextInt(500, 5000)));
-            } else if (combo == 2) {
-                item2.itemOptions.add(new Item.ItemOption(77, Util.nextInt(1, 5)));
-                item2.itemOptions.add(new Item.ItemOption(6, Util.nextInt(5000, 50000)));
-            } else {
-                item2.itemOptions.add(new Item.ItemOption(103, Util.nextInt(1, 5)));
-                item2.itemOptions.add(new Item.ItemOption(7, Util.nextInt(5000, 50000)));
-            }
-        }
-        InventoryService.gI().addItemBag(pl, item2);
-        InventoryService.gI().sendItemBag(pl);
-        InventoryService.gI().subQuantityItemsBag(pl, item, 1);
-        Service.gI().sendThongBao(pl, "Bạn mở rương nhận được " + item2.template.name);
-    }
 }

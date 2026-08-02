@@ -298,9 +298,9 @@ public class UseItem {
                         break;
                     }
                     default:
-                        if (ItemService.gI().openConfiguredGiftBox(pl, item)) {
-                            break;
-                        }
+                        // Gift boxes are handled by the item-id cases below.
+                        // Rewards, chances and options belong in Source_game/src,
+                        // not in the web/database configuration.
                         switch (item.template.id) {
                             case 992: // Nhan thoi khong
                                 pl.type = 2;
@@ -698,6 +698,12 @@ public class UseItem {
                                 break;
                             case 1967:
                                 ItemService.gI().OpenItem1967(pl, item);
+                                break;
+                            case 2041:
+                                ItemService.gI().OpenItem2041(pl, item);
+                                break;
+                            case 2042:
+                                ItemService.gI().OpenItem2042(pl, item);
                                 break;
                             case 1228:
                                 NpcService.gI().createMenuConMeo(pl, ConstNpc.HOP_QUA_THAN_LINH, -1,
@@ -2415,6 +2421,7 @@ public class UseItem {
         NpcService.gI().createMenuConMeo(pl, ConstNpc.MENU_OPTION_USE_ITEM1704, -1, "Chọn hành tinh của Bạn đi", "Set trái đất",
                 "Set namec", "Set xayda", "Từ chổi");
     }
+
     private void Hopdoskh(Player pl, Item item) {// hop qua do skh
         NpcService.gI().createMenuConMeo(pl, ConstNpc.MENU_OPTION_USE_ITEM1968, -1, "Chọn hành tinh của Bạn đi", "Set trái đất",
                 "Set namec", "Set xayda", "Từ chổi");

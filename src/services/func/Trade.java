@@ -14,6 +14,7 @@ import services.ItemService;
 import services.PlayerService;
 import services.Service;
 import services.InventoryService;
+import services.RandomOptionService;
 import utils.Logger;
 import utils.Util;
 
@@ -301,7 +302,7 @@ public class Trade {
                     // mở option item cho src
                     for (Item.ItemOption io : item.itemOptions) {
                         msg.writer().writeInt(io.optionTemplate.id);
-                        msg.writer().writeInt(io.param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(io));
                     }
                 }
                 player2.sendMessage(msg);
@@ -320,7 +321,7 @@ public class Trade {
                     // mở option item cho src
                     for (Item.ItemOption io : item.itemOptions) {
                         msg.writer().writeInt(io.optionTemplate.id);
-                        msg.writer().writeInt(io.param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(io));
                     }
                 }
                 player1.sendMessage(msg);

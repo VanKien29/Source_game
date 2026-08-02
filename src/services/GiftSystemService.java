@@ -452,7 +452,7 @@ public class GiftSystemService {
             for (int j = 0; j < optionCount; j++) {
                 Item.ItemOption option = item.itemOptions.get(j);
                 msg.writer().writeInt(option.optionTemplate.id);
-                msg.writer().writeInt(option.param);
+                msg.writer().writeInt(RandomOptionService.getDisplayParam(option));
             }
         }
     }

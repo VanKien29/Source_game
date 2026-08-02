@@ -20,7 +20,6 @@ import utils.Util;
 
 public class Fide extends Npc {
 
-    private static final int FIDE_EXTRA_MENU = 74000;
     private static final int CONFIRM_REMOVE_LIMITED_ITEMS = 74001;
     private static final int MAX_REMOVE_LIMITED_ITEMS = 5;
     private static final int MAX_PREVIEW_ITEM_NAME_LENGTH = 28;
@@ -43,7 +42,8 @@ public class Fide extends Npc {
                         + "Số điểm săn boss hiện có: "
                         + formatCoin(player.event.getEventPointBHM()) + " điểm.",
                         "Cửa hàng\n tiện lợi", "Cửa hàng\n cao cấp",
-                        "Cửa hàng\n điểm boss", "Xem top\n kill boss", "Chức năng\nkhác");
+                        "Cửa hàng\n điểm boss", "Xem top\n kill boss",
+                        "Cửa hàng\nthỏi vàng", "Xóa đồ\nhạn dùng");
             } else if (mapId == ConstTranhNgocNamek.MAP_ID) {
                 if (player.iDMark.getTranhNgoc() == 1) {
                     this.createOtherMenu(player, ConstNpc.BASE_MENU,
@@ -65,11 +65,6 @@ public class Fide extends Npc {
 //                        case 0 -> {
 //                            ShopService.gI().opendShop(player, "SANTA_PHUKIEN", false);
 //                        }
-                        case 4 -> {
-                            createOtherMenu(player, FIDE_EXTRA_MENU,
-                                    "Ngươi muốn dùng chức năng nào?",
-                                    "Cửa hàng\nthỏi vàng", "Xóa đồ\nhạn dùng", "Từ chối");
-                        }
                         case 0 -> {
                             ShopService.gI().opendShop(player, "SHOP_NANGCAP", false);
                         }
@@ -82,15 +77,12 @@ public class Fide extends Npc {
                         case 3 -> {
                             TopService.showListTop(player, 8);
                         }
-                    }
-                }
-            } else if (player.iDMark.getIndexMenu() == FIDE_EXTRA_MENU) {
-                switch (select) {
-                    case 0 -> {
-                        ShopService.gI().opendShop(player, "SHOP_TV", false);
-                    }
-                    case 1 -> {
-                        showRemoveLimitedItemsConfirm(player);
+                        case 4 -> {
+                            ShopService.gI().opendShop(player, "SHOP_TV", false);
+                        }
+                        case 5 -> {
+                            showRemoveLimitedItemsConfirm(player);
+                        }
                     }
                 }
             } else if (player.iDMark.getIndexMenu() == CONFIRM_REMOVE_LIMITED_ITEMS) {

@@ -3,6 +3,7 @@ package item;
 import models.Template;
 import models.Template.ItemTemplate;
 import services.ItemService;
+import services.RandomOptionService;
 import player.SetClothes;
 import utils.Util;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class Item {
     public String getInfo() {
         String strInfo = "";
         for (ItemOption itemOption : itemOptions) {
-            strInfo += itemOption.getOptionString();
+            strInfo += RandomOptionService.getOptionString(itemOption);
         }
         return strInfo;
     }

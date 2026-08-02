@@ -31,7 +31,7 @@ public class ToriBot extends Npc {
                                     "|7|Nâng cấp VIP 1 bạn sẽ nhận được"
                                     + "\n|2|- 500tr vàng, 30 đá bảo vệ"
                                     + "\n- 70 thỏi vàng và 1 phiếu giảm giá 80%"
-                                    + "\n- 30% may mắn, Avatar đẹp trai nhất vũ trụ"
+                                    + "\n- Avatar: 10-15% sức đánh, 5-10% HP/KI, 5-10% phản sát thương, 1-5% chí mạng"
                                     + "\n- 5 xí muội hoa mai"
                                     + "\n- 20 mảnh đội trưởng vàng"
                                     + "\n- 20 mảnh Rồng Thần Namek"
@@ -43,12 +43,12 @@ public class ToriBot extends Npc {
                                     "|7|Nâng cấp VIP 2 bạn sẽ nhận được"
                                     + "\n|2|- 1 tỷ vàng, 50 đá bảo vệ"
                                     + "\n- 150 thỏi vàng và 1 phiếu giảm giá 80%"
-                                    + "\n- 30% may mắn, Avatar đẹp trai nhất vũ trụ"
+                                    + "\n- Avatar: 14-20% sức đánh, 7-12% HP/KI, 7-12% phản sát thương, 2-7% chí mạng"
                                     + "\n- 10 xí muội hoa mai và 10 xí muội hoa đào"
                                     + "\n- 15 spl tnsm"
                                     + "\n- 30 mảnh đội trưởng vàng"
                                     + "\n- 30 mảnh Rồng Thần Namek"
-                                    + "\n- Cải trang 20-25% chỉ số",
+                                    + "\n- Cải trang 18-22% sức đánh/HP/KI, 8% chí mạng, 5% giáp",
                                     "50.000 vnd", "Đóng");
 
                         case 2 ->
@@ -56,13 +56,13 @@ public class ToriBot extends Npc {
                                     "|7|Nâng cấp VIP 3 bạn sẽ nhận được"
                                     + "\n|2|- 1.5 tỷ vàng, 50 đá bảo vệ"
                                     + "\n- 350 thỏi vàng, 250 xu elite, 1 phiếu giảm giá 80%"
-                                    + "\n- 30% may mắn, Avatar đẹp trai nhất vũ trụ"
+                                    + "\n- Avatar: 18-24% sức đánh, 9-15% HP/KI, 9-15% phản sát thương, 3-9% chí mạng"
                                     + "\n- 15 xí muội hoa mai và 15 xí muội hoa đào"
                                     + "\n- 15 spl tnsm"
                                     + "\n- 50 mảnh đội trưởng vàng"
                                     + "\n- 50 mảnh Rồng Thần Namek"
-                                    + "\n- Cải trang 25-30% chỉ số"
-                                    + "\n- Pet 5-10% chỉ số",
+                                    + "\n- Cải trang 24-28% sức đánh/HP/KI, 10% chí mạng, 7% giáp"
+                                    + "\n- Pet 7-10% sức đánh/HP/KI, 5% chí mạng, 4% giáp",
                                     "150.000 vnd", "Đóng");
                         case 3 ->
                             this.createOtherMenu(player, 3422,

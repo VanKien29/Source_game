@@ -63,7 +63,6 @@ public class MySession extends Session {
     public int eventPoint;
     public List<Item> itemsReward;
     public String dataReward;
-    public boolean is_gift_box;
     public double bdPlayer;
 
     public int version;

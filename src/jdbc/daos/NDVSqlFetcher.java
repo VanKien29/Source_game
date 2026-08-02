@@ -43,6 +43,7 @@ import models.AntiLogin;
 import services.ClanService;
 import services.IntrinsicService;
 import services.ItemService;
+import services.RandomOptionService;
 import services.MapService;
 import services.Service;
 import services.TaskService;
@@ -551,6 +552,7 @@ public class NDVSqlFetcher {
                                             Integer.parseInt(String.valueOf(opt.get(1))))
                             );
                         }
+                        RandomOptionService.randomizeOnEquip(item);
                         item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
 
                         if (ItemService.gI().isOutOfDateTime(item)) {
@@ -1233,6 +1235,8 @@ public class NDVSqlFetcher {
                                         }
                                     }
                                 }
+
+                                RandomOptionService.randomizeOnEquip(item);
 
                                 item.createTime = Long.parseLong(String.valueOf(dataItem.get(3)));
 

@@ -13,6 +13,7 @@ import network.Message;
 import services.InventoryService;
 import services.ItemService;
 import services.NpcService;
+import services.RandomOptionService;
 import services.Service;
 
 import java.util.ArrayList;
@@ -214,7 +215,7 @@ public class ConsignShopService {
                 for (int a = 0; a < it.itemOptions.size(); a++) {
                     ItemOption itemOption = it.itemOptions.get(a);
                     msg.writer().writeInt(itemOption.optionTemplate.id);
-                    msg.writer().writeInt(itemOption.param);
+                    msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                 }
                 msg.writer().writeByte(0);
                 //////////////////////////
@@ -472,7 +473,7 @@ public class ConsignShopService {
                         for (int a = 0; a < it.itemOptions.size(); a++) {
                             ItemOption itemOption = it.itemOptions.get(a);
                             msg.writer().writeInt(itemOption.optionTemplate.id);
-                            msg.writer().writeInt(itemOption.param);
+                            msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                         }
                         msg.writer().writeByte(0);
                         ////////////////////////////
@@ -524,7 +525,7 @@ public class ConsignShopService {
                         for (int a = 0; a < it.itemOptions.size(); a++) {
                             ItemOption itemOption = it.itemOptions.get(a);
                             msg.writer().writeInt(itemOption.optionTemplate.id);
-                            msg.writer().writeInt(itemOption.param);
+                            msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                         }
                         msg.writer().writeByte(0); // new item
                         //////////////////////////////////

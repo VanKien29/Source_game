@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import server.Manager;
 import services.InventoryService;
 import services.ItemService;
+import services.RandomOptionService;
 import services.Service;
 import utils.Logger;
 import utils.Util;
@@ -542,7 +543,7 @@ public class ShopService {
                         // mở option item cho src
                         for (Item.ItemOption option : itemShop.options) {
                             msg.writer().writeInt(option.optionTemplate.id);
-                            msg.writer().writeInt(option.param);
+                            msg.writer().writeInt(RandomOptionService.getDisplayParam(option));
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
                         if (itemShop.temp.type == 5) {
@@ -593,7 +594,7 @@ public class ShopService {
                         // mở option item cho src
                         for (Item.ItemOption option : itemShop.options) {
                             msg.writer().writeInt(option.optionTemplate.id);
-                            msg.writer().writeInt(option.param);
+                            msg.writer().writeInt(RandomOptionService.getDisplayParam(option));
                         }
                         msg.writer().writeByte(itemShop.isNew ? 1 : 0);
                         if (itemShop.temp.type == 5) {
@@ -637,7 +638,7 @@ public class ShopService {
                 // mở option item cho src
                 for (Item.ItemOption io : item.itemOptions) {
                     msg.writer().writeInt(io.optionTemplate.id);
-                    msg.writer().writeInt(io.param);
+                    msg.writer().writeInt(RandomOptionService.getDisplayParam(io));
                 }
                 if (item.quantity > 1) {
                     msg.writer().writeInt(31);
@@ -692,7 +693,7 @@ public class ShopService {
                 // mở option item cho src
                 for (Item.ItemOption io : item.itemOptions) {
                     msg.writer().writeInt(io.optionTemplate.id);
-                    msg.writer().writeInt(io.param);
+                    msg.writer().writeInt(RandomOptionService.getDisplayParam(io));
                 }
                 msg.writer().writeByte(0);
                 if (item.template.type == 5) {

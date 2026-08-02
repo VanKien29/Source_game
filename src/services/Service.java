@@ -754,14 +754,14 @@ public class Service {
                     NangCapLevelKichHoat.ensureLevelZero(item);
                     msg.writer().writeShort(item.template.id);
                     msg.writer().writeInt(item.quantity);
-                    msg.writer().writeUTF(item.getInfo());
+                    msg.writer().writeUTF(RandomOptionService.getInfo(item, true));
                     msg.writer().writeUTF(item.getContent());
-                    List<ItemOption> itemOptions = item.itemOptions;
+                    List<ItemOption> itemOptions = RandomOptionService.getDisplayOptions(item, true);
                     msg.writer().writeByte(itemOptions.size());
                     // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
                         msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl, item, itemOption));
-                        msg.writer().writeInt(itemOption.param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                     }
                 }
 
@@ -785,7 +785,7 @@ public class Service {
                     // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
                         msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl, item, itemOption));
-                        msg.writer().writeInt(itemOption.param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                     }
                 }
 
@@ -809,7 +809,7 @@ public class Service {
                     // mở option item cho src
                     for (ItemOption itemOption : itemOptions) {
                         msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl, item, itemOption));
-                        msg.writer().writeInt(itemOption.param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                     }
                 }
             }
@@ -1669,15 +1669,16 @@ public class Service {
                         NangCapLevelKichHoat.ensureLevelZero(item);
                         msg.writer().writeShort(item.template.id);
                         msg.writer().writeInt(item.quantity);
-                        msg.writer().writeUTF(item.getInfo());
+                        msg.writer().writeUTF(RandomOptionService.getInfo(item, true));
                         msg.writer().writeUTF(item.getContent());
 
-                        int countOption = item.itemOptions.size();
+                        List<ItemOption> displayOptions = RandomOptionService.getDisplayOptions(item, true);
+                        int countOption = displayOptions.size();
                         msg.writer().writeByte(countOption);
                         // mở option item cho src
-                        for (ItemOption iop : item.itemOptions) {
+                        for (ItemOption iop : displayOptions) {
                             msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(pl.pet, item, iop));
-                            msg.writer().writeInt(iop.param);
+                            msg.writer().writeInt(RandomOptionService.getDisplayParam(iop));
                         }
                     }
                 }

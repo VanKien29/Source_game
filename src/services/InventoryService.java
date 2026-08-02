@@ -176,6 +176,7 @@ public class InventoryService {
     }
 
     public void removeItemBody(Player player, int index) {
+        RandomOptionService.removeMarkerOnUnequip(player.inventory.itemsBody.get(index));
         this.removeItem(player.inventory.itemsBody, index);
     }
 
@@ -267,6 +268,7 @@ public class InventoryService {
     private Item putItemBag(Player player, Item item) {
         for (int i = 0; i < player.inventory.itemsBag.size(); i++) {
             if (!player.inventory.itemsBag.get(i).isNotNullItem()) {
+                RandomOptionService.removeMarkerOnUnequip(item);
                 player.inventory.itemsBag.set(i, item);
                 Item sItem = ItemService.gI().createItemNull();
                 return sItem;
@@ -280,6 +282,7 @@ public class InventoryService {
             case Inventory.TYPE_NORMAL_BOX -> {
                 for (int i = 0; i < player.inventory.itemsBox.size(); i++) {
                     if (!player.inventory.itemsBox.get(i).isNotNullItem()) {
+                        RandomOptionService.removeMarkerOnUnequip(item);
                         player.inventory.itemsBox.set(i, item);
                         return ItemService.gI().createItemNull();
                     }
@@ -288,6 +291,7 @@ public class InventoryService {
             default -> {
                 for (int i = 0; i < player.inventory.itemsBoxCollection.size(); i++) {
                     if (!player.inventory.itemsBoxCollection.get(i).isNotNullItem()) {
+                        RandomOptionService.removeMarkerOnUnequip(item);
                         player.inventory.itemsBoxCollection.set(i, item);
                         return ItemService.gI().createItemNull();
                     }
@@ -436,9 +440,17 @@ public class InventoryService {
             }
         }
 
+        if (!RandomOptionService.randomizeOnEquip(item)) {
+            Service.gI().sendThongBaoOK(
+                    player.isPet ? ((Pet) player).master : player,
+                    "Vật phẩm cấu hình số dòng chỉ số không hợp lệ!");
+            return sItem;
+        }
+
         // Thao hieu ung cu neu la slot co hieu ung. Slot 8 la deo lung/flag bag,
         // khong di qua co che effect vi id flag bag co the trung part danh hieu.
         sItem = player.inventory.itemsBody.get(index);
+        RandomOptionService.removeMarkerOnUnequip(sItem);
         if (index == 11 || index == 12) {
             if (sItem.isNotNullItem()) {
                 Service.gI().removeEffPlayer(player, sItem.template.part);
@@ -563,9 +575,11 @@ public class InventoryService {
                                     }
                                 }
                                 if (powerRequire <= player.nPoint.power) {
-                                    player.inventory.itemsBody.set(bodyIndex, item);
-                                    player.inventory.itemsBox.set(index, itemBody);
-                                    done = true;
+                                    if (RandomOptionService.randomizeOnEquip(item)) {
+                                        player.inventory.itemsBody.set(bodyIndex, item);
+                                        player.inventory.itemsBox.set(index, itemBody);
+                                        done = true;
+                                    }
 
                                     refreshSetKichHoatEffect(player);
                                     sendItemBody(player);
@@ -608,9 +622,11 @@ public class InventoryService {
                                     }
                                 }
                                 if (powerRequire <= player.nPoint.power) {
-                                    player.inventory.itemsBody.set(bodyIndex, item);
-                                    player.inventory.itemsBoxCollection.set(index, itemBody);
-                                    done = true;
+                                    if (RandomOptionService.randomizeOnEquip(item)) {
+                                        player.inventory.itemsBody.set(bodyIndex, item);
+                                        player.inventory.itemsBoxCollection.set(index, itemBody);
+                                        done = true;
+                                    }
 
                                     sendItemBody(player);
                                     Service.gI().point(player);
@@ -713,7 +729,7 @@ public class InventoryService {
                         msg.writer().writeInt(param);
                     } else {
                         msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(player, item, item.itemOptions.get(j)));
-                        msg.writer().writeInt(item.itemOptions.get(j).param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(item.itemOptions.get(j)));
                     }
                 }
             }
@@ -757,10 +773,10 @@ public class InventoryService {
 
                 msg.writer().writeShort(item.template.id);
                 msg.writer().writeInt(item.quantity);
-                msg.writer().writeUTF(item.getInfo());
+                msg.writer().writeUTF(RandomOptionService.getInfo(item, true));
                 msg.writer().writeUTF(item.getContent());
 
-                List<Item.ItemOption> itemOptions = item.itemOptions;
+                List<Item.ItemOption> itemOptions = RandomOptionService.getDisplayOptions(item, true);
                 msg.writer().writeByte(itemOptions.size());
                 // mở option item cho src
                 for (Item.ItemOption itemOption : itemOptions) {
@@ -778,7 +794,7 @@ public class InventoryService {
                         msg.writer().writeInt(param);
                     } else {
                         msg.writer().writeInt(NangCapLevelKichHoat.getDisplayOptionId(player, item, itemOption));
-                        msg.writer().writeInt(itemOption.param);
+                        msg.writer().writeInt(RandomOptionService.getDisplayParam(itemOption));
                     }
                 }
             }
@@ -819,7 +835,7 @@ public class InventoryService {
                                 msg.writer().writeInt(param);
                             } else {
                                 msg.writer().writeInt(io.optionTemplate.id);
-                                msg.writer().writeInt(io.param);
+                                msg.writer().writeInt(RandomOptionService.getDisplayParam(io));
                             }
                         }
                     }
@@ -849,7 +865,7 @@ public class InventoryService {
                                 msg.writer().writeInt(param);
                             } else {
                                 msg.writer().writeInt(io.optionTemplate.id);
-                                msg.writer().writeInt(io.param);
+                                msg.writer().writeInt(RandomOptionService.getDisplayParam(io));
                             }
                         }
                     }
