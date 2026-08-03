@@ -705,6 +705,12 @@ public class UseItem {
                             case 2042:
                                 ItemService.gI().OpenItem2042(pl, item);
                                 break;
+                            case 2043:
+                                ItemService.gI().OpenItem2043(pl, item);
+                                break;
+                            case 2044:
+                                ItemService.gI().OpenItem2044(pl, item);
+                                break;
                             case 1228:
                                 NpcService.gI().createMenuConMeo(pl, ConstNpc.HOP_QUA_THAN_LINH, -1,
                                         "Chọn hành tinh của đồ thần linh muốn nhận.",

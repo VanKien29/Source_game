@@ -87,55 +87,55 @@ public class IntrinsicService {
 
     public void settltd(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_TLTD, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nThiên Xin Hăn", "Set\nGenki", "Set\nKamejoko", "Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nThiên Xin Hăn", "Món\nGenki", "Món\nKamejoko", "Từ chối");
 
     }
 
     public void settlnm(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_TLNM, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nPicolo", "Set\nỐc Tiêu", "Set\nPikkoro Daimao", "Set\nLiên Hoàn","Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nPicolo", "Món\nỐc Tiêu", "Món\nPikkoro Daimao", "Món\nLiên Hoàn","Từ chối");
 
     }
 
     public void settlxd(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_TLXD, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nKakarot", "Set\nCadic", "Set\nNappa", "Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nKakarot", "Món\nCadic", "Món\nNappa", "Từ chối");
 
     }
 
     public void sethdtd(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_HDTD, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nTien Xin Han", "Set\nGenki", "Set\nKamejoko", "Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nTien Xin Han", "Món\nGenki", "Món\nKamejoko", "Từ chối");
 
     }
 
     public void sethdnm(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_HDNM, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nPicolo", "Set\nỐc Tiêu", "Set\nPikkoro Daimao","Set\nLiên Hoàn","Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nPicolo", "Món\nỐc Tiêu", "Món\nPikkoro Daimao","Món\nLiên Hoàn","Từ chối");
 
     }
 
     public void sethdxd(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_HDXD, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nKakarot", "Set\nCadic", "Set\nNappa", "Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nKakarot", "Món\nCadic", "Món\nNappa", "Từ chối");
 
     }
     
     public void setkhtd(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_KHTD, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nThiên Xin Hăn", "Set\nGenki", "Set\nKamejoko", "Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nThiên Xin Hăn", "Món\nGenki", "Món\nKamejoko", "Từ chối");
 
     }
 
     public void setkhnm(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_KHNM, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nPicolo", "Set\nỐc Tiêu", "Set\nPikkoro Daimao", "Set\nLiên Hoàn","Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nPicolo", "Món\nỐc Tiêu", "Món\nPikkoro Daimao", "Món\nLiên Hoàn","Từ chối");
 
     }
 
     public void setkhxd(Player player) {
         NpcService.gI().createMenuConMeo(player, ConstNpc.SET_KHXD, -1,
-                "chọn lẹ đi để tau đi chơi với ny", "Set\nKakarot", "Set\nCadic", "Set\nNappa", "Từ chối");
+                "chọn lẹ đi để tau đi chơi với ny", "Món\nKakarot", "Món\nCadic", "Món\nNappa", "Từ chối");
 
     }
 

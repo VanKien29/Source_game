@@ -2415,11 +2415,28 @@ public class ItemService {
                 )
         );
     }
+
     public void OpenItem2042(Player pl, Item itemUse) {
         GiftBoxService.gI().open(pl, itemUse,
-                giftReward(1943, 1,
+                giftReward(1588, 7,
                         options(
-                                option(50, 23, 30),
+                                option(50, 20, 23),
+                                option(77, 20, 23),
+                                option(103, 20, 23),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1589, 6,
+                        options(
+                                option(50, 20, 25),
                                 option(77, 20, 25),
                                 option(103, 20, 25),
                                 option(210, 1),
@@ -2433,11 +2450,11 @@ public class ItemService {
                                 rate(0, 3)
                         )
                 ),
-                giftReward(1944, 1,
+                giftReward(1595, 5,
                         options(
-                                option(50, 20, 25),
-                                option(77, 20, 25),
-                                option(103, 23, 30),
+                                option(50, 20, 26),
+                                option(77, 20, 26),
+                                option(103, 20, 26),
                                 option(210, 1),
                                 option(30, 1)
                         ),
@@ -2449,11 +2466,59 @@ public class ItemService {
                                 rate(0, 3)
                         )
                 ),
-                giftReward(1945, 1,
+                giftReward(1587, 4,
                         options(
-                                option(50, 20, 25),
-                                option(77, 23, 30),
-                                option(103, 20, 25),
+                                option(50, 20, 27),
+                                option(77, 20, 27),
+                                option(103, 20, 27),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1590, 3,
+                        options(
+                                option(50, 20, 28),
+                                option(77, 20, 28),
+                                option(103, 20, 28),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1593, 2,
+                        options(
+                                option(50, 20, 29),
+                                option(77, 20, 29),
+                                option(103, 20, 29),
+                                option(210, 1),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1829, 1,
+                        options(
+                                option(50, 20, 30),
+                                option(77, 20, 30),
+                                option(103, 20, 30),
                                 option(210, 1),
                                 option(30, 1)
                         ),
@@ -2468,4 +2533,148 @@ public class ItemService {
         );
     }
 
+    public void OpenItem2043(Player pl, Item itemUse) {
+        GiftBoxService.gI().open(pl, itemUse,
+                giftReward(1916, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1917, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1918, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1919, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1920, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1921, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                )
+        );
+    }
+
+    public void OpenItem2044(Player pl, Item itemUse) {
+        GiftBoxService.gI().open(pl, itemUse,
+                giftReward(1487, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1477, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                ),
+                giftReward(1468, 1,
+                        options(
+                                option(50, 3, 15),
+                                option(77, 3, 15),
+                                option(103, 3, 15),
+                                option(30, 1)
+                        ),
+                        rates(
+                                rate(1, 33),
+                                rate(3, 29),
+                                rate(7, 25),
+                                rate(15, 10),
+                                rate(0, 3)
+                        )
+                )
+        );
+    }
 }
