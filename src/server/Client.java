@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import models.DragonNamecWar.TranhNgoc;
 import services.func.SummonDragonNamek;
@@ -52,7 +53,7 @@ public class Client implements Runnable {
 
     public Player getPlayerByName(String name) {
         for (Player player : players) {
-            if (player.getName().equals(name)) {
+            if (player != null && Objects.equals(player.getName(), name)) {
                 return player;
             }
         }

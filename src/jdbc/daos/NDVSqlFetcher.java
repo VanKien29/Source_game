@@ -1005,7 +1005,14 @@ public class NDVSqlFetcher {
             dataArray = (JSONArray) JSONValue.parse(rs.getString("data_task"));
             TaskMain taskMain = TaskService.gI().getTaskMainById(player,
                     Byte.parseByte(String.valueOf(dataArray.get(0))));
-            taskMain.index = Byte.parseByte(String.valueOf(dataArray.get(1)));
+            int taskIndex = Byte.parseByte(String.valueOf(dataArray.get(1)));
+            if (taskMain.subTasks == null || taskMain.subTasks.isEmpty()) {
+                throw new IllegalStateException("Task has no sub task: " + taskMain.id);
+            }
+            if (taskIndex < 0 || taskIndex >= taskMain.subTasks.size()) {
+                taskIndex = taskMain.subTasks.size() - 1;
+            }
+            taskMain.index = (byte) taskIndex;
             taskMain.subTasks.get(taskMain.index).count = Short.parseShort(String.valueOf(dataArray.get(2)));
             if (dataArray.size() > 3) {
                 taskMain.lastTime = Long.parseLong(String.valueOf(dataArray.get(3)));

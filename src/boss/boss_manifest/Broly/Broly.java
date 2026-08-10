@@ -23,6 +23,8 @@ import utils.Util;
 
 public class Broly extends Boss {
 
+    private static final long SUPER_BROLY_HP_THRESHOLD = 2_000_000L;
+
     private int maxHp;
 
     public Broly() throws Exception {
@@ -80,30 +82,50 @@ public class Broly extends Boss {
 
         if (this.zone != null) {
             try {
-                int zoneid = Util.nextInt(2, this.zone.map.zones.size());
-                while (zoneid < this.zone.map.zones.size() && !this.zone.map.zones.get(zoneid).getBosses().isEmpty()) {
-                    zoneid++;
-                }
-
-                if (zoneid < this.zone.map.zones.size()) {
-                    this.zone = this.zone.map.zones.get(zoneid);
-                } else if (this.id == BossID.BROLY) {
-                    this.changeStatus(BossStatus.DIE);
+                int zoneCount = this.zone.map.zones.size();
+                if (zoneCount == 0) {
+                    this.lastTimeRest = System.currentTimeMillis();
+                    this.changeStatus(BossStatus.REST);
                     return;
-                } else {
-                    this.zone = this.zone.map.zones.get(Util.nextInt(2, this.zone.map.zones.size()));
                 }
 
-                if (this.zone.zoneId < 2) {
-                    this.leaveMap();
+                // Util.nextInt(from, to) is inclusive. The old code passed
+                // zones.size(), which occasionally selected an invalid index
+                // and left Broly in REST without ever joining the map.
+                int firstZone = zoneCount > 2 ? 2 : 0;
+                int firstCandidate = Util.nextInt(firstZone, zoneCount - 1);
+                Zone selectedZone = null;
+                Zone leastOccupiedZone = null;
+                int leastBosses = Integer.MAX_VALUE;
+                for (int offset = 0; offset < zoneCount - firstZone; offset++) {
+                    int index = firstZone + ((firstCandidate - firstZone + offset) % (zoneCount - firstZone));
+                    Zone candidate = this.zone.map.zones.get(index);
+                    int bossCount = candidate.getBosses().size();
+                    if (bossCount == 0) {
+                        selectedZone = candidate;
+                        break;
+                    }
+                    if (bossCount < leastBosses) {
+                        leastBosses = bossCount;
+                        leastOccupiedZone = candidate;
+                    }
                 }
+                if (selectedZone == null) {
+                    // If all zones are occupied, still let Broly spawn in the
+                    // least busy one instead of killing the boss permanently.
+                    selectedZone = leastOccupiedZone;
+                }
+                this.zone = selectedZone;
 
                 ChangeMapService.gI().changeMap(this, this.zone, -1, -1);
+                this.changeToTypePK();
                 this.changeStatus(BossStatus.CHAT_S);
             } catch (Exception e) {
+                this.lastTimeRest = System.currentTimeMillis();
                 this.changeStatus(BossStatus.REST);
             }
         } else {
+            this.lastTimeRest = System.currentTimeMillis();
             this.changeStatus(BossStatus.RESPAWN);
         }
     }
@@ -123,7 +145,10 @@ public class Broly extends Boss {
                 SkillService.gI().useSkill(this, null, null, -1, null);
             }
             damage = this.nPoint.subDameInjureWithDeff(damage);
-            if (!piercing && plAtt.playerSkill.skillSelect.template.id != Skill.TU_SAT && damage > this.nPoint.hpMax / 100) {
+            int attackerSkill = plAtt != null && plAtt.playerSkill != null && plAtt.playerSkill.skillSelect != null
+                    && plAtt.playerSkill.skillSelect.template != null
+                    ? plAtt.playerSkill.skillSelect.template.id : -1;
+            if (!piercing && attackerSkill != Skill.TU_SAT && damage > this.nPoint.hpMax / 100) {
                 damage = this.nPoint.hpMax / 100;
             }
             this.nPoint.subHP(damage);
@@ -184,7 +209,12 @@ public class Broly extends Boss {
     private void updateStats() {
         int hpMax = (int) this.nPoint.hpMax;
         int rand = Util.nextInt(4, 10);
-        this.nPoint.hpMax = Math.min(hpMax + hpMax / rand, 16_070_777);
+        int growth = Math.max(1, hpMax / rand);
+        this.nPoint.hpMax = Math.min((long) hpMax + growth, 16_070_777L);
+        // Keep the boss alive while its maximum HP is growing. Without this,
+        // the 1% damage cap still drains the original HP and Broly dies long
+        // before reaching the Super Broly threshold.
+        this.nPoint.hp = Math.min(this.nPoint.hpMax, this.nPoint.hp + growth);
         this.nPoint.dame = this.nPoint.hpMax / 10;
     }
 
@@ -197,7 +227,7 @@ public class Broly extends Boss {
 
         try {
 
-            if (this.nPoint.hpMax >= 2_000_000) {
+            if (this.nPoint.hpMax >= SUPER_BROLY_HP_THRESHOLD && zone != null) {
                 new SuperBroly(zone, x, y);
             }
         } catch (Exception ex) {

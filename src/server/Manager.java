@@ -5,6 +5,7 @@ package server;
  *
  * @author CongHoan
  */
+import HoandzManager.Functions;
 import models.Card.OptionCard;
 import models.Card.RadarService;
 import models.Card.RadarCard;
@@ -241,15 +242,16 @@ public final class Manager {
             // new Thread(map, "Update map " + map.mapName).start();
         }
         new Thread(() -> {
-            try {
-                while (!Maintenance.isRunning) {
+            while (!Maintenance.isRunning) {
+                try {
                     long st = System.currentTimeMillis();
                     for (map.Map map : MAPS) {
                         for (Zone zone : map.zones) {
                             try {
                                 zone.update();
                             } catch (Exception e) {
-
+                                Logger.logException(Manager.class, e, "Lỗi update zone "
+                                        + zone.zoneId + " map " + map.mapId);
                             }
                         }
                     }
@@ -259,9 +261,16 @@ public final class Manager {
                     if (sleep > 0) {
                         Thread.sleep(sleep);
                     }
+                } catch (OutOfMemoryError oom) {
+                    // Keep the map loop alive: dead mobs cannot respawn if this
+                    // core thread terminates after a temporary allocation spike.
+                    System.err.println("Update maps recovered from OutOfMemoryError: " + oom.getMessage());
+                    System.gc();
+                    Functions.sleep(1000);
+                } catch (Exception ex) {
+                    Logger.logException(Manager.class, ex, "Lỗi vòng lặp update maps");
+                    Functions.sleep(100);
                 }
-            } catch (Exception ex) {
-
             }
         },
                 "Update maps").start();
@@ -607,7 +616,7 @@ public final class Manager {
             ps = con.prepareStatement("SELECT id, task_main_template.name, detail, "
                     + "task_sub_template.name AS 'sub_name', max_count, notify, npc_id, map "
                     + "FROM task_main_template JOIN task_sub_template ON task_main_template.id = "
-                    + "task_sub_template.task_main_id");
+                    + "task_sub_template.task_main_id ORDER BY task_main_template.id, task_sub_template.ducvupro");
             rs = ps.executeQuery();
             int taskId = -1;
             TaskMain task = null;

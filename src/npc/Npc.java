@@ -16,8 +16,17 @@ import services.MapService;
 import services.Service;
 import utils.Logger;
 import utils.Util;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Npc implements IAtionNpc {
+
+    private static final ScheduledExecutorService AUTO_CHAT_EXECUTOR = Executors.newScheduledThreadPool(2, runnable -> {
+        Thread thread = new Thread(runnable, "NPC auto-chat");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public int mapId;
     public Map map;
@@ -164,7 +173,7 @@ public abstract class Npc implements IAtionNpc {
         }
     }
     public static void autoChat(Npc npc, String[] messages, int delayStart, int delayRepeat) {
-        java.util.concurrent.Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+        AUTO_CHAT_EXECUTOR.scheduleAtFixedRate(() -> {
             try {
                 if (npc.map != null && npc.map.zones != null) {
                     for (map.Zone zone : npc.map.zones) {
@@ -173,19 +182,16 @@ public abstract class Npc implements IAtionNpc {
                             for (player.Player pl : zone.getPlayers()) {
                                 npc.npcChat(pl, msg);
                             }
-                            new java.util.Timer().schedule(new java.util.TimerTask() {
-                                @Override
-                                public void run() {
-                                    for (player.Player pl : zone.getPlayers()) {
-                                        npc.npcChat(pl, "");
-                                    }
+                            AUTO_CHAT_EXECUTOR.schedule(() -> {
+                                for (player.Player pl : zone.getPlayers()) {
+                                    npc.npcChat(pl, "");
                                 }
-                            }, 5000);
+                            }, 5, TimeUnit.SECONDS);
                         }
                     }
                 }
             } catch (Exception ignored) {}
-        }, delayStart, delayRepeat, java.util.concurrent.TimeUnit.SECONDS);
+        }, delayStart, delayRepeat, TimeUnit.SECONDS);
     }
 
     public boolean canOpenNpc(Player player) {

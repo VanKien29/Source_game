@@ -145,18 +145,16 @@ public class Zone {
     }
 
     private void udMob() {
-        List<Mob> snapshot;
         synchronized (this.mobs) {
-            snapshot = new ArrayList<>(this.mobs);
-        }
-        for (int i = snapshot.size() - 1; i >= 0; i--) {
-            try {
-                Mob mob = snapshot.get(i);
-                if (mob != null) {
-                    mob.update();
+            for (int i = this.mobs.size() - 1; i >= 0; i--) {
+                try {
+                    Mob mob = this.mobs.get(i);
+                    if (mob != null) {
+                        mob.update();
+                    }
+                } catch (Exception e) {
+                    Logger.logException(Zone.class, e, "Lỗi update mobs");
                 }
-            } catch (Exception e) {
-                Logger.logException(Zone.class, e, "Lỗi update mobs");
             }
         }
     }

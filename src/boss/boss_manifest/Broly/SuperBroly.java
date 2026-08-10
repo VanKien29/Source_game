@@ -100,6 +100,10 @@ public class SuperBroly extends Boss {
             this.notifyJoinMap();
           //  System.out.println("Super Broly Spawned At Map: " + this.zone.map.mapId + " Zone: " + this.zone.zoneId);
         } else {
+            // A direct admin summon must not get stuck in REST just because
+            // every normal boss zone (2+) is occupied. The base join logic can
+            // use zone 0/1 as a last-resort spawn location for this summon.
+            this.isZone01SpawnDisabled = false;
             super.joinMap();
         }
         PetService.gI().createNormalPet(this);
@@ -132,7 +136,10 @@ public class SuperBroly extends Boss {
                 SkillService.gI().useSkill(this, null, null, -1, null);
             }
             damage = this.nPoint.subDameInjureWithDeff(damage);
-            if (!piercing && plAtt.playerSkill.skillSelect.template.id != Skill.TU_SAT && damage > this.nPoint.hpMax / 100) {
+            int attackerSkill = plAtt != null && plAtt.playerSkill != null && plAtt.playerSkill.skillSelect != null
+                    && plAtt.playerSkill.skillSelect.template != null
+                    ? plAtt.playerSkill.skillSelect.template.id : -1;
+            if (!piercing && attackerSkill != Skill.TU_SAT && damage > this.nPoint.hpMax / 100) {
                 damage = this.nPoint.hpMax / 100;
             }
             this.nPoint.subHP(damage);

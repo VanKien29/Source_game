@@ -1545,11 +1545,21 @@ public class ItemService {
     public Item getAngelItem(int gender, int type) {
         int tempId = 1048 + type * 3 + gender;
         Item angelItem = createNewItem((short) tempId);
-        for (Item.ItemOption io : getListOptionItemShop(14, type == 4 ? 3 : gender, type)) {
+        List<Item.ItemOption> huyDietOptions = getListOptionItemShop(14, type == 4 ? 3 : gender, type);
+        boolean hasDamageOption = false;
+        for (Item.ItemOption io : huyDietOptions) {
+            if (io.optionTemplate != null && io.optionTemplate.id == 0) {
+                hasDamageOption = true;
+            }
             if (io.isOptionCanUpgrade()) {
                 int param = (int) (io.param * 1.2);
                 angelItem.itemOptions.add(new ItemOption(io.optionTemplate.id, param));
             }
+        }
+        // Keep Angel gloves usable even if an old BILL shop row is still missing
+        // its primary damage option before the shop is reloaded.
+        if (type == 2 && !hasDamageOption) {
+            angelItem.itemOptions.add(new ItemOption(0, 10560));
         }
         int param = switch (type) {
             case 0 ->

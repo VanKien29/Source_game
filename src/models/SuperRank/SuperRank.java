@@ -85,7 +85,7 @@ public final class SuperRank implements Runnable {
             } catch (Exception e) {
                 if (error < 5) {
                     error++;
-                    System.err.println(e);
+                    e.printStackTrace();
                 }
             }
             long elapsedTime = System.currentTimeMillis() - startTime;

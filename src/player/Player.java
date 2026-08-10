@@ -408,8 +408,13 @@ public class Player implements Runnable {
                             && (TaskService.gI().getIdTask(this) == ConstTask.TASK_0_0
                             || TaskService.gI().getIdTask(this) == ConstTask.TASK_0_1)) {
                         if (this.playerTask != null && this.playerTask.taskMain != null) {
-                            this.playerTask.taskMain.index = 2;
-                            TaskService.gI().sendTaskMain(this);
+                            synchronized (this) {
+                                if (this.playerTask.taskMain.subTasks != null
+                                        && this.playerTask.taskMain.subTasks.size() > 2) {
+                                    this.playerTask.taskMain.index = 2;
+                                    TaskService.gI().sendTaskMain(this);
+                                }
+                            }
                         }
                     }
                 }

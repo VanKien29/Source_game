@@ -147,20 +147,27 @@ public class ItemTime {
     }
 
     public void update() {
+        boolean statChanged = false;
         if (nuocMiaKhongLo) {
             if (Util.canDoWithTime(lastTimeKhongLo, TIME_ITEM)) {
                 nuocMiaKhongLo = false;
+                statChanged = true;
             }
         }
         if (nuocMiaThom) {
             if (Util.canDoWithTime(lastTimeThom, TIME_ITEM)) {
                 nuocMiaThom = false;
+                statChanged = true;
             }
         }
         if (nuocMiaSauRieng) {
             if (Util.canDoWithTime(lastTimeSauRieng, TIME_ITEM)) {
                 nuocMiaSauRieng = false;
+                statChanged = true;
             }
+        }
+        if (statChanged) {
+            Service.gI().point(player);
         }
         if (isUsePhoTaiHanh) {
             if (Util.canDoWithTime(lastTimePhoTaiHanh, TIME_ITEM)) {

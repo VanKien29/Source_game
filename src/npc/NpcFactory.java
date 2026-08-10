@@ -748,7 +748,7 @@ public class NpcFactory {
                                     BossManager.gI().showListBoss(player);
                                 }
                                 case 5 -> {
-                                    BossManager.gI().createBoss(BossID.SUPER_BROLY);
+                                    BossManager.gI().createBossNow(BossID.SUPER_BROLY);
                                 }
                                 case 6 -> {
                                     Input.gI().createFormBuffVND(player);

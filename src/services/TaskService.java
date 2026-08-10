@@ -82,6 +82,13 @@ public class TaskService {
 
     // gửi thông tin nhiệm vụ chính
     public void sendTaskMain(Player player) {
+        if (!hasValidTaskSubTask(player)) {
+            return;
+        }
+        synchronized (player) {
+            if (!hasValidTaskSubTask(player)) {
+                return;
+            }
         Message msg = null;
         try {
             msg = new Message(40);
@@ -115,7 +122,18 @@ public class TaskService {
     }
 
     // chuyển sang task mới
+        }
+
     public void sendNextTaskMain(Player player) {
+        if (player == null) {
+            return;
+        }
+        synchronized (player) {
+        if (player.playerTask == null || player.playerTask.taskMain == null
+                || player.playerTask.taskMain.subTasks == null
+                || player.playerTask.taskMain.subTasks.isEmpty()) {
+            return;
+        }
         rewardDoneTask(player);
         switch (player.playerTask.taskMain.id) {
             case 3:
@@ -131,16 +149,37 @@ public class TaskService {
                         player.playerTask.taskMain.id + 1);
                 break;
         }
+        if (!hasValidTaskSubTask(player)) {
+            if (player.playerTask != null && player.playerTask.taskMain != null
+                    && player.playerTask.taskMain.subTasks != null
+                    && !player.playerTask.taskMain.subTasks.isEmpty()) {
+                player.playerTask.taskMain.index = (byte) (player.playerTask.taskMain.subTasks.size() - 1);
+                player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).count
+                        = player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).maxCount;
+            } else {
+                return;
+            }
+        }
         sendTaskMain(player);
         Service.gI().sendThongBao(player, "Nhiệm vụ tiếp theo của bạn là "
                 + player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).name);
     }
 
     // số lượng đã hoàn thành
+        }
+
     public void sendUpdateCountSubTask(Player player) {
         if (player != null && player.isBot) {
             return;
         }
+        if (!hasValidTaskSubTask(player)) {
+            return;
+        }
+        synchronized (player) {
+            if (!hasValidTaskSubTask(player)) {
+                return;
+            }
+
         Message msg = null;
         try {
             msg = new Message(43);
@@ -159,6 +198,8 @@ public class TaskService {
     }
 
     // chuyển sub task tiếp theo
+        }
+
     public void sendNextSubTask(Player player) {
         if (player != null && player.isBot) {
             return;
@@ -177,11 +218,24 @@ public class TaskService {
 
     // gửi thông tin nhiệm vụ hiện tại
     public void sendInfoCurrentTask(Player player) {
+        if (!hasValidTaskSubTask(player)) {
+            return;
+        }
+        synchronized (player) {
+            if (!hasValidTaskSubTask(player)) {
+                return;
+            }
+
         Service.gI().sendThongBao(player, "Nhiệm vụ hiện tại của bạn là "
                 + player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).name);
     }
 
+        }
+
     public boolean checkDoneTaskTalkNpc(Player player, Npc npc) {
+        if (player == null || npc == null) {
+            return false;
+        }
         switch (npc.tempId) {
             case ConstNpc.QUY_LAO_KAME:
                 return (doneTask(player, ConstTask.TASK_11_0)
@@ -241,7 +295,6 @@ public class TaskService {
                         || doneTask(player, ConstTask.TASK_5_3)
                         || doneTask(player, ConstTask.TASK_6_3)
                         || doneTask(player, ConstTask.TASK_7_3)
-                        || doneTask(player, ConstTask.TASK_7_2)
                         || doneTask(player, ConstTask.TASK_8_2)
                         || doneTask(player, ConstTask.TASK_10_3)
                         || doneTask(player, ConstTask.TASK_11_1)
@@ -252,9 +305,7 @@ public class TaskService {
             case ConstNpc.DR_DRIEF:
             case ConstNpc.CARGO:
             case ConstNpc.CUI:
-                return (player.zone.map.mapId == 19 && doneTask(player, ConstTask.TASK_19_3)
-                        || player.zone.map.mapId == 19 && doneTask(player, ConstTask.TASK_20_6)
-                        || player.zone.map.mapId == 19 && doneTask(player, ConstTask.TASK_21_4));
+                return false;
             case ConstNpc.BUNMA:
             case ConstNpc.DENDE:
             case ConstNpc.APPULE:
@@ -280,7 +331,8 @@ public class TaskService {
                 }
                 return doneTask(player, ConstTask.TASK_9_3);
             case ConstNpc.OSIN:
-                return doneTask(player, ConstTask.TASK_30_7);
+                return doneTask(player, ConstTask.TASK_30_0)
+                        || doneTask(player, ConstTask.TASK_30_7);
         }
         return false;
     }
@@ -367,7 +419,7 @@ public class TaskService {
                     doneTask(player, ConstTask.TASK_0_1);
                     break;
                 case 47:
-                    doneTask(player, ConstTask.TASK_8_3);
+                    doneTask(player, ConstTask.TASK_24_1);
                     break;
                 case 93:
                     doneTask(player, ConstTask.TASK_25_0);
@@ -383,8 +435,9 @@ public class TaskService {
                     break;
                 case 103:
                     doneTask(player, ConstTask.TASK_29_2);
+                    break;
                 case 114:
-                    doneTask(player, ConstTask.TASK_30_0);
+                    doneTask(player, ConstTask.TASK_30_1);
                     break;
                 case 46:
                     doneTask(player, ConstTask.TASK_9_2);
@@ -735,7 +788,12 @@ public class TaskService {
         if (player == null) {
             return false;
         }
+        synchronized (player) {
+            return doneTaskLocked(player, idTaskCustom);
+        }
+    }
 
+    private boolean doneTaskLocked(Player player, int idTaskCustom) {
         boolean taskJustCompleted = false;
         if (TaskService.gI().isCurrentTask(player, idTaskCustom)) {
             this.addDoneSubTask(player, 1);
@@ -1527,6 +1585,9 @@ public class TaskService {
 
     // vd: pem đc 1 mộc nhân -> +1 mộc nhân vào nv hiện tại
     private void addDoneSubTask(Player player, int numDone) {
+        if (!hasValidTaskSubTask(player)) {
+            return;
+        }
         player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).count += numDone;
         if (player.playerTask.taskMain.subTasks
                 .get(player.playerTask.taskMain.index).count >= player.playerTask.taskMain.subTasks
@@ -1697,13 +1758,24 @@ public class TaskService {
         return text;
     }
 
+    private boolean hasValidTaskSubTask(Player player) {
+        return player != null && player.playerTask != null && player.playerTask.taskMain != null
+                && player.playerTask.taskMain.subTasks != null
+                && !player.playerTask.taskMain.subTasks.isEmpty()
+                && player.playerTask.taskMain.index >= 0
+                && player.playerTask.taskMain.index < player.playerTask.taskMain.subTasks.size();
+    }
+
     private boolean isCurrentTask(Player player, int idTaskCustom) {
         return (player != null && player.playerTask != null && player.playerTask.taskMain != null
+                && player.playerTask.taskMain.subTasks != null
+                && player.playerTask.taskMain.index >= 0
+                && player.playerTask.taskMain.index < player.playerTask.taskMain.subTasks.size()
                 && idTaskCustom == (player.playerTask.taskMain.id << 10) + player.playerTask.taskMain.index << 1);
     }
 
     public int getIdTask(Player player) {
-        if (player.isPet || player.isBoss || player.playerTask == null || player.playerTask.taskMain == null) {
+        if (player == null || player.isPet || player.isBoss || !hasValidTaskSubTask(player)) {
             return -1;
         }
         return (player.playerTask.taskMain.id << 10) + player.playerTask.taskMain.index << 1;

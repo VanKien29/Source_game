@@ -480,6 +480,10 @@ public class NPoint {
         for (ItemOption io : ShopService.gI().getActiveSantaDanhHieuOptions(this.player)) {
             addOption(io);
         }
+        if (this.player.itemTime != null && this.player.itemTime.nuocMiaKhongLo) {
+            this.tlDameCrit.add(5);
+            this.tlSDCM += 5;
+        }
         applyIntrinsicGoldDrop();
         setDameTrainArmor();
         setBasePoint();
@@ -1375,8 +1379,10 @@ public class NPoint {
             dame = GetNpoinCap(dame);
         }
         if (this.player.itemTime != null && this.player.itemTime.nuocMiaKhongLo) {
+            // Nước mía khổng lồ: +10% sức đánh và +5% sức đánh chí mạng.
+            // STCM được cộng ở setPointWhenWearClothes(), không ghi đè tại
+            // đây, vì setDame() được gọi lại sau mỗi lần tấn công.
             dame += (dame * 10L / 100L);
-            this.tlSDCM = 7;
         }
         if (this.isPhongHoaLuan && this.isHoaTiemThuong) {
             dame += (dame * 5L / 100L);

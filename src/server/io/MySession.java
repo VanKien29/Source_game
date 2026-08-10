@@ -25,12 +25,19 @@ import utils.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import utils.TimeUtil;
 import utils.Util;
 
 public class MySession extends Session {
 
     private static final Map<String, AntiLogin> ANTILOGIN = new HashMap<>();
+    private static final int MAX_PENDING_MESSAGES = 256;
+    private static final int MAX_PENDING_EFFECT_MESSAGES = 32;
+    private static final int MAX_EFFECT_TEMPLATES_PER_SESSION = 512;
+
+    private final Set<Long> requestedEffectTemplates = ConcurrentHashMap.newKeySet();
     public Player player;
 
     public byte timeWait = 100;
@@ -100,8 +107,34 @@ public class MySession extends Session {
         return true;
     }
 
+    /**
+     * Effect images can be hundreds of KB. Do not build the same response over
+     * and over while an earlier copy is still waiting for the socket writer.
+     */
+    public boolean reserveEffectTemplate(int responseId, int templateId) {
+        if (!isConnected() || getNumMessages() >= MAX_PENDING_EFFECT_MESSAGES
+                || requestedEffectTemplates.size() >= MAX_EFFECT_TEMPLATES_PER_SESSION) {
+            return false;
+        }
+        long key = ((long) responseId << 32) ^ (templateId & 0xFFFFFFFFL);
+        return requestedEffectTemplates.add(key);
+    }
+
+    @Override
+    public void sendMessage(Message msg) {
+        if (msg == null) {
+            return;
+        }
+        if (!isConnected() || getNumMessages() >= MAX_PENDING_MESSAGES) {
+            msg.cleanup();
+            return;
+        }
+        super.sendMessage(msg);
+    }
+
     @Override
     public void dispose() {
+        requestedEffectTemplates.clear();
         server.AntiDDoS.gI().onSessionClosed(ipAddress);
         super.dispose();
     }

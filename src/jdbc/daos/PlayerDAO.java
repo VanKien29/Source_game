@@ -866,10 +866,21 @@ public class PlayerDAO {
                 dataArray.clear();
 
                 // data nhiệm vụ
-                dataArray.add(player.playerTask.taskMain.id);
-                dataArray.add(player.playerTask.taskMain.index);
-                dataArray.add(player.playerTask.taskMain.subTasks.get(player.playerTask.taskMain.index).count);
-                dataArray.add(player.playerTask.taskMain.lastTime);
+                synchronized (player) {
+                    if (player.playerTask != null && player.playerTask.taskMain != null
+                            && player.playerTask.taskMain.subTasks != null
+                            && !player.playerTask.taskMain.subTasks.isEmpty()) {
+                        int taskIndex = player.playerTask.taskMain.index;
+                        if (taskIndex < 0 || taskIndex >= player.playerTask.taskMain.subTasks.size()) {
+                            taskIndex = player.playerTask.taskMain.subTasks.size() - 1;
+                            player.playerTask.taskMain.index = (byte) taskIndex;
+                        }
+                        dataArray.add(player.playerTask.taskMain.id);
+                        dataArray.add(player.playerTask.taskMain.index);
+                        dataArray.add(player.playerTask.taskMain.subTasks.get(taskIndex).count);
+                        dataArray.add(player.playerTask.taskMain.lastTime);
+                    }
+                }
                 String task = dataArray.toJSONString();
                 dataArray.clear();
 

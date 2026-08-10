@@ -48,10 +48,65 @@ public class ShopDAO {
                 }
             } catch (SQLException ex) {
             }
+            ensureHuyDietGloveDamageOption(list);
         } catch (Exception e) {
             Logger.logException(ShopDAO.class, e);
         }
         return list;
+    }
+
+    /**
+     * Huy Diet gloves must always have a damage option. Some BILL shop data
+     * rows were missing that option for Namek and Xayda, which also caused
+     * the corresponding Thien Su gloves to be created without damage.
+     */
+    private static void ensureHuyDietGloveDamageOption(List<Shop> shops) {
+        int defaultDamage = 8800;
+
+        for (Shop shop : shops) {
+            if (!"BILL".equals(shop.tagName)) {
+                continue;
+            }
+            for (TabShop tabShop : shop.tabShops) {
+                for (ItemShop itemShop : tabShop.itemShops) {
+                    if (itemShop.temp == null || itemShop.temp.id != 657) {
+                        continue;
+                    }
+                    for (Item.ItemOption option : itemShop.options) {
+                        if (option.optionTemplate != null && option.optionTemplate.id == 0) {
+                            defaultDamage = option.param;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Shop shop : shops) {
+            if (!"BILL".equals(shop.tagName)) {
+                continue;
+            }
+            for (TabShop tabShop : shop.tabShops) {
+                for (ItemShop itemShop : tabShop.itemShops) {
+                    if (itemShop.temp == null
+                            || (itemShop.temp.id != 657 && itemShop.temp.id != 659 && itemShop.temp.id != 661)) {
+                        continue;
+                    }
+                    boolean hasDamageOption = false;
+                    for (Item.ItemOption option : itemShop.options) {
+                        if (option.optionTemplate != null && option.optionTemplate.id == 0) {
+                            hasDamageOption = true;
+                            break;
+                        }
+                    }
+                    if (!hasDamageOption) {
+                        itemShop.options.add(new Item.ItemOption(0, defaultDamage));
+                        Logger.warning("BILL shop glove " + itemShop.temp.id
+                                + " missing damage option; restored option 0 with param " + defaultDamage + "\n");
+                    }
+                }
+            }
+        }
     }
 
     private static void loadShopTab(Connection con, Shop shop) {

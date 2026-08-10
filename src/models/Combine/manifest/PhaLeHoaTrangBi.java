@@ -150,7 +150,7 @@ public class PhaLeHoaTrangBi {
                                 }
                             }
                         }
-                        // tỉ lệ đập đồ open note dòng 153 bật dòng 154
+                        // tỉ lệ đập đồ open note dòng 154 bật dòng 155
                         //  if (Util.isTrue(100, 100)) {
                         if (Util.isTrue(player.combine.ratioCombine, 100 * ratio) && succ) {
                             success = true;

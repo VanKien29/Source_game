@@ -69,20 +69,23 @@ public class Achievement {
     }
 
     public void done(int index, long completed) {
-        if (index >= 0 && index < achievementList.size()) {
-            achievementList.set(index, new AchievementQuest(get(index).completed + completed, get(index).isRecieve));
+        AchievementQuest achievement = get(index);
+        if (achievement != null) {
+            achievement.completed += completed;
         }
     }
 
     public void doneNotAdd(int index, long completed) {
-        if (index >= 0 && index < achievementList.size()) {
-            achievementList.set(index, new AchievementQuest(completed, get(index).isRecieve));
+        AchievementQuest achievement = get(index);
+        if (achievement != null) {
+            achievement.completed = completed;
         }
     }
 
     public void reward(int index) {
-        if (index >= 0 && index < achievementList.size()) {
-            achievementList.set(index, new AchievementQuest(get(index).completed, true));
+        AchievementQuest achievement = get(index);
+        if (achievement != null) {
+            achievement.isRecieve = true;
         }
     }
 

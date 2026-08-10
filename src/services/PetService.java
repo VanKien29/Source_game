@@ -599,6 +599,13 @@ public class PetService {
     }
 
     private void createNewPet(Player player, boolean isMabu, boolean isUub, boolean isKidBeer, boolean isJiren, boolean isFideNhi, boolean isXenNhi, boolean isBuNhi, byte... gender) {
+        // Các hàm createXXXPet chạy bất đồng bộ. Nếu chỉ gán player.pet ở dưới,
+        // đệ cũ vẫn còn nằm trong zone và trở thành một pet mồ côi trong map.
+        // Dọn theo đúng cơ chế đổi đệ tử bằng item trước khi thay reference.
+        if (player.pet != null) {
+            deletePet(player);
+        }
+
         int[] data;
 
         if (isMabu) {

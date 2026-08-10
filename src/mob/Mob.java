@@ -1008,7 +1008,7 @@ public class Mob {
 //        }
 
         // Set kich hoat level 0
-        if (Util.isTrue(1, 80) && MapService.gI().isMapUpSKH(mapid)) {
+        if (Util.isTrue(1, 30) && MapService.gI().isMapUpSKH(mapid)) {
             int skhLevel = 0;
             short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
             ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
@@ -1030,7 +1030,7 @@ public class Mob {
         }
 
         // Set kich hoat new theo mon
-        if (Util.isTrue(1, 500) && MapService.gI().isMapUpSKH(mapid)) {
+        if (Util.isTrue(1, 50) && MapService.gI().isMapUpSKH(mapid)) {
             short itTemp = (short) ItemService.gI().randTempItemKichHoat(player.gender);
             ItemMap it = new ItemMap(zone, itTemp, 1, x, yEnd, player.id);
             List<Item.ItemOption> ops = ItemService.gI().getListOptionItemShop(itTemp);

@@ -115,6 +115,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -261,10 +262,13 @@ public class BossManager implements Runnable {
     }
 
     public BossManager() {
-        this.bosses = new ArrayList<>();
+        // Bosses are added/removed while the update thread is iterating them.
+        // A copy-on-write list keeps that hot path allocation-free and prevents
+        // a transient snapshot from consuming the remaining heap under load.
+        this.bosses = new CopyOnWriteArrayList<>();
     }
 
-    protected final List<Boss> bosses;
+    protected final CopyOnWriteArrayList<Boss> bosses;
     private static final Map<Integer, BossData> RUNTIME_CUSTOM_TEMPLATES = new HashMap<>();
     private static final Map<String, JSONObject> RUNTIME_TEMPLATE_OVERRIDES = new ConcurrentHashMap<>();
     private static final String RUNTIME_CONFIG_TABLE = "boss_runtime_config";
@@ -273,8 +277,8 @@ public class BossManager implements Runnable {
     private static boolean runtimeConfigsApplied;
 
     public void addBoss(Boss boss) {
-        synchronized (this.bosses) {
-            this.bosses.add(boss);
+        if (boss != null) {
+            this.bosses.addIfAbsent(boss);
         }
     }
 
@@ -291,9 +295,10 @@ public class BossManager implements Runnable {
         for (BossManager manager : runtimeManagers()) {
             String managerKey = runtimeManagerKey(manager);
             List<Boss> snapshot = runtimeBossSnapshot(manager);
-            for (int i = 0; i < snapshot.size(); i++) {
-                Boss boss = snapshot.get(i);
+            int i = 0;
+            for (Boss boss : snapshot) {
                 if (boss == null) {
+                    i++;
                     continue;
                 }
                 if (!first) {
@@ -301,6 +306,7 @@ public class BossManager implements Runnable {
                 }
                 first = false;
                 json.append(runtimeBossJson(managerKey, i, boss));
+                i++;
             }
         }
         json.append("],\"catalog\":").append(runtimeBossCatalogJson()).append('}');
@@ -1187,10 +1193,12 @@ public class BossManager implements Runnable {
     private static RuntimeBossRef findRuntimeBossRef(Boss boss) {
         for (BossManager manager : runtimeManagers()) {
             List<Boss> snapshot = runtimeBossSnapshot(manager);
-            for (int i = 0; i < snapshot.size(); i++) {
-                if (snapshot.get(i) == boss) {
+            int i = 0;
+            for (Boss candidate : snapshot) {
+                if (candidate == boss) {
                     return new RuntimeBossRef(runtimeManagerKey(manager), i);
                 }
+                i++;
             }
         }
         return null;
@@ -1476,11 +1484,9 @@ public class BossManager implements Runnable {
 
     private static List<Boss> runtimeBossSnapshot(BossManager manager) {
         if (manager == null) {
-            return new ArrayList<>();
+            return List.of();
         }
-        synchronized (manager.bosses) {
-            return new ArrayList<>(manager.bosses);
-        }
+        return manager.bosses;
     }
 
     private static String runtimeBossJson(String managerKey, int index, Boss boss) {
@@ -1998,6 +2004,20 @@ public class BossManager implements Runnable {
         }
     }
 
+    /**
+     * Creates a boss and puts it in the next update cycle immediately.
+     * Regular createBoss() keeps the normal REST/RESPAWN lifecycle used by
+     * server startup and persistent spawn rules.
+     */
+    public Boss createBossNow(int bossID) {
+        Boss boss = createBoss(bossID);
+        if (boss != null) {
+            boss.runtimeDisabled = false;
+            boss.changeStatus(BossStatus.RESPAWN);
+        }
+        return boss;
+    }
+
     public Boss getBoss(int id) {
         try {
             Boss boss;
@@ -2022,7 +2042,9 @@ public class BossManager implements Runnable {
             msg = new Message(-96);
             msg.writer().writeByte(0);
             msg.writer().writeUTF("Boss");
-            List<Boss> snapshot = runtimeBossSnapshot(this);
+            // The UI needs stable indexes for the two messages below; the
+            // manager itself uses a copy-on-write list for the update loop.
+            List<Boss> snapshot = new ArrayList<>(runtimeBossSnapshot(this));
             msg.writer()
                     .writeByte((int) snapshot.stream()
                             .filter(boss -> !MapService.gI().isMapBossFinal(boss.data[0].getMapJoin()[0])
@@ -2091,10 +2113,10 @@ public class BossManager implements Runnable {
             try {
                 int delay = 150;
                 long st = System.currentTimeMillis();
-                List<Boss> snapshot = runtimeBossSnapshot(this);
-                for (int i = snapshot.size() - 1; i >= 0; i--) {
+                // CopyOnWriteArrayList gives this loop a stable iterator without
+                // allocating a new ArrayList on every 150 ms tick.
+                for (Boss boss : this.bosses) {
                     try {
-                        Boss boss = snapshot.get(i);
                         if (boss != null) {
                             boss.update();
                         }

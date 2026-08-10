@@ -243,7 +243,10 @@ public class DataGame {
         if (idtemp.length > 0 && idtemp[0] != 0) {
             idT = idtemp[0];
         }
-        Message msg;
+        if (session == null || !session.reserveEffectTemplate(id, idT)) {
+            return;
+        }
+        Message msg = null;
         try {
             final byte[] effData = FileIO.readFile("data/effdata/DataEffect_" + idT);
             byte[] effImg = FileIO.readFile("data/effect/x" + session.zoomLevel + "/ImgEffect_" + idT + ".png");
@@ -263,9 +266,12 @@ public class DataGame {
             msg.writer().writeInt(effImg.length);
             msg.writer().write(effImg);
             session.sendMessage(msg);
-            msg.cleanup();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
         }
     }
 
