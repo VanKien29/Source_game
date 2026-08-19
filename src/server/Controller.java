@@ -778,6 +778,17 @@ public class Controller implements IMessageHandler {
                             case 0, 1, 2 -> {
                                 SuperRankService.gI().competing(player, _id);
                             }
+                            case 4 -> {
+                                if (player.isAdmin()) {
+                                    Boss boss = BrolyManager.gI().getBoss(_id);
+                                    if (boss != null && boss.zone != null && boss.location != null) {
+                                        ChangeMapService.gI().changeMapYardrat(player, boss.zone, boss.location.x,
+                                                boss.location.y);
+                                    }
+                                } else {
+                                    Service.gI().sendThongBao(player, "Không thể thực hiện");
+                                }
+                            }
                             default -> {
                                 if (player.isAdmin()) {
                                     Boss boss = BossManager.gI().getBoss(_id);

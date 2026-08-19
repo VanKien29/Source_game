@@ -42,6 +42,7 @@ public class BossID {
     public static final int FIDE = -28;
 
     public static final int COOLER = -29;
+    public static final int VUA_COOLER = -3456;
 public static final int Duong = -2900;
     public static final int ANDROID_19 = -30;
     public static final int DR_KORE = -31;

@@ -9,6 +9,7 @@ import HoandzManager.Functions;
 import boss.boss_manifest.AnTrom.AnTrom;
 import boss.boss_manifest.AnTrom.AnTromTV;
 import boss.boss_manifest.Black.BlackGoku;
+import boss.boss_manifest.VuaCooler.VuaCooler;
 import boss.boss_manifest.Nappa.Rambo;
 import boss.boss_manifest.Nappa.MapDauDinh;
 import boss.boss_manifest.Nappa.Kuku;
@@ -145,6 +146,7 @@ import java.util.List;
 import map.Zone;
 import server.Maintenance;
 import utils.Logger;
+import utils.Util;
 import boss.boss_manifest.DaiTuongBroly.DaiTuongBroly;
 import boss.boss_manifest.Hatchiyac.Hatchiyac;
 import boss.boss_manifest.Doraemon.*;
@@ -275,6 +277,9 @@ public class BossManager implements Runnable {
     private static final String TEMPLATE_CONFIG_TABLE = "boss_template_config";
     private static final String SPAWN_RULE_TABLE = "boss_spawn_rule";
     private static boolean runtimeConfigsApplied;
+    private static final long VUA_COOLER_SPAWN_INTERVAL = 10 * 60 * 1000L;
+    private static final int VUA_COOLER_MAX_ALIVE = 3;
+    private long lastVuaCoolerSpawn = System.currentTimeMillis();
 
     public void addBoss(Boss boss) {
         if (boss != null) {
@@ -1620,7 +1625,7 @@ public class BossManager implements Runnable {
             BossID.TIEU_DOI_TRUONG, BossID.BOJACK, BossID.SUPER_BOJACK, BossID.KING_KONG,
             BossID.XEN_BO_HUNG, BossID.SIEU_BO_HUNG, BossID.KUKU, BossID.MAP_DAU_DINH,
             BossID.RAMBO, BossID.FIDE, BossID.ANDROID_14, BossID.DR_KORE, BossID.COOLER,
-            BossID.BLACK_GOKU, BossID.GOLDEN_FRIEZA, BossID.AN_TROM, BossID.AN_TROM_TV,
+            BossID.BLACK_GOKU, BossID.VUA_COOLER, BossID.GOLDEN_FRIEZA, BossID.AN_TROM, BossID.AN_TROM_TV,
             BossID.BROLY, BossID.SUPER_BROLY, BossID.CUMBER, BossID.NYASU, BossID.JAMES,
             BossID.JESSIE, BossID.DORAEMON, BossID.BROLY_SSJ, BossID.BA_CON_SOI, BossID.BE_NA
         };
@@ -1628,7 +1633,7 @@ public class BossManager implements Runnable {
             "Tiểu đội trưởng", "Bojack", "Siêu Bojack", "King Kong",
             "Xên bọ hung", "Siêu bọ hung", "Kuku", "Mập đầu đinh",
             "Rambo", "Fide", "Android 14", "Dr Kore", "Cooler",
-            "Black Goku", "Golden Frieza", "Ăn trộm", "Ăn trộm TV",
+            "Black Goku", "Vua Cooler", "Golden Frieza", "Ăn trộm", "Ăn trộm TV",
             "Broly", "Super Broly", "Cumber", "Nyasu", "James",
             "Jessie", "Doraemon", "Broly SSJ", "Ba con sói", "Bé Na"
         };
@@ -1753,6 +1758,7 @@ public class BossManager implements Runnable {
         this.createBoss(BossID.BLACK_GOKU, 5);
         this.createBoss(BossID.GOLDEN_FRIEZA, 5);
         this.createBoss(BossID.BLACK_GOKU);
+        this.createBoss(BossID.VUA_COOLER);
         this.createBoss(BossID.AN_TROM, 2);
         this.createBoss(BossID.AN_TROM_TV, 2);
         this.createBoss(BossID.BROLY, 15);
@@ -1985,6 +1991,8 @@ public class BossManager implements Runnable {
                     new LanCon();
                 case BossID.BLACK_GOKU ->
                     new BlackGoku();
+                case BossID.VUA_COOLER ->
+                    new VuaCooler();
                 case BossID.CUMBER ->
                     new Cumber();
                 case BossID.NYASU ->
@@ -2036,7 +2044,7 @@ public class BossManager implements Runnable {
         if (!player.isAdmin()) {
             return;
         }
-        player.iDMark.setMenuType(3);
+        player.iDMark.setMenuType(this instanceof BrolyManager ? 4 : 3);
         Message msg;
         try {
             msg = new Message(-96);
@@ -2107,12 +2115,38 @@ public class BossManager implements Runnable {
                 .orElse(null);
     }
 
+    private void updateVuaCoolerSpawn() {
+        if (!Util.canDoWithTime(this.lastVuaCoolerSpawn, VUA_COOLER_SPAWN_INTERVAL)) {
+            return;
+        }
+        this.lastVuaCoolerSpawn = System.currentTimeMillis();
+
+        int alive = 0;
+        Boss reusable = null;
+        for (Boss boss : this.bosses) {
+            if (boss instanceof VuaCooler && !boss.runtimeDisabled && !boss.isDie()) {
+                alive++;
+            } else if (boss instanceof VuaCooler && !boss.runtimeDisabled && reusable == null) {
+                reusable = boss;
+            }
+        }
+        if (alive >= VUA_COOLER_MAX_ALIVE) {
+            return;
+        }
+
+        Boss boss = reusable != null ? reusable : createBoss(BossID.VUA_COOLER);
+        if (boss != null) {
+            boss.changeStatus(BossStatus.RESPAWN);
+        }
+    }
+
     @Override
     public void run() {
         while (!Maintenance.isRunning) {
             try {
                 int delay = 150;
                 long st = System.currentTimeMillis();
+                updateVuaCoolerSpawn();
                 // CopyOnWriteArrayList gives this loop a stable iterator without
                 // allocating a new ArrayList on every 150 ms tick.
                 for (Boss boss : this.bosses) {
