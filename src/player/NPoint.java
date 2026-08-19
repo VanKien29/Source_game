@@ -5,6 +5,7 @@ package player;
  *
  * @author CongHoan
  */
+import boss.Boss;
 import models.Card.Card;
 import models.Card.OptionCard;
 import consts.ConstPlayer;
@@ -1886,6 +1887,11 @@ public class NPoint {
     }
 
     public long getDameAttack(boolean isAttackMob) {
+        if (this.player instanceof Boss boss && boss.getFixedAttackDamage() >= 0) {
+            this.isCrit = false;
+            return boss.getFixedAttackDamage();
+        }
+
         setCaiTrang();
 
         setThuCuoi();

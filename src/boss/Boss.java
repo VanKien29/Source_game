@@ -75,6 +75,7 @@ public class Boss extends Player implements IBoss, IBossOutfit {
     public boolean isNotifyDisabled;
     public boolean isZone01SpawnDisabled;
     public boolean runtimeDisabled;
+    protected long fixedAttackDamage = -1;
 
     private long lastTimeCheck;
 
@@ -269,6 +270,10 @@ public class Boss extends Player implements IBoss, IBossOutfit {
                 this.data[this.currentLevel].getMapJoin().length - 1)];
         Zone map = MapService.gI().getMapWithRandZone(mapId);
         return map;
+    }
+
+    public long getFixedAttackDamage() {
+        return this.fixedAttackDamage;
     }
 
     @Override

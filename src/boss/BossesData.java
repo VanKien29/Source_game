@@ -2457,6 +2457,20 @@ public class BossesData {
                 "|-1|Biến hình, hây aaaa..."}, // text chat 3
             REST_30_M // second rest
     );
+    public static final BossData VUA_COOLER = new BossData(
+            "Vua Cooler",
+            ConstPlayer.XAYDA,
+            new short[]{2203, 2204, 2205, -1, -1, -1},
+            1000,
+            new long[]{100_000},
+            new int[]{3456},
+            new int[][]{
+                {Skill.DRAGON, 1, 1000}},
+            new String[]{},
+            new String[]{},
+            new String[]{},
+            REST_10_M);
+
     public static final BossData Duong = new BossData(
             "Dương", // name
             ConstPlayer.XAYDA, // gender
